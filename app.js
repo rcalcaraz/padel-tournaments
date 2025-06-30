@@ -2,6 +2,7 @@
 class PadelApp {
   constructor() {
     this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
+    this.isProcessing = false;
     this.init();
   }
 
@@ -27,7 +28,12 @@ class PadelApp {
     // Event listener para el botón de enviar partido
     const botonEnviar = DOMUtils.getElement('enviar-partido');
     if (botonEnviar) {
-      botonEnviar.addEventListener('click', (e) => this.handleSubmitPartido(e));
+      // Remover event listeners anteriores para evitar duplicados
+      const nuevoBoton = botonEnviar.cloneNode(true);
+      botonEnviar.parentNode.replaceChild(nuevoBoton, botonEnviar);
+      
+      // Agregar event listener
+      nuevoBoton.addEventListener('click', (e) => this.handleSubmitPartido(e));
     }
   }
 
@@ -172,17 +178,21 @@ class PadelApp {
       const selector = DOMUtils.getElement(selectorId);
       if (!selector) return;
 
+      // Remover event listeners anteriores para evitar duplicados
+      const nuevoSelector = selector.cloneNode(true);
+      selector.parentNode.replaceChild(nuevoSelector, selector);
+
       // Limpiar opciones existentes excepto la primera
-      selector.innerHTML = selector.innerHTML.split('</option>')[0] + '</option>';
+      nuevoSelector.innerHTML = nuevoSelector.innerHTML.split('</option>')[0] + '</option>';
       
       jugadores.forEach(jugador => {
         const option = DOMUtils.createElement('option', '', jugador.nombre);
         option.value = jugador.id;
-        selector.appendChild(option);
+        nuevoSelector.appendChild(option);
       });
       
       // Agregar event listener para actualizar opciones
-      selector.addEventListener('change', () => this.updateAvailableOptions());
+      nuevoSelector.addEventListener('change', () => this.updateAvailableOptions());
     });
     
     // Aplicar validación inicial
@@ -273,10 +283,16 @@ class PadelApp {
   async handleSubmitPartido(e) {
     e.preventDefault();
     
+    // Evitar múltiples envíos simultáneos
+    if (this.isProcessing) {
+      return;
+    }
+    
     if (!this.validateForm()) {
       return;
     }
 
+    this.isProcessing = true;
     const botonEnviar = DOMUtils.getElement('enviar-partido');
     const originalText = botonEnviar.innerHTML;
     
@@ -300,6 +316,7 @@ class PadelApp {
     } finally {
       botonEnviar.innerHTML = originalText;
       botonEnviar.disabled = false;
+      this.isProcessing = false;
     }
   }
 
@@ -387,5 +404,10 @@ function validarInputSet(input) {
 
 // Inicializar aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
+  // Verificar si ya existe una instancia
+  if (window.padelApp) {
+    return;
+  }
+  
   window.padelApp = new PadelApp();
 }); 
