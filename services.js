@@ -84,22 +84,22 @@ class SupabaseService {
   // Métodos para partidos
   async getPartidos() {
     try {
-      const { data, error } = await this.supabase
+      const { data: partidos, error } = await this.supabase
         .from('partidos')
         .select(`
           *,
-          pareja1_jugador1:jugadores!partidos_pareja1_jugador1_id_fkey(nombre),
-          pareja1_jugador2:jugadores!partidos_pareja1_jugador2_id_fkey(nombre),
-          pareja2_jugador1:jugadores!partidos_pareja2_jugador1_id_fkey(nombre),
-          pareja2_jugador2:jugadores!partidos_pareja2_jugador2_id_fkey(nombre)
+          pareja1_jugador1:jugadores!partidos_pareja1_jugador1_id_fkey(id, nombre, rating_elo),
+          pareja1_jugador2:jugadores!partidos_pareja1_jugador2_id_fkey(id, nombre, rating_elo),
+          pareja2_jugador1:jugadores!partidos_pareja2_jugador1_id_fkey(id, nombre, rating_elo),
+          pareja2_jugador2:jugadores!partidos_pareja2_jugador2_id_fkey(id, nombre, rating_elo)
         `)
         .order('fecha_partido', { ascending: false });
 
       if (error) throw error;
-      return { success: true, data };
+      return partidos;
     } catch (error) {
       console.error('Error obteniendo partidos:', error);
-      return { success: false, error: error.message };
+      throw error;
     }
   }
 
@@ -126,6 +126,23 @@ class SupabaseService {
     } else {
       return null; // Empate
     }
+  }
+
+  // Función para obtener información detallada del partido para ELO
+  obtenerInfoPartido(datosPartido) {
+    const sets = EloUtils.countSetsWon(
+      datosPartido.pareja1_set1, datosPartido.pareja1_set2, datosPartido.pareja1_set3,
+      datosPartido.pareja2_set1, datosPartido.pareja2_set2, datosPartido.pareja2_set3
+    );
+    
+    const ganador = this.calcularGanador(datosPartido);
+    
+    return {
+      ganador,
+      setsPareja1: sets.pareja1,
+      setsPareja2: sets.pareja2,
+      resultFactor: EloUtils.getResultFactor(sets.pareja1, sets.pareja2)
+    };
   }
 
   async createPartido(datosPartido) {
@@ -221,13 +238,13 @@ class SupabaseService {
 
   async getEstadisticasGenerales() {
     try {
-      const [jugadoresResult, partidosResult] = await Promise.all([
+      const [jugadoresResult, partidos] = await Promise.all([
         this.getJugadores(),
         this.getPartidos()
       ]);
 
-      if (!jugadoresResult.success || !partidosResult.success) {
-        throw new Error('Error obteniendo datos para estadísticas');
+      if (!jugadoresResult.success) {
+        throw new Error('Error obteniendo jugadores');
       }
 
       const estadisticas = await Promise.all(
@@ -303,13 +320,13 @@ class SupabaseService {
   // Métodos para el sistema ELO
   async getEstadisticasConELO() {
     try {
-      const [jugadoresResult, partidosResult] = await Promise.all([
+      const [jugadoresResult, partidos] = await Promise.all([
         this.getJugadores(),
         this.getPartidos()
       ]);
 
-      if (!jugadoresResult.success || !partidosResult.success) {
-        throw new Error('Error obteniendo datos para estadísticas ELO');
+      if (!jugadoresResult.success) {
+        throw new Error('Error obteniendo jugadores');
       }
 
       // Inicializar ratings ELO para todos los jugadores
@@ -320,7 +337,7 @@ class SupabaseService {
       }));
 
       // Calcular estadísticas y ELO basado en todos los partidos
-      for (const partido of partidosResult.data) {
+      for (const partido of partidos) {
         if (!partido.ganador_pareja) continue;
 
         // Obtener jugadores del partido

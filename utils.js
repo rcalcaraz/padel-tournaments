@@ -228,7 +228,7 @@ class StorageUtils {
   }
 }
 
-// Utilidades para el sistema ELO
+// Utilidades para el sistema ELO MEJORADO
 class EloUtils {
   // Factor K determina cuánto cambia el rating en cada partido
   static K_FACTOR = 32;
@@ -241,41 +241,129 @@ class EloUtils {
     return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
   }
   
-  // Calcular nuevo rating después de un partido
-  static calculateNewRating(currentRating, expectedScore, actualScore) {
-    return Math.round(currentRating + this.K_FACTOR * (actualScore - expectedScore));
+  // Calcular el factor de resultado basado en la diferencia de sets
+  static getResultFactor(setsPareja1, setsPareja2) {
+    const diferenciaSets = Math.abs(setsPareja1 - setsPareja2);
+    
+    if (diferenciaSets === 0) {
+      return 1.0; // Empate
+    } else if (diferenciaSets === 1) {
+      return 1.0; // Partido ajustado (2-1, 2-0)
+    } else if (diferenciaSets === 2) {
+      return 1.2; // Victoria clara (2-0, 3-1)
+    } else {
+      return 1.5; // Victoria aplastante (3-0)
+    }
   }
   
-  // Calcular ratings para un partido entre dos parejas
-  static calculateMatchRatings(pareja1Rating, pareja2Rating, ganadorPareja) {
-    const expectedScore1 = this.getExpectedScore(pareja1Rating, pareja2Rating);
-    const expectedScore2 = this.getExpectedScore(pareja2Rating, pareja1Rating);
+  // Calcular el factor de recompensa diferencial
+  static getRewardFactor(playerRating, teamAverageRating) {
+    const diferencia = teamAverageRating - playerRating;
     
-    let newRating1, newRating2;
-    
-    if (ganadorPareja === 1) {
-      // Pareja 1 ganó
-      newRating1 = this.calculateNewRating(pareja1Rating, expectedScore1, 1);
-      newRating2 = this.calculateNewRating(pareja2Rating, expectedScore2, 0);
-    } else if (ganadorPareja === 2) {
-      // Pareja 2 ganó
-      newRating1 = this.calculateNewRating(pareja1Rating, expectedScore1, 0);
-      newRating2 = this.calculateNewRating(pareja2Rating, expectedScore2, 1);
+    if (diferencia > 0) {
+      // Jugador de menor nivel: más recompensa (hasta 1.3x)
+      const factor = 1.0 + (diferencia / 400.0) * 0.3;
+      return Math.min(1.3, factor);
+    } else if (diferencia < 0) {
+      // Jugador de mayor nivel: menos recompensa (hasta 0.7x)
+      const factor = 1.0 + (diferencia / 400.0) * 0.3;
+      return Math.max(0.7, factor);
     } else {
-      // Empate
-      newRating1 = this.calculateNewRating(pareja1Rating, expectedScore1, 0.5);
-      newRating2 = this.calculateNewRating(pareja2Rating, expectedScore2, 0.5);
+      // Mismo nivel
+      return 1.0;
+    }
+  }
+  
+  // Calcular nuevo rating después de un partido (MEJORADO)
+  static calculateNewRatingImproved(
+    currentRating, 
+    expectedScore, 
+    actualScore, 
+    resultFactor, 
+    rewardFactor
+  ) {
+    const baseChange = this.K_FACTOR * (actualScore - expectedScore);
+    const finalChange = Math.round(baseChange * resultFactor * rewardFactor);
+    return Math.max(100, currentRating + finalChange);
+  }
+  
+  // Calcular ratings para un partido entre dos parejas (MEJORADO)
+  static calculateMatchRatingsImproved(
+    pareja1Jugador1, pareja1Jugador2, 
+    pareja2Jugador1, pareja2Jugador2, 
+    ganadorPareja, 
+    pareja1Sets, pareja2Sets
+  ) {
+    // Calcular ratings promedio de cada pareja
+    const ratingPareja1 = this.calculateTeamRating(pareja1Jugador1, pareja1Jugador2);
+    const ratingPareja2 = this.calculateTeamRating(pareja2Jugador1, pareja2Jugador2);
+    
+    const expectedScore1 = this.getExpectedScore(ratingPareja1, ratingPareja2);
+    const expectedScore2 = this.getExpectedScore(ratingPareja2, ratingPareja1);
+    
+    // Determinar resultado real
+    let actualScore1, actualScore2;
+    if (ganadorPareja === 1) {
+      actualScore1 = 1.0;
+      actualScore2 = 0.0;
+    } else if (ganadorPareja === 2) {
+      actualScore1 = 0.0;
+      actualScore2 = 1.0;
+    } else {
+      actualScore1 = 0.5;
+      actualScore2 = 0.5;
     }
     
+    // Calcular factor de resultado
+    const resultFactor = this.getResultFactor(pareja1Sets, pareja2Sets);
+    
+    // Calcular factores de recompensa para cada jugador
+    const rewardFactor1 = this.getRewardFactor(pareja1Jugador1, ratingPareja1);
+    const rewardFactor2 = this.getRewardFactor(pareja1Jugador2, ratingPareja1);
+    const rewardFactor3 = this.getRewardFactor(pareja2Jugador1, ratingPareja2);
+    const rewardFactor4 = this.getRewardFactor(pareja2Jugador2, ratingPareja2);
+    
+    // Calcular nuevos ratings individuales
+    const newRating1 = this.calculateNewRatingImproved(
+      pareja1Jugador1, expectedScore1, actualScore1, resultFactor, rewardFactor1
+    );
+    const newRating2 = this.calculateNewRatingImproved(
+      pareja1Jugador2, expectedScore1, actualScore1, resultFactor, rewardFactor2
+    );
+    const newRating3 = this.calculateNewRatingImproved(
+      pareja2Jugador1, expectedScore2, actualScore2, resultFactor, rewardFactor3
+    );
+    const newRating4 = this.calculateNewRatingImproved(
+      pareja2Jugador2, expectedScore2, actualScore2, resultFactor, rewardFactor4
+    );
+    
     return {
-      pareja1: newRating1,
-      pareja2: newRating2
+      pareja1_jugador1: newRating1,
+      pareja1_jugador2: newRating2,
+      pareja2_jugador1: newRating3,
+      pareja2_jugador2: newRating4
     };
   }
   
   // Calcular rating promedio de una pareja
   static calculateTeamRating(jugador1Rating, jugador2Rating) {
     return Math.round((jugador1Rating + jugador2Rating) / 2);
+  }
+  
+  // Contar sets ganados por una pareja
+  static countSetsWon(pareja1Set1, pareja1Set2, pareja1Set3, pareja2Set1, pareja2Set2, pareja2Set3) {
+    let setsPareja1 = 0;
+    let setsPareja2 = 0;
+    
+    if (pareja1Set1 > pareja2Set1) setsPareja1++;
+    if (pareja1Set2 > pareja2Set2) setsPareja1++;
+    if (pareja1Set3 > pareja2Set3) setsPareja1++;
+    
+    if (pareja2Set1 > pareja1Set1) setsPareja2++;
+    if (pareja2Set2 > pareja1Set2) setsPareja2++;
+    if (pareja2Set3 > pareja1Set3) setsPareja2++;
+    
+    return { pareja1: setsPareja1, pareja2: setsPareja2 };
   }
   
   // Obtener el color del rating ELO (para mostrar en la UI)
@@ -296,6 +384,34 @@ class EloUtils {
     if (rating >= 1400) return 'Intermedio';
     if (rating >= 1200) return 'Principiante';
     return 'Novato';
+  }
+  
+  // Función legacy para compatibilidad (mantener por si acaso)
+  static calculateNewRating(currentRating, expectedScore, actualScore) {
+    return Math.round(currentRating + this.K_FACTOR * (actualScore - expectedScore));
+  }
+  
+  static calculateMatchRatings(pareja1Rating, pareja2Rating, ganadorPareja) {
+    const expectedScore1 = this.getExpectedScore(pareja1Rating, pareja2Rating);
+    const expectedScore2 = this.getExpectedScore(pareja2Rating, pareja1Rating);
+    
+    let newRating1, newRating2;
+    
+    if (ganadorPareja === 1) {
+      newRating1 = this.calculateNewRating(pareja1Rating, expectedScore1, 1);
+      newRating2 = this.calculateNewRating(pareja2Rating, expectedScore2, 0);
+    } else if (ganadorPareja === 2) {
+      newRating1 = this.calculateNewRating(pareja1Rating, expectedScore1, 0);
+      newRating2 = this.calculateNewRating(pareja2Rating, expectedScore2, 1);
+    } else {
+      newRating1 = this.calculateNewRating(pareja1Rating, expectedScore1, 0.5);
+      newRating2 = this.calculateNewRating(pareja2Rating, expectedScore2, 0.5);
+    }
+    
+    return {
+      pareja1: newRating1,
+      pareja2: newRating2
+    };
   }
 }
 
