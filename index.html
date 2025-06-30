@@ -8,10 +8,30 @@
       href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Public+Sans%3Awght%40400%3B500%3B700%3B900"
     />
 
-    <title>Stitch Design</title>
+    <title>Torneos de Pádel</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Archivos de la aplicación -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <script src="utils.js"></script>
+    <script src="services.js"></script>
+    <script src="app.js"></script>
+    <style>
+      /* Estilos para opciones deshabilitadas en selectores */
+      select option:disabled {
+        color: #9ca3af;
+        font-style: italic;
+        background-color: #f3f4f6;
+      }
+      
+      select option:disabled::after {
+        content: " (Ya seleccionado)";
+      }
+    </style>
   </head>
   <body>
     <div
@@ -19,57 +39,46 @@
       style='--select-button-svg: url(&apos;data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(100,135,113)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e&apos;); font-family: "Public Sans", "Noto Sans", sans-serif;'
     >
       <div class="w-full px-2 sm:px-4 lg:px-6">
-        <div class="flex items-center bg-white p-8 pb-4 justify-between">
-          <div class="text-[#111714] flex size-20 shrink-0 items-center" data-icon="ArrowLeft" data-size="40px" data-weight="regular">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px" fill="currentColor" viewBox="0 0 256 256">
-              <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
-            </svg>
-          </div>
-          <h2 class="text-[#111714] text-4xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-20">Clasificaciones y Registro de Partidos</h2>
-        </div>
         <h2 class="text-[#111714] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Clasificaciones</h2>
-        <div class="grid grid-cols-1 gap-10 max-w-full mx-auto">
-          <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div
-              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzVNB3S1wr5Pvfo8jMbjyzLyp4QLPRDGF4BEFjqKDLR_N31LpbLCMPLKtCuWaGoDfXKBD5WNlVRyZtqBoFaBgpM9xQfEnCUQQaB6-nInb-_7HDwik6EWRnj3De4myekf2YXrJ-1K5Ezz0b9H0M3jDJXIa_Umwo_nWDerD44Ok5g92pmQL82Q7s8kMlYrQ1z4KTpj9RZEF6jUoWGPGnp0IEnN8STIafFIb9bQfuWmF3-TzOBDC6oifd9ijaVYdr6_1g7eUpU5MQtIM");'
-            ></div>
-            <div class="flex flex-col justify-center min-w-0">
-              <p class="text-[#111714] text-4xl font-medium leading-normal truncate">Ethan</p>
-              <p class="text-[#648771] text-3xl font-normal leading-normal truncate">Puntos: 1200 | V: 25 | D: 10</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div
-              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBdhuyKEmp-xbsmvg158toL49ql2JpjqcFJSE4ACGhr61HfaxgHT3oQ-xIxJVn7xKpFO1KBD8bb3R6VX4e-Eu2iqiZei7zm3oAhxXBbxhxGl5Ldm1C2R9VM5rBgyDCk9kohxa-bmqjVRdszQlfGWnu4iiOYPJpZgjesZQ_JGLqBw-S4D1JlfenjbM2xNemaCA51KcQPicHcnzvZ8lTpFRsDusix7mtJsOkdguyN9khhyOhUvA-wCtfCWR0MhT13S5V2Z5paC6_5xMI");'
-            ></div>
-            <div class="flex flex-col justify-center min-w-0">
-              <p class="text-[#111714] text-4xl font-medium leading-normal truncate">Liam</p>
-              <p class="text-[#648771] text-3xl font-normal leading-normal truncate">Puntos: 1150 | V: 20 | D: 15</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div
-              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAz0N0_edoQwgH4xT0wlFp5Ua6d6lw1JcbM5zL5fLzbK6U_ayy-7ftEpZCl6anOrOj-puBGg7y_XIGgq2J1TdoWBVO0vI8UqI67BSs5YkPwBNVmAvUH-ztbT9nPZxc9qtILqikQBDA6wfpaBcw5orqz7Jr3aHScgmk6X20Sicu5MDeuftveU8AaRhpxKEAKbNPTtHos3J5kmlXRIgSG5CEEUPquprJdUgMYeM3RwmhTw7HQ2xlwTMTQkW7Uc2zMH_0PSL1iNdVohB0");'
-            ></div>
-            <div class="flex flex-col justify-center min-w-0">
-              <p class="text-[#111714] text-4xl font-medium leading-normal truncate">Noah</p>
-              <p class="text-[#648771] text-3xl font-normal leading-normal truncate">Puntos: 1100 | V: 18 | D: 17</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div
-              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD4YbPePmIWGBgMnz_9YBjYqZC3cCREPWy7o9L9HJ6H7iBt5dQwThVEpwMsonG8bMq5APexfbg7qSqYo01mZOXkm_wZ7XKJE8VHGTdZTdHhOhXVkkyojQnh-I_0GozmFOqafUobrBihVqX8gNnc__S-pwVuwIA4Hv0e9gxWfqoqboSUjmHRGkENZdZfx0aoXKiEqdPnzfcuI7vFuPUOci0hZPe5o6dLHlKDRzHS7r6OuzOoteUizz5b7ggcCKbyr0M6KBkfMP1RJMY");'
-            ></div>
-            <div class="flex flex-col justify-center min-w-0">
-              <p class="text-[#111714] text-4xl font-medium leading-normal truncate">Oliver</p>
-              <p class="text-[#648771] text-3xl font-normal leading-normal truncate">Puntos: 1050 | V: 15 | D: 20</p>
-            </div>
+        
+        <!-- Botón para navegar a partidos -->
+        <div class="flex justify-center mb-6">
+          <a href="partidos.html" class="inline-flex items-center px-6 py-3 bg-[#648771] text-white text-lg font-medium rounded-lg hover:bg-[#4a5f4f] transition-colors">
+            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 256 256">
+              <path d="M201.57,54.46a104,104,0,1,0,0,147.08A103.4,103.4,0,0,0,201.57,54.46ZM65.75,65.77a87.63,87.63,0,0,1,53.66-25.31A87.31,87.31,0,0,1,94,94.06a87.42,87.42,0,0,1-53.62,25.35A87.58,87.58,0,0,1,65.75,65.77ZM40.33,135.48a103.29,103.29,0,0,0,65-30.11,103.24,103.24,0,0,0,30.13-65,87.78,87.78,0,0,1,80.18,80.14,104,104,0,0,0-95.16,95.1,87.78,87.78,0,0,1-80.18-80.14Zm149.92,54.75a87.69,87.69,0,0,1-53.66,25.31,88,88,0,0,1,79-78.95A87.58,87.58,0,0,1,190.25,190.23Z"></path>
+            </svg>
+            Ver Historial de Partidos
+          </a>
+        </div>
+        
+        <!-- Mensaje de configuración -->
+        <div id="config-message" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <p class="font-bold">⚠️ Configuración necesaria:</p>
+          <p>Por favor, actualiza las credenciales de Supabase en el código JavaScript al final de la página.</p>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="loading" class="text-center py-10">
+          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-[#38e078] transition ease-in-out duration-150">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Cargando jugadores...
           </div>
         </div>
+        
+        <!-- Error message -->
+        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <p class="font-bold">Error:</p>
+          <p id="error-text"></p>
+        </div>
+        
+        <!-- Jugadores container -->
+        <div id="jugadores-container" class="grid grid-cols-1 gap-10 max-w-full mx-auto">
+          <!-- Los jugadores se cargarán aquí dinámicamente -->
+        </div>
+        
         <h2 class="text-[#111714] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Añadir Partido</h2>
         <div class="max-w-full mx-auto space-y-12 bg-white rounded-xl border border-[#e5e7e6] p-10">
           <div class="space-y-10">
@@ -77,20 +86,18 @@
             <div class="space-y-10">
               <label class="flex flex-col">
                 <select
+                  id="jugador1"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                 >
-                  <option value="one">Seleccionar Jugador 1</option>
-                  <option value="two">dos</option>
-                  <option value="three">tres</option>
+                  <option value="">Seleccionar Jugador 1</option>
                 </select>
               </label>
               <label class="flex flex-col">
                 <select
+                  id="jugador2"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                 >
-                  <option value="one">Seleccionar Jugador 2</option>
-                  <option value="two">dos</option>
-                  <option value="three">tres</option>
+                  <option value="">Seleccionar Jugador 2</option>
                 </select>
               </label>
             </div>
@@ -100,20 +107,18 @@
             <div class="space-y-10">
               <label class="flex flex-col">
                 <select
+                  id="jugador3"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                 >
-                  <option value="one">Seleccionar Jugador 3</option>
-                  <option value="two">dos</option>
-                  <option value="three">tres</option>
+                  <option value="">Seleccionar Jugador 3</option>
                 </select>
               </label>
               <label class="flex flex-col">
                 <select
+                  id="jugador4"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                 >
-                  <option value="one">Seleccionar Jugador 4</option>
-                  <option value="two">dos</option>
-                  <option value="three">tres</option>
+                  <option value="">Seleccionar Jugador 4</option>
                 </select>
               </label>
             </div>
@@ -125,32 +130,44 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10">
               <label class="flex flex-col">
                 <input
+                  id="pareja1-set1"
                   type="number"
                   min="0"
-                  max="7"
+                  max="99"
+                  step="1"
                   placeholder="Set 1"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                   value=""
+                  oninput="validarInputSet(this)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 />
               </label>
               <label class="flex flex-col">
                 <input
+                  id="pareja1-set2"
                   type="number"
                   min="0"
-                  max="7"
+                  max="99"
+                  step="1"
                   placeholder="Set 2"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                   value=""
+                  oninput="validarInputSet(this)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 />
               </label>
               <label class="flex flex-col">
                 <input
+                  id="pareja1-set3"
                   type="number"
                   min="0"
-                  max="7"
+                  max="99"
+                  step="1"
                   placeholder="Set 3"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                   value=""
+                  oninput="validarInputSet(this)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 />
               </label>
             </div>
@@ -160,32 +177,44 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10">
               <label class="flex flex-col">
                 <input
+                  id="pareja2-set1"
                   type="number"
                   min="0"
-                  max="7"
+                  max="99"
+                  step="1"
                   placeholder="Set 1"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                   value=""
+                  oninput="validarInputSet(this)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 />
               </label>
               <label class="flex flex-col">
                 <input
+                  id="pareja2-set2"
                   type="number"
                   min="0"
-                  max="7"
+                  max="99"
+                  step="1"
                   placeholder="Set 2"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                   value=""
+                  oninput="validarInputSet(this)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 />
               </label>
               <label class="flex flex-col">
                 <input
+                  id="pareja2-set3"
                   type="number"
                   min="0"
-                  max="7"
+                  max="99"
+                  step="1"
                   placeholder="Set 3"
                   class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
                   value=""
+                  oninput="validarInputSet(this)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 />
               </label>
             </div>
@@ -193,33 +222,396 @@
         </div>
         <div class="flex justify-center mt-20 mb-80">
           <button
+            id="enviar-partido"
             class="flex min-w-[400px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-24 px-12 bg-[#38e078] text-[#111714] text-4xl font-bold leading-normal tracking-[0.015em] hover:bg-[#32c86a] transition-colors"
           >
             <span class="truncate">Enviar Partido</span>
           </button>
         </div>
       </div>
-      <div class="w-full fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#f0f4f2]">
-        <div class="flex gap-6 px-8 pb-8 pt-6 max-w-screen-xl mx-auto">
-          <a class="flex flex-1 flex-col items-center justify-center gap-3 rounded-full text-[#111714]" href="#">
-            <div class="text-[#111714] flex h-20 items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M232,64H208V56a16,16,0,0,0-16-16H64A16,16,0,0,0,48,56v8H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"></path>
-              </svg>
-            </div>
-            <p class="text-[#111714] text-3xl font-medium">Clasificaciones</p>
-          </a>
-          <a class="flex flex-1 flex-col items-center justify-center gap-3 text-[#648771]" href="#">
-            <div class="text-[#648771] flex h-20 items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M201.57,54.46a104,104,0,1,0,0,147.08A103.4,103.4,0,0,0,201.57,54.46ZM65.75,65.77a87.63,87.63,0,0,1,53.66-25.31A87.31,87.31,0,0,1,94,94.06a87.42,87.42,0,0,1-53.62,25.35A87.58,87.58,0,0,1,65.75,65.77ZM40.33,135.48a103.29,103.29,0,0,0,65-30.11,103.24,103.24,0,0,0,30.13-65,87.78,87.78,0,0,1,80.18,80.14,104,104,0,0,0-95.16,95.1,87.78,87.78,0,0,1-80.18-80.14Zm149.92,54.75a87.69,87.69,0,0,1-53.66,25.31,88,88,0,0,1,79-78.95A87.58,87.58,0,0,1,190.25,190.23Z"></path>
-              </svg>
-            </div>
-            <p class="text-[#648771] text-3xl font-medium">Partidos</p>
-          </a>
-        </div>
-        <div class="h-12 bg-white"></div>
-      </div>
     </div>
+
+    <script>
+      // IMPORTANTE: Reemplaza estas credenciales con las de tu proyecto de Supabase
+      const SUPABASE_URL = 'https://renhtzglxihiqqvirlui.supabase.co'
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlbmh0emdseGloaXFxdmlybHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxOTMzMTMsImV4cCI6MjA2MTc2OTMxM30.TIXnK8QjBpml3l9tqeP2f7p6NJVseHQ8ziEVo7RT0Hs'
+      
+      // Inicializar cliente de Supabase
+      let supabase = null;
+      
+      try {
+        if (SUPABASE_URL === 'TU_SUPABASE_URL_AQUI' || SUPABASE_ANON_KEY === 'TU_SUPABASE_ANON_KEY_AQUI') {
+          throw new Error('Por favor configura las credenciales de Supabase');
+        }
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        document.getElementById('config-message').style.display = 'none';
+      } catch (error) {
+        console.error('Error de configuración:', error);
+        showError('Error de configuración: ' + error.message);
+      }
+
+      // Función para mostrar errores
+      function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-message').classList.remove('hidden');
+        document.getElementById('error-text').textContent = message;
+      }
+
+      // Función para calcular estadísticas de un jugador
+      async function calcularEstadisticasJugador(jugadorId, partidos) {
+        let victorias = 0;
+        let derrotas = 0;
+
+        partidos.forEach(partido => {
+          // Verificar si el jugador participó en este partido
+          const jugadoresPartido = [
+            partido.pareja1_jugador1_id,
+            partido.pareja1_jugador2_id,
+            partido.pareja2_jugador1_id,
+            partido.pareja2_jugador2_id
+          ];
+
+          if (jugadoresPartido.includes(jugadorId)) {
+            // Determinar en qué pareja está el jugador
+            const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+            const ganadorPareja = partido.ganador_pareja;
+
+            if (ganadorPareja) {
+              if ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2)) {
+                victorias++;
+              } else {
+                derrotas++;
+              }
+            }
+          }
+        });
+
+        return { victorias, derrotas };
+      }
+
+      // Función para cargar jugadores y sus estadísticas desde Supabase
+      async function cargarJugadores() {
+        try {
+          // Cargar jugadores
+          const { data: jugadores, error: errorJugadores } = await supabase
+            .from('jugadores')
+            .select('*')
+            .order('nombre');
+
+          if (errorJugadores) {
+            throw errorJugadores;
+          }
+
+          // Cargar partidos para calcular estadísticas
+          const { data: partidos, error: errorPartidos } = await supabase
+            .from('partidos')
+            .select('*');
+
+          if (errorPartidos) {
+            throw errorPartidos;
+          }
+
+          document.getElementById('loading').style.display = 'none';
+          
+          if (!jugadores || jugadores.length === 0) {
+            document.getElementById('jugadores-container').innerHTML = `
+              <div class="text-center py-10">
+                <p class="text-[#648771] text-2xl">No hay jugadores registrados aún.</p>
+                <p class="text-[#648771] text-lg mt-2">Agrega algunos jugadores a tu base de datos de Supabase.</p>
+              </div>
+            `;
+            return;
+          }
+
+          // Calcular estadísticas para cada jugador
+          const jugadoresConEstadisticas = await Promise.all(
+            jugadores.map(async (jugador) => {
+              const stats = await calcularEstadisticasJugador(jugador.id, partidos || []);
+              return {
+                ...jugador,
+                victorias: stats.victorias,
+                derrotas: stats.derrotas
+              };
+            })
+          );
+
+          mostrarJugadores(jugadoresConEstadisticas);
+          llenarSelectoresJugadores(jugadoresConEstadisticas);
+
+        } catch (error) {
+          console.error('Error cargando jugadores:', error);
+          showError('Error cargando jugadores: ' + error.message);
+        }
+      }
+
+      // Función para mostrar jugadores en la interfaz
+      function mostrarJugadores(jugadores) {
+        const container = document.getElementById('jugadores-container');
+        container.innerHTML = '';
+
+        jugadores.forEach(jugador => {
+          const jugadorHTML = `
+            <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div class="bg-[#38e078] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
+                ${jugador.nombre.charAt(0).toUpperCase()}
+              </div>
+              <div class="flex flex-col justify-center min-w-0">
+                <p class="text-[#111714] text-4xl font-medium leading-normal truncate">${jugador.nombre}</p>
+                <p class="text-[#648771] text-3xl font-normal leading-normal truncate">W:${jugador.victorias} L:${jugador.derrotas}</p>
+              </div>
+            </div>
+          `;
+          container.innerHTML += jugadorHTML;
+        });
+      }
+
+      // Función para actualizar opciones disponibles en los selectores
+      function actualizarOpcionesDisponibles() {
+        const selectores = ['jugador1', 'jugador2', 'jugador3', 'jugador4'];
+        const valoresSeleccionados = selectores.map(id => document.getElementById(id).value);
+        
+        selectores.forEach((selectorId, indexSelector) => {
+          const selector = document.getElementById(selectorId);
+          const valorActual = selector.value;
+          
+          // Recorrer todas las opciones del selector
+          Array.from(selector.options).forEach(option => {
+            if (option.value === '') {
+              // La opción por defecto siempre disponible
+              option.disabled = false;
+            } else {
+              // Verificar si este jugador ya está seleccionado en otro selector
+              const estaSeleccionadoEnOtro = valoresSeleccionados.some((valor, index) => 
+                valor === option.value && index !== indexSelector
+              );
+              
+              option.disabled = estaSeleccionadoEnOtro;
+              
+              // Si esta opción está deshabilitada y es la seleccionada actualmente, limpiar
+              if (estaSeleccionadoEnOtro && option.value === valorActual) {
+                selector.value = '';
+              }
+            }
+          });
+        });
+      }
+
+      // Función para llenar los selectores de jugadores
+      function llenarSelectoresJugadores(jugadores) {
+        const selectores = ['jugador1', 'jugador2', 'jugador3', 'jugador4'];
+        
+        selectores.forEach(selectorId => {
+          const selector = document.getElementById(selectorId);
+          // Limpiar opciones existentes excepto la primera
+          selector.innerHTML = selector.innerHTML.split('</option>')[0] + '</option>';
+          
+          jugadores.forEach(jugador => {
+            const option = document.createElement('option');
+            option.value = jugador.id;
+            option.textContent = jugador.nombre;
+            selector.appendChild(option);
+          });
+          
+          // Agregar event listener para actualizar opciones cuando cambie la selección
+          selector.addEventListener('change', actualizarOpcionesDisponibles);
+        });
+        
+        // Aplicar validación inicial
+        actualizarOpcionesDisponibles();
+      }
+
+      // Función para validar el formulario
+      function validarFormulario() {
+        const jugadores = [
+          document.getElementById('jugador1').value,
+          document.getElementById('jugador2').value,
+          document.getElementById('jugador3').value,
+          document.getElementById('jugador4').value
+        ];
+
+        // Verificar que todos los jugadores estén seleccionados
+        if (jugadores.some(j => !j)) {
+          alert('Por favor selecciona todos los jugadores');
+          return false;
+        }
+
+        // Verificar que no haya jugadores duplicados
+        const jugadoresUnicos = new Set(jugadores);
+        if (jugadoresUnicos.size !== 4) {
+          alert('No puede haber jugadores duplicados');
+          return false;
+        }
+
+        // Verificar que al menos un set tenga puntuación
+        const sets = [
+          document.getElementById('pareja1-set1').value,
+          document.getElementById('pareja1-set2').value,
+          document.getElementById('pareja1-set3').value,
+          document.getElementById('pareja2-set1').value,
+          document.getElementById('pareja2-set2').value,
+          document.getElementById('pareja2-set3').value
+        ];
+
+        if (sets.every(s => !s)) {
+          alert('Por favor ingresa al menos la puntuación del primer set');
+          return false;
+        }
+
+        return true;
+      }
+
+      // Función para guardar partido en Supabase
+      async function guardarPartido() {
+        try {
+          const datosPartido = {
+            pareja1_jugador1_id: parseInt(document.getElementById('jugador1').value),
+            pareja1_jugador2_id: parseInt(document.getElementById('jugador2').value),
+            pareja2_jugador1_id: parseInt(document.getElementById('jugador3').value),
+            pareja2_jugador2_id: parseInt(document.getElementById('jugador4').value),
+            pareja1_set1: document.getElementById('pareja1-set1').value ? parseInt(document.getElementById('pareja1-set1').value) : null,
+            pareja1_set2: document.getElementById('pareja1-set2').value ? parseInt(document.getElementById('pareja1-set2').value) : null,
+            pareja1_set3: document.getElementById('pareja1-set3').value ? parseInt(document.getElementById('pareja1-set3').value) : null,
+            pareja2_set1: document.getElementById('pareja2-set1').value ? parseInt(document.getElementById('pareja2-set1').value) : null,
+            pareja2_set2: document.getElementById('pareja2-set2').value ? parseInt(document.getElementById('pareja2-set2').value) : null,
+            pareja2_set3: document.getElementById('pareja2-set3').value ? parseInt(document.getElementById('pareja2-set3').value) : null
+          };
+
+          const { data, error } = await supabase
+            .from('partidos')
+            .insert([datosPartido])
+            .select();
+
+          if (error) {
+            throw error;
+          }
+
+          console.log('Partido guardado exitosamente:', data);
+          return true;
+
+        } catch (error) {
+          console.error('Error guardando partido:', error);
+          alert('Error al guardar el partido: ' + error.message);
+          return false;
+        }
+      }
+
+      // Función para mostrar confirmación de envío
+      function mostrarConfirmacion() {
+        const boton = document.getElementById('enviar-partido');
+        const originalText = boton.innerHTML;
+        const originalBg = boton.style.backgroundColor;
+        
+        boton.innerHTML = '<span class="truncate">✓ Partido Guardado</span>';
+        boton.style.backgroundColor = '#10b981';
+        boton.disabled = true;
+        
+        setTimeout(() => {
+          boton.innerHTML = originalText;
+          boton.style.backgroundColor = originalBg;
+          boton.disabled = false;
+        }, 2000);
+      }
+
+      // Función para resetear el formulario
+      function resetearFormulario() {
+        // Resetear selectores de jugadores
+        const selectores = ['jugador1', 'jugador2', 'jugador3', 'jugador4'];
+        selectores.forEach(selectorId => {
+          const selector = document.getElementById(selectorId);
+          if (selector) {
+            selector.value = '';
+          }
+        });
+
+        // Resetear campos de puntuación
+        const camposPuntuacion = [
+          'pareja1-set1', 'pareja1-set2', 'pareja1-set3',
+          'pareja2-set1', 'pareja2-set2', 'pareja2-set3'
+        ];
+        camposPuntuacion.forEach(campoId => {
+          const campo = document.getElementById(campoId);
+          if (campo) {
+            campo.value = '';
+            // Resetear estilos
+            campo.style.backgroundColor = '#ffffff';
+            campo.style.borderColor = '#dce5df';
+          }
+        });
+
+        // Actualizar opciones disponibles después del reset
+        actualizarOpcionesDisponibles();
+      }
+
+      // Función para validar inputs de sets
+      function validarInputSet(input) {
+        let valor = input.value;
+        
+        // Remover caracteres no numéricos excepto números
+        valor = valor.replace(/[^0-9]/g, '');
+        
+        // Convertir a número
+        let numero = parseInt(valor) || 0;
+        
+        // Aplicar límites
+        if (numero < 0) numero = 0;
+        if (numero > 99) numero = 99;
+        
+        // Actualizar el valor del input
+        input.value = numero;
+        
+        // Cambiar estilo según si tiene valor o no
+        if (numero > 0) {
+          input.style.backgroundColor = '#f0f9ff';
+          input.style.borderColor = '#38e078';
+        } else {
+          input.style.backgroundColor = '#ffffff';
+          input.style.borderColor = '#dce5df';
+        }
+      }
+
+      // Cargar jugadores cuando la página se carga
+      document.addEventListener('DOMContentLoaded', function() {
+        if (supabase) {
+          cargarJugadores();
+        }
+
+        // Agregar event listener al botón de enviar partido
+        const botonEnviar = document.getElementById('enviar-partido');
+        if (botonEnviar) {
+          botonEnviar.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // Validar formulario
+            if (!validarFormulario()) {
+              return;
+            }
+
+            // Cambiar texto del botón a "Guardando..."
+            const originalText = botonEnviar.innerHTML;
+            botonEnviar.innerHTML = '<span class="truncate">Guardando...</span>';
+            botonEnviar.disabled = true;
+
+            try {
+              // Guardar partido en Supabase
+              const guardadoExitoso = await guardarPartido();
+              
+              if (guardadoExitoso) {
+                // Mostrar confirmación
+                mostrarConfirmacion();
+                // Resetear formulario
+                resetearFormulario();
+              }
+            } catch (error) {
+              console.error('Error en el proceso:', error);
+              alert('Error al procesar el partido');
+            } finally {
+              // Restaurar botón
+              botonEnviar.innerHTML = originalText;
+              botonEnviar.disabled = false;
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
