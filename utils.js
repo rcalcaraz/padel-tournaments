@@ -231,7 +231,7 @@ class StorageUtils {
 // Utilidades para el sistema ELO MEJORADO
 class EloUtils {
   // Factor K determina cuánto cambia el rating en cada partido
-  static K_FACTOR = 32;
+  static K_FACTOR = 48; // Aumentado de 32 a 48 para cambios más pronunciados
   
   // Rating inicial para nuevos jugadores
   static INITIAL_RATING = 1200;
@@ -248,11 +248,11 @@ class EloUtils {
     if (diferenciaSets === 0) {
       return 1.0; // Empate
     } else if (diferenciaSets === 1) {
-      return 1.0; // Partido ajustado (2-1, 2-0)
+      return 1.1; // Partido ajustado (2-1, 2-0) - aumentado de 1.0
     } else if (diferenciaSets === 2) {
-      return 1.2; // Victoria clara (2-0, 3-1)
+      return 1.4; // Victoria clara (2-0, 3-1) - aumentado de 1.2
     } else {
-      return 1.5; // Victoria aplastante (3-0)
+      return 1.8; // Victoria aplastante (3-0) - aumentado de 1.5
     }
   }
   
@@ -261,13 +261,13 @@ class EloUtils {
     const diferencia = teamAverageRating - playerRating;
     
     if (diferencia > 0) {
-      // Jugador de menor nivel: más recompensa (hasta 1.3x)
-      const factor = 1.0 + (diferencia / 400.0) * 0.3;
-      return Math.min(1.3, factor);
+      // Jugador de menor nivel: más recompensa (hasta 1.8x)
+      const factor = 1.0 + (diferencia / 200.0) * 0.8;
+      return Math.min(1.8, factor);
     } else if (diferencia < 0) {
-      // Jugador de mayor nivel: menos recompensa (hasta 0.7x)
-      const factor = 1.0 + (diferencia / 400.0) * 0.3;
-      return Math.max(0.7, factor);
+      // Jugador de mayor nivel: menos recompensa (hasta 0.5x)
+      const factor = 1.0 + (diferencia / 200.0) * 0.5;
+      return Math.max(0.5, factor);
     } else {
       // Mismo nivel
       return 1.0;

@@ -240,13 +240,21 @@ class PartidosApp {
       const jugador3Rating = partido.pareja2_jugador1?.rating_elo || 1200;
       const jugador4Rating = partido.pareja2_jugador2?.rating_elo || 1200;
 
+      // Debug: mostrar ratings actuales
+      console.log('📊 Ratings actuales:', {
+        jugador1: { nombre: partido.pareja1_jugador1?.nombre, rating: jugador1Rating },
+        jugador2: { nombre: partido.pareja1_jugador2?.nombre, rating: jugador2Rating },
+        jugador3: { nombre: partido.pareja2_jugador1?.nombre, rating: jugador3Rating },
+        jugador4: { nombre: partido.pareja2_jugador2?.nombre, rating: jugador4Rating }
+      });
+
       // Contar sets ganados
       const sets = EloUtils.countSetsWon(
         partido.pareja1_set1, partido.pareja1_set2, partido.pareja1_set3,
         partido.pareja2_set1, partido.pareja2_set2, partido.pareja2_set3
       );
 
-      // Calcular nuevos ratings
+      // Calcular nuevos ratings individuales
       const nuevosRatings = EloUtils.calculateMatchRatingsImproved(
         jugador1Rating, jugador2Rating,
         jugador3Rating, jugador4Rating,
@@ -254,13 +262,21 @@ class PartidosApp {
         sets.pareja1, sets.pareja2
       );
 
-      // Calcular diferencias
-      return {
+      // Debug: mostrar nuevos ratings
+      console.log('🎯 Nuevos ratings:', nuevosRatings);
+
+      // Calcular diferencias individuales
+      const cambios = {
         jugador1: Math.round(nuevosRatings.pareja1_jugador1 - jugador1Rating),
         jugador2: Math.round(nuevosRatings.pareja1_jugador2 - jugador2Rating),
         jugador3: Math.round(nuevosRatings.pareja2_jugador1 - jugador3Rating),
         jugador4: Math.round(nuevosRatings.pareja2_jugador2 - jugador4Rating)
       };
+
+      // Debug: mostrar cambios
+      console.log('📈 Cambios de ELO:', cambios);
+
+      return cambios;
     } catch (error) {
       console.error('Error calculando cambios de ELO:', error);
       return { jugador1: 0, jugador2: 0, jugador3: 0, jugador4: 0 };
