@@ -24,7 +24,7 @@ padel-tournaments/
 - **Registro de partidos**: Formulario completo con validación
 - **Historial de partidos**: Vista detallada de todos los partidos
 - **Estadísticas automáticas**: Cálculo de victorias y derrotas
-- **Validación en tiempo real**: Prevención de duplicados y errores
+- **Validación en tiempo real**: Prevenciónde duplicados y errores
 - **Interfaz responsive**: Diseño adaptativo para móviles y desktop
 
 ### 🎯 Características Técnicas

@@ -247,6 +247,149 @@ class SupabaseService {
     }
   }
 
+  // Obtener estadísticas ordenadas por ELO
+  async getEstadisticasPorELO() {
+    try {
+      const { data, error } = await this.supabase
+        .from('jugadores')
+        .select(`
+          *,
+          partidos_pareja1_jugador1:partidos!partidos_pareja1_jugador1_id_fkey(id),
+          partidos_pareja1_jugador2:partidos!partidos_pareja1_jugador2_id_fkey(id),
+          partidos_pareja2_jugador1:partidos!partidos_pareja2_jugador1_id_fkey(id),
+          partidos_pareja2_jugador2:partidos!partidos_pareja2_jugador2_id_fkey(id)
+        `)
+        .order('rating_elo', { ascending: false });
+
+      if (error) throw error;
+
+      // Calcular estadísticas para cada jugador
+      const jugadoresConStats = data.map(jugador => {
+        const partidos = [
+          ...(jugador.partidos_pareja1_jugador1 || []),
+          ...(jugador.partidos_pareja1_jugador2 || []),
+          ...(jugador.partidos_pareja2_jugador1 || []),
+          ...(jugador.partidos_pareja2_jugador2 || [])
+        ];
+
+        let victorias = 0;
+        let derrotas = 0;
+
+        partidos.forEach(partido => {
+          if (!partido.ganador_pareja) return;
+
+          const estaEnPareja1 = partido.pareja1_jugador1_id === jugador.id || partido.pareja1_jugador2_id === jugador.id;
+          
+          if ((estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2)) {
+            victorias++;
+          } else {
+            derrotas++;
+          }
+        });
+
+        return {
+          ...jugador,
+          estadisticas: { victorias, derrotas, total: victorias + derrotas }
+        };
+      });
+
+      return { success: true, data: jugadoresConStats };
+    } catch (error) {
+      console.error('Error obteniendo estadísticas por ELO:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Métodos para el sistema ELO
+  async getEstadisticasConELO() {
+    try {
+      const [jugadoresResult, partidosResult] = await Promise.all([
+        this.getJugadores(),
+        this.getPartidos()
+      ]);
+
+      if (!jugadoresResult.success || !partidosResult.success) {
+        throw new Error('Error obteniendo datos para estadísticas ELO');
+      }
+
+      // Inicializar ratings ELO para todos los jugadores
+      const jugadoresConELO = jugadoresResult.data.map(jugador => ({
+        ...jugador,
+        rating_elo: jugador.rating_elo || EloUtils.INITIAL_RATING,
+        estadisticas: { victorias: 0, derrotas: 0, total: 0 }
+      }));
+
+      // Calcular estadísticas y ELO basado en todos los partidos
+      for (const partido of partidosResult.data) {
+        if (!partido.ganador_pareja) continue;
+
+        // Obtener jugadores del partido
+        const jugador1 = jugadoresConELO.find(j => j.id === partido.pareja1_jugador1_id);
+        const jugador2 = jugadoresConELO.find(j => j.id === partido.pareja1_jugador2_id);
+        const jugador3 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador1_id);
+        const jugador4 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador2_id);
+
+        if (!jugador1 || !jugador2 || !jugador3 || !jugador4) continue;
+
+        // Calcular rating promedio de cada pareja
+        const ratingPareja1 = EloUtils.calculateTeamRating(jugador1.rating_elo, jugador2.rating_elo);
+        const ratingPareja2 = EloUtils.calculateTeamRating(jugador3.rating_elo, jugador4.rating_elo);
+
+        // Calcular nuevos ratings
+        const nuevosRatings = EloUtils.calculateMatchRatings(ratingPareja1, ratingPareja2, partido.ganador_pareja);
+
+        // Actualizar ratings de los jugadores
+        const diferencia1 = nuevosRatings.pareja1 - ratingPareja1;
+        const diferencia2 = nuevosRatings.pareja2 - ratingPareja2;
+
+        jugador1.rating_elo = Math.max(100, jugador1.rating_elo + diferencia1);
+        jugador2.rating_elo = Math.max(100, jugador2.rating_elo + diferencia1);
+        jugador3.rating_elo = Math.max(100, jugador3.rating_elo + diferencia2);
+        jugador4.rating_elo = Math.max(100, jugador4.rating_elo + diferencia2);
+
+        // Actualizar estadísticas
+        if (partido.ganador_pareja === 1) {
+          jugador1.estadisticas.victorias++;
+          jugador2.estadisticas.victorias++;
+          jugador3.estadisticas.derrotas++;
+          jugador4.estadisticas.derrotas++;
+        } else {
+          jugador1.estadisticas.derrotas++;
+          jugador2.estadisticas.derrotas++;
+          jugador3.estadisticas.victorias++;
+          jugador4.estadisticas.victorias++;
+        }
+
+        jugador1.estadisticas.total++;
+        jugador2.estadisticas.total++;
+        jugador3.estadisticas.total++;
+        jugador4.estadisticas.total++;
+      }
+
+      return { success: true, data: jugadoresConELO };
+    } catch (error) {
+      console.error('Error obteniendo estadísticas ELO:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Actualizar rating ELO de un jugador en la base de datos
+  async updateJugadorELO(jugadorId, nuevoRating) {
+    try {
+      const { data, error } = await this.supabase
+        .from('jugadores')
+        .update({ rating_elo: nuevoRating })
+        .eq('id', jugadorId)
+        .select();
+
+      if (error) throw error;
+      return { success: true, data: data[0] };
+    } catch (error) {
+      console.error('Error actualizando ELO:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Métodos de utilidad
   isConnected() {
     return this.supabase !== null;

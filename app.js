@@ -3,6 +3,7 @@ class PadelApp {
   constructor() {
     this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
     this.isProcessing = false;
+    this.clasificacionMode = 'victorias'; // 'victorias' o 'elo'
     this.init();
   }
 
@@ -15,6 +16,7 @@ class PadelApp {
     this.hideConfigMessage();
     this.setupEventListeners();
     this.loadJugadores();
+    this.actualizarBotonClasificacion();
   }
 
   hideConfigMessage() {
@@ -35,6 +37,15 @@ class PadelApp {
       // Agregar event listener
       nuevoBoton.addEventListener('click', (e) => this.handleSubmitPartido(e));
     }
+
+    // Event listener para el botón de cambiar clasificación
+    const botonClasificacion = DOMUtils.getElement('cambiar-clasificacion');
+    if (botonClasificacion) {
+      botonClasificacion.addEventListener('click', () => {
+        const nuevoMode = this.clasificacionMode === 'victorias' ? 'elo' : 'victorias';
+        this.cambiarClasificacion(nuevoMode);
+      });
+    }
   }
 
   async loadJugadores(showFullLoading = true) {
@@ -43,7 +54,12 @@ class PadelApp {
         this.showLoading();
       }
       
-      const result = await this.supabaseService.getEstadisticasGenerales();
+      let result;
+      if (this.clasificacionMode === 'elo') {
+        result = await this.supabaseService.getEstadisticasPorELO();
+      } else {
+        result = await this.supabaseService.getEstadisticasGenerales();
+      }
       
       if (!result.success) {
         throw new Error(result.error);
@@ -135,6 +151,42 @@ class PadelApp {
     
     const claseAnimacion = tieneCambios ? 'animate-pulse bg-green-50' : '';
     
+    // Mostrar ELO o victorias/derrotas según el modo
+    let estadisticasHTML = '';
+    if (this.clasificacionMode === 'elo') {
+      const ratingColor = EloUtils.getRatingColor(jugador.rating_elo || 1200);
+      const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
+      estadisticasHTML = `
+        <div class="flex items-center gap-4">
+          <span class="text-[#648771] text-3xl font-normal leading-normal">
+            ELO: <span style="color: ${ratingColor}; font-weight: bold;">${jugador.rating_elo || 1200}</span>
+          </span>
+          <span class="text-[#648771] text-xl font-normal leading-normal">
+            ${ratingTitle}
+          </span>
+        </div>
+        <div class="flex items-center gap-4 mt-2">
+          <span class="text-[#648771] text-2xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
+            W:${jugador.estadisticas.victorias}
+          </span>
+          <span class="text-[#648771] text-2xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
+            L:${jugador.estadisticas.derrotas}
+          </span>
+        </div>
+      `;
+    } else {
+      estadisticasHTML = `
+        <div class="flex items-center gap-4">
+          <span class="text-[#648771] text-3xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
+            W:${jugador.estadisticas.victorias}
+          </span>
+          <span class="text-[#648771] text-3xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
+            L:${jugador.estadisticas.derrotas}
+          </span>
+        </div>
+      `;
+    }
+    
     return `
       <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow player-card ${claseAnimacion}">
         <div class="bg-[#38e078] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
@@ -142,14 +194,7 @@ class PadelApp {
         </div>
         <div class="flex flex-col justify-center min-w-0">
           <p class="text-[#111714] text-4xl font-medium leading-normal truncate">${jugador.nombre}</p>
-          <div class="flex items-center gap-4">
-            <span class="text-[#648771] text-3xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
-              W:${jugador.estadisticas.victorias}
-            </span>
-            <span class="text-[#648771] text-3xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
-              L:${jugador.estadisticas.derrotas}
-            </span>
-          </div>
+          ${estadisticasHTML}
         </div>
       </div>
     `;
@@ -372,6 +417,27 @@ class PadelApp {
         }
       });
     });
+  }
+
+  // Cambiar modo de clasificación
+  async cambiarClasificacion(mode) {
+    this.clasificacionMode = mode;
+    await this.loadJugadores(true);
+    this.actualizarBotonClasificacion();
+  }
+
+  // Actualizar el botón de clasificación
+  actualizarBotonClasificacion() {
+    const boton = DOMUtils.getElement('cambiar-clasificacion');
+    if (boton) {
+      if (this.clasificacionMode === 'elo') {
+        boton.innerHTML = 'Ver por Victorias/Derrotas';
+        boton.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors';
+      } else {
+        boton.innerHTML = 'Ver por ELO';
+        boton.className = 'px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors';
+      }
+    }
   }
 }
 

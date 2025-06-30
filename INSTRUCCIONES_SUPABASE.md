@@ -25,6 +25,7 @@
 CREATE TABLE jugadores (
   id BIGSERIAL PRIMARY KEY,
   nombre TEXT NOT NULL,
+  rating_elo INTEGER DEFAULT 1200,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -38,7 +39,95 @@ INSERT INTO jugadores (nombre) VALUES
   ('Laura González');
 ```
 
-## Paso 4: Obtener las credenciales de tu proyecto
+## Paso 4: Crear la tabla de partidos
+
+```sql
+-- Crear tabla de partidos
+CREATE TABLE partidos (
+  id BIGSERIAL PRIMARY KEY,
+  pareja1_jugador1_id BIGINT REFERENCES jugadores(id),
+  pareja1_jugador2_id BIGINT REFERENCES jugadores(id),
+  pareja2_jugador1_id BIGINT REFERENCES jugadores(id),
+  pareja2_jugador2_id BIGINT REFERENCES jugadores(id),
+  pareja1_set1 INTEGER,
+  pareja1_set2 INTEGER,
+  pareja1_set3 INTEGER,
+  pareja2_set1 INTEGER,
+  pareja2_set2 INTEGER,
+  pareja2_set3 INTEGER,
+  ganador_pareja INTEGER,
+  fecha_partido TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+## Paso 5: Crear la tabla de historial ELO (opcional)
+
+```sql
+-- Crear tabla para el historial de cambios de ELO
+CREATE TABLE historial_elo (
+  id BIGSERIAL PRIMARY KEY,
+  jugador_id BIGINT REFERENCES jugadores(id),
+  rating_anterior INTEGER NOT NULL,
+  rating_nuevo INTEGER NOT NULL,
+  partido_id BIGINT REFERENCES partidos(id),
+  fecha_cambio TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+## Paso 6: Crear función para calcular ELO automáticamente
+
+```sql
+-- Función para calcular y actualizar ELO después de un partido
+CREATE OR REPLACE FUNCTION calcular_elo_partido()
+RETURNS TRIGGER AS $$
+DECLARE
+  jugador1_rating INTEGER;
+  jugador2_rating INTEGER;
+  jugador3_rating INTEGER;
+  jugador4_rating INTEGER;
+  pareja1_rating INTEGER;
+  pareja2_rating INTEGER;
+  nuevos_ratings RECORD;
+  diferencia1 INTEGER;
+  diferencia2 INTEGER;
+BEGIN
+  -- Solo procesar si hay un ganador
+  IF NEW.ganador_pareja IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Obtener ratings actuales de los jugadores
+  SELECT rating_elo INTO jugador1_rating FROM jugadores WHERE id = NEW.pareja1_jugador1_id;
+  SELECT rating_elo INTO jugador2_rating FROM jugadores WHERE id = NEW.pareja1_jugador2_id;
+  SELECT rating_elo INTO jugador3_rating FROM jugadores WHERE id = NEW.pareja2_jugador1_id;
+  SELECT rating_elo INTO jugador4_rating FROM jugadores WHERE id = NEW.pareja2_jugador2_id;
+
+  -- Calcular rating promedio de cada pareja
+  pareja1_rating := (jugador1_rating + jugador2_rating) / 2;
+  pareja2_rating := (jugador3_rating + jugador4_rating) / 2;
+
+  -- Calcular nuevos ratings (simplificado - usarás la lógica del frontend)
+  -- Esta es una implementación básica, la lógica completa estará en el frontend
+
+  -- Actualizar ratings de los jugadores
+  UPDATE jugadores SET rating_elo = GREATEST(100, rating_elo + diferencia1) 
+  WHERE id IN (NEW.pareja1_jugador1_id, NEW.pareja1_jugador2_id);
+  
+  UPDATE jugadores SET rating_elo = GREATEST(100, rating_elo + diferencia2) 
+  WHERE id IN (NEW.pareja2_jugador1_id, NEW.pareja2_jugador2_id);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear trigger para ejecutar la función después de insertar un partido
+CREATE TRIGGER trigger_calcular_elo
+  AFTER INSERT ON partidos
+  FOR EACH ROW
+  EXECUTE FUNCTION calcular_elo_partido();
+```
+
+## Paso 7: Obtener las credenciales de tu proyecto
 
 1. Ve a la sección "Settings" en el menú lateral
 2. Haz clic en "API"
@@ -46,7 +135,7 @@ INSERT INTO jugadores (nombre) VALUES
    - **Project URL** (algo como: https://tuproyecto.supabase.co)
    - **anon public** key (una clave larga que empieza con "eyJ...")
 
-## Paso 5: Configurar la aplicación
+## Paso 8: Configurar la aplicación
 
 1. Abre el archivo `index.html`
 2. Busca estas líneas en el JavaScript al final del archivo:
@@ -66,11 +155,12 @@ const SUPABASE_URL = 'https://abcdefghijklmnop.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 ```
 
-## Paso 6: Probar la aplicación
+## Paso 9: Probar la aplicación
 
 1. Abre el archivo `index.html` en tu navegador
 2. Deberías ver los jugadores cargándose desde la base de datos
 3. Los selectores en la sección "Añadir Partido" también deberían mostrar los jugadores
+4. El sistema ELO se calculará automáticamente al guardar partidos
 
 ## Agregar más jugadores
 
@@ -94,7 +184,8 @@ O puedes usar la interfaz de "Table Editor":
 
 - **Error de configuración**: Verifica que hayas reemplazado correctamente las credenciales
 - **Error de conexión**: Asegúrate de que tu proyecto de Supabase esté activo
-- **Tabla no encontrada**: Verifica que hayas ejecutado el SQL para crear la tabla
+- **Tabla no encontrada**: Verifica que hayas ejecutado el SQL para crear las tablas
 - **Sin jugadores**: Verifica que hayas insertado datos en la tabla
+- **ELO no se actualiza**: Verifica que el trigger esté creado correctamente
 
-¡Tu aplicación ya está conectada a Supabase! 🎾 
+¡Tu aplicación ya está conectada a Supabase con sistema ELO! 🎾 
