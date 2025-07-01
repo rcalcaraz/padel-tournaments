@@ -176,7 +176,7 @@ select option:disabled::after {
 
 /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
 .main-content {
-  padding-bottom: 200px;
+  padding-bottom: 300px;
   min-height: 100vh;
   position: relative;
   overflow-y: auto;
