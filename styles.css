@@ -152,17 +152,19 @@ select option:disabled::after {
 
 /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
 .main-content {
-  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  padding-bottom: calc(200px + env(safe-area-inset-bottom));
 }
 
-/* Menú de navegación inferior sticky */
+/* Menú de navegación inferior fijo */
 .bottom-nav {
-  position: sticky;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 50;
   padding-bottom: env(safe-area-inset-bottom);
+  background-color: white;
+  border-top: 2px solid #f0f4f2;
 }
 
 /* Estilos para responsive */
@@ -216,17 +218,19 @@ select option:disabled::after {
   
   /* Solución para el menú de navegación inferior en móviles */
   .bottom-nav {
-    position: sticky;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 50;
     padding-bottom: env(safe-area-inset-bottom);
+    background-color: white;
+    border-top: 2px solid #f0f4f2;
   }
   
   /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
   .main-content {
-    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    padding-bottom: calc(200px + env(safe-area-inset-bottom));
   }
   
   /* Inputs más grandes en móvil */
