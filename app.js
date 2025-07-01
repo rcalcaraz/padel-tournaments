@@ -36,12 +36,7 @@ class PadelApp {
     
     // Mostrar contenido principal sin animación
     if (mainContent) {
-      mainContent.style.transition = 'none';
-      mainContent.style.transform = 'translateY(0)';
-      // Restaurar la transición después de un breve momento
-      setTimeout(() => {
-        mainContent.style.transition = '';
-      }, 10);
+      mainContent.classList.remove('hidden');
     }
   }
 
@@ -51,13 +46,11 @@ class PadelApp {
     const mainContent = DOMUtils.getElement('main-content');
     
     if (loadingScreen) {
-      loadingScreen.style.transform = 'translateY(0)';
+      loadingScreen.style.display = 'block';
     }
     
     if (mainContent) {
-      // Asegurar que el contenido principal esté abajo para la animación
-      mainContent.style.transition = 'transform 0.5s ease-in-out';
-      mainContent.style.transform = 'translateY(100%)';
+      mainContent.classList.add('hidden');
     }
 
     // Cargar datos en segundo plano
@@ -79,22 +72,15 @@ class PadelApp {
     const loadingScreen = DOMUtils.getElement('loading-screen');
     const mainContent = DOMUtils.getElement('main-content');
     
-    // Deslizar la pantalla de carga hacia arriba
+    // Ocultar pantalla de carga
     if (loadingScreen) {
-      loadingScreen.style.transform = 'translateY(-100%)';
+      loadingScreen.style.display = 'none';
     }
     
-    // Deslizar el contenido principal desde abajo
+    // Mostrar contenido principal
     if (mainContent) {
-      mainContent.style.transform = 'translateY(0)';
+      mainContent.classList.remove('hidden');
     }
-    
-    // Ocultar completamente la pantalla de carga después de la transición
-    setTimeout(() => {
-      if (loadingScreen) {
-        loadingScreen.style.display = 'none';
-      }
-    }, 300);
   }
 
 
