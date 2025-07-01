@@ -6,7 +6,7 @@ Una aplicación web completa para gestionar torneos de pádel con base de datos 
 
 ```
 padel-tournaments/
-├── index.html          # Página principal (clasificaciones y formulario)
+├── index.html          # Página principal (Clasificación y formulario)
 ├── partidos.html       # Página de historial de partidos
 ├── styles.css          # Estilos CSS centralizados
 ├── config.js           # Configuración de la aplicación
@@ -44,7 +44,7 @@ padel-tournaments/
 ## 📋 Archivos Principales
 
 ### `index.html`
-- Página principal con clasificaciones
+- Página principal con Clasificación
 - Formulario para registrar partidos
 - Navegación entre secciones
 

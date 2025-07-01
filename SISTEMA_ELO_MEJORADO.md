@@ -139,7 +139,7 @@ EloUtils.calculateMatchRatingsImproved() // Cálculo completo
 ### **Métricas a Observar**
 - Progresión de jugadores de menor nivel
 - Estabilidad de jugadores de mayor nivel
-- Equilibrio en las clasificaciones
+- Equilibrio en las Clasificación
 - Motivación general de los jugadores
 
 ### **Posibles Ajustes**

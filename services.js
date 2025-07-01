@@ -383,6 +383,11 @@ class SupabaseService {
         jugador4.estadisticas.total++;
       }
 
+      // Calcular progresión de ELO (cambio total desde el rating inicial)
+      jugadoresConELO.forEach(jugador => {
+        jugador.progresion_elo = (jugador.rating_elo || EloUtils.INITIAL_RATING) - EloUtils.INITIAL_RATING;
+      });
+
       return { success: true, data: jugadoresConELO };
     } catch (error) {
       console.error('Error obteniendo estadísticas ELO:', error);

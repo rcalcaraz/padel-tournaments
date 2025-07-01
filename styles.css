@@ -15,7 +15,7 @@ select option:disabled::after {
 }
 
 .form-input:focus {
-  box-shadow: 0 0 0 3px rgba(56, 224, 120, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Estilos para botones */
@@ -25,7 +25,7 @@ select option:disabled::after {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(56, 224, 120, 0.3);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 /* Estilos para tarjetas de jugadores */
@@ -83,8 +83,8 @@ select option:disabled::after {
 
 /* Estilos para inputs con valor */
 .input-with-value {
-  background-color: #f0f9ff !important;
-  border-color: #38e078 !important;
+  background-color: #dbeafe !important;
+  border-color: #2563eb !important;
 }
 
 /* Estilos para navegación */
@@ -93,11 +93,11 @@ select option:disabled::after {
 }
 
 .nav-item.active {
-  color: #111714;
+  color: #1e293b;
 }
 
 .nav-item.inactive {
-  color: #648771;
+  color: #64748b;
 }
 
 /* Estilos para partidos */
@@ -111,12 +111,12 @@ select option:disabled::after {
 }
 
 .winner {
-  color: #38e078;
+  color: #2563eb;
   font-weight: bold;
 }
 
 .loser {
-  color: #648771;
+  color: #64748b;
 }
 
 /* Estilos para estadísticas */
@@ -147,7 +147,7 @@ select option:disabled::after {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #111714;
+  color: #1e293b;
 }
 
 /* Estilos para responsive */

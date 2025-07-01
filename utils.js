@@ -371,9 +371,9 @@ class EloUtils {
     if (rating >= 2000) return '#FFD700'; // Oro
     if (rating >= 1800) return '#C0C0C0'; // Plata
     if (rating >= 1600) return '#CD7F32'; // Bronce
-    if (rating >= 1400) return '#4CAF50'; // Verde
-    if (rating >= 1200) return '#2196F3'; // Azul
-    return '#9E9E9E'; // Gris
+    if (rating >= 1400) return '#2563eb'; // Azul principal
+    if (rating >= 1200) return '#3b82f6'; // Azul claro
+    return '#64748b'; // Gris azulado
   }
   
   // Obtener el título del rating ELO

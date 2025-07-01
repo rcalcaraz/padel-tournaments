@@ -3,11 +3,12 @@ class PadelApp {
   constructor() {
     this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
     this.isProcessing = false;
-    this.clasificacionMode = 'victorias'; // 'victorias' o 'elo'
+    this.ordenActual = 'victorias'; // 'victorias' o 'elo'
+    this.jugadores = []; // Almacenar jugadores para ordenar localmente
     this.init();
   }
 
-  init() {
+  init(showLoadingScreen = true) {
     if (!this.supabaseService.isConnected()) {
       this.showError(MESSAGES.ERROR_CONFIG + 'No se pudo conectar a Supabase');
       return;
@@ -15,9 +16,88 @@ class PadelApp {
 
     this.hideConfigMessage();
     this.setupEventListeners();
-    this.loadJugadores();
-    this.actualizarBotonClasificacion();
+    
+    if (showLoadingScreen) {
+      this.startLoadingScreen();
+    } else {
+      this.showMainContent();
+      this.loadJugadores();
+    }
   }
+
+  showMainContent() {
+    const loadingScreen = DOMUtils.getElement('loading-screen');
+    const mainContent = DOMUtils.getElement('main-content');
+    
+    // Ocultar pantalla de carga si existe
+    if (loadingScreen) {
+      loadingScreen.style.display = 'none';
+    }
+    
+    // Mostrar contenido principal sin animación
+    if (mainContent) {
+      mainContent.style.transition = 'none';
+      mainContent.style.transform = 'translateY(0)';
+      // Restaurar la transición después de un breve momento
+      setTimeout(() => {
+        mainContent.style.transition = '';
+      }, 10);
+    }
+  }
+
+  startLoadingScreen() {
+    // Mostrar pantalla de carga
+    const loadingScreen = DOMUtils.getElement('loading-screen');
+    const mainContent = DOMUtils.getElement('main-content');
+    
+    if (loadingScreen) {
+      loadingScreen.style.transform = 'translateY(0)';
+    }
+    
+    if (mainContent) {
+      // Asegurar que el contenido principal esté abajo para la animación
+      mainContent.style.transition = 'transform 0.5s ease-in-out';
+      mainContent.style.transform = 'translateY(100%)';
+    }
+
+    // Cargar datos en segundo plano
+    this.loadJugadores().then(() => {
+      // Esperar al menos 2 segundos
+      setTimeout(() => {
+        this.hideLoadingScreen();
+      }, 2000);
+    }).catch((error) => {
+      console.error('Error durante la carga:', error);
+      // Si hay error, mostrar pantalla principal después de 2 segundos
+      setTimeout(() => {
+        this.hideLoadingScreen();
+      }, 2000);
+    });
+  }
+
+  hideLoadingScreen() {
+    const loadingScreen = DOMUtils.getElement('loading-screen');
+    const mainContent = DOMUtils.getElement('main-content');
+    
+    // Deslizar la pantalla de carga hacia arriba
+    if (loadingScreen) {
+      loadingScreen.style.transform = 'translateY(-100%)';
+    }
+    
+    // Deslizar el contenido principal desde abajo
+    if (mainContent) {
+      mainContent.style.transform = 'translateY(0)';
+    }
+    
+    // Ocultar completamente la pantalla de carga después de la transición
+    setTimeout(() => {
+      if (loadingScreen) {
+        loadingScreen.style.display = 'none';
+      }
+    }, 300);
+  }
+
+
 
   hideConfigMessage() {
     const configMessage = DOMUtils.getElement('config-message');
@@ -38,67 +118,58 @@ class PadelApp {
       nuevoBoton.addEventListener('click', (e) => this.handleSubmitPartido(e));
     }
 
-    // Event listener para el botón de cambiar clasificación
-    const botonClasificacion = DOMUtils.getElement('cambiar-clasificacion');
-    if (botonClasificacion) {
-      botonClasificacion.addEventListener('click', () => {
-        const nuevoMode = this.clasificacionMode === 'victorias' ? 'elo' : 'victorias';
-        this.cambiarClasificacion(nuevoMode);
+    // Event listeners para los botones de ordenación
+    const botonVictorias = DOMUtils.getElement('ordenar-victorias');
+    const botonELO = DOMUtils.getElement('ordenar-elo');
+    const botonProgresion = DOMUtils.getElement('ordenar-progresion');
+    
+    if (botonVictorias) {
+      botonVictorias.addEventListener('click', () => {
+        this.cambiarOrden('victorias');
+      });
+    }
+    
+    if (botonELO) {
+      botonELO.addEventListener('click', () => {
+        this.cambiarOrden('elo');
+      });
+    }
+    
+    if (botonProgresion) {
+      botonProgresion.addEventListener('click', () => {
+        this.cambiarOrden('progresion');
       });
     }
   }
 
-  async loadJugadores(showFullLoading = true) {
+  async loadJugadores() {
     try {
-      if (showFullLoading) {
-        this.showLoading();
-      }
-      
-      let result;
-      if (this.clasificacionMode === 'elo') {
-        result = await this.supabaseService.getEstadisticasPorELO();
-      } else {
-        result = await this.supabaseService.getEstadisticasGenerales();
-      }
+      // Siempre obtener estadísticas con ELO
+      const result = await this.supabaseService.getEstadisticasConELO();
       
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      if (showFullLoading) {
-        this.hideLoading();
-      }
+      // Guardar jugadores para ordenar localmente
+      this.jugadores = result.data;
       
-      this.displayJugadores(result.data);
-      this.fillPlayerSelectors(result.data);
+      // Ordenar por defecto por victorias
+      this.ordenarJugadores('victorias');
+      
+      this.displayJugadores(this.jugadores);
+      this.fillPlayerSelectors(this.jugadores);
+      this.actualizarBotonesOrdenacion();
+      
+      return result;
     } catch (error) {
       console.error('Error cargando jugadores:', error);
       this.showError(MESSAGES.ERROR_LOADING + error.message);
+      throw error;
     }
   }
 
-  showLoading() {
-    const loading = DOMUtils.getElement('loading');
-    if (loading) {
-      loading.innerHTML = `
-        <div class="inline-flex items-center px-6 py-3 sm:px-4 sm:py-2 font-semibold leading-6 text-lg sm:text-sm shadow rounded-md text-white bg-[#38e078] transition ease-in-out duration-150">
-          <svg class="animate-spin -ml-1 mr-3 h-6 w-6 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Cargando jugadores...
-        </div>
-      `;
-      DOMUtils.showElement(loading);
-    }
-  }
 
-  hideLoading() {
-    const loading = DOMUtils.getElement('loading');
-    if (loading) {
-      DOMUtils.hideElement(loading);
-    }
-  }
 
   showError(message) {
     const errorMessage = DOMUtils.getElement('error-message');
@@ -118,8 +189,8 @@ class PadelApp {
     if (!jugadores || jugadores.length === 0) {
       container.innerHTML = `
         <div class="text-center py-10">
-          <p class="text-[#648771] text-2xl sm:text-2xl font-medium">${MESSAGES.NO_PLAYERS}</p>
-          <p class="text-[#648771] text-lg sm:text-lg mt-4">${MESSAGES.ADD_PLAYERS}</p>
+          <p class="text-[#64748b] text-2xl sm:text-2xl font-medium">${MESSAGES.NO_PLAYERS}</p>
+          <p class="text-[#64748b] text-lg sm:text-lg mt-4">${MESSAGES.ADD_PLAYERS}</p>
         </div>
       `;
       return;
@@ -129,8 +200,9 @@ class PadelApp {
     const estadisticasAnteriores = this.getEstadisticasAnteriores();
     
     container.innerHTML = '';
-    jugadores.forEach(jugador => {
-      const jugadorHTML = this.createJugadorHTML(jugador, estadisticasAnteriores);
+    jugadores.forEach((jugador, index) => {
+      const posicion = index + 1;
+      const jugadorHTML = this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
       container.innerHTML += jugadorHTML;
     });
     
@@ -143,7 +215,7 @@ class PadelApp {
     }, 3000);
   }
 
-  createJugadorHTML(jugador, estadisticasAnteriores) {
+  createJugadorHTML(jugador, estadisticasAnteriores, posicion) {
     const statsAnteriores = estadisticasAnteriores[jugador.id] || { victorias: 0, derrotas: 0 };
     const victoriasCambiaron = statsAnteriores.victorias !== jugador.estadisticas.victorias;
     const derrotasCambiaron = statsAnteriores.derrotas !== jugador.estadisticas.derrotas;
@@ -151,49 +223,50 @@ class PadelApp {
     
     const claseAnimacion = tieneCambios ? 'animate-pulse bg-green-50' : '';
     
-    // Mostrar ELO o victorias/derrotas según el modo
-    let estadisticasHTML = '';
-    if (this.clasificacionMode === 'elo') {
-      const ratingColor = EloUtils.getRatingColor(jugador.rating_elo || 1200);
-      const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
-      estadisticasHTML = `
-        <div class="flex items-center gap-4">
-          <span class="text-[#648771] text-3xl font-normal leading-normal">
-            ELO: <span style="color: ${ratingColor}; font-weight: bold;">${jugador.rating_elo || 1200}</span>
+    // Siempre mostrar victorias, derrotas y ELO
+    const ratingColor = EloUtils.getRatingColor(jugador.rating_elo || 1200);
+    const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
+    const totalPartidos = jugador.estadisticas.victorias + jugador.estadisticas.derrotas;
+    
+    const estadisticasHTML = `
+      <div class="flex items-center gap-4">
+        <span class="text-[#64748b] text-2xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
+          W:${jugador.estadisticas.victorias}
+        </span>
+        <span class="text-[#64748b] text-2xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
+          L:${jugador.estadisticas.derrotas}
+        </span>
+        <span class="text-[#64748b] text-xl font-normal leading-normal">
+          (${totalPartidos} partidos)
+        </span>
+      </div>
+      <div class="flex items-center gap-4 mt-2">
+        <span class="text-[#64748b] text-xl font-normal leading-normal">
+          ELO: <span style="color: ${ratingColor}; font-weight: bold;">${jugador.rating_elo || 1200}</span>
+        </span>
+        <span class="text-[#64748b] text-lg font-normal leading-normal">
+          ${ratingTitle}
+        </span>
+      </div>
+      <div class="flex items-center gap-4 mt-2">
+        <span class="text-[#64748b] text-lg font-normal leading-normal">
+          Progresión: <span style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'}; font-weight: bold;">
+            ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
           </span>
-          <span class="text-[#648771] text-xl font-normal leading-normal">
-            ${ratingTitle}
-          </span>
-        </div>
-        <div class="flex items-center gap-4 mt-2">
-          <span class="text-[#648771] text-2xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
-            W:${jugador.estadisticas.victorias}
-          </span>
-          <span class="text-[#648771] text-2xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
-            L:${jugador.estadisticas.derrotas}
-          </span>
-        </div>
-      `;
-    } else {
-      estadisticasHTML = `
-        <div class="flex items-center gap-4">
-          <span class="text-[#648771] text-3xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
-            W:${jugador.estadisticas.victorias}
-          </span>
-          <span class="text-[#648771] text-3xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
-            L:${jugador.estadisticas.derrotas}
-          </span>
-        </div>
-      `;
-    }
+        </span>
+      </div>
+    `;
     
     return `
       <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow player-card ${claseAnimacion}">
-        <div class="bg-[#38e078] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
+        <div class="flex items-center justify-center w-16 h-16 bg-[#111714] text-white text-3xl font-bold rounded-full flex-shrink-0">
+          ${posicion}
+        </div>
+        <div class="bg-[#2563eb] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
           ${StringUtils.capitalize(jugador.nombre.charAt(0))}
         </div>
         <div class="flex flex-col justify-center min-w-0">
-          <p class="text-[#111714] text-4xl font-medium leading-normal truncate">${jugador.nombre}</p>
+          <p class="text-[#1e293b] text-4xl font-medium leading-normal truncate">${jugador.nombre}</p>
           ${estadisticasHTML}
         </div>
       </div>
@@ -341,7 +414,7 @@ class PadelApp {
     const botonEnviar = DOMUtils.getElement('enviar-partido');
     const originalText = botonEnviar.innerHTML;
     
-    botonEnviar.innerHTML = `<span class="truncate">${MESSAGES.LOADING}</span>`;
+    botonEnviar.innerHTML = `<span class="truncate">Enviando...</span>`;
     botonEnviar.disabled = true;
 
     try {
@@ -351,7 +424,7 @@ class PadelApp {
       if (result.success) {
         this.resetForm();
         // Actualizar automáticamente la clasificación
-        await this.loadJugadores(false);
+        await this.loadJugadores();
       } else {
         throw new Error(result.error);
       }
@@ -385,7 +458,7 @@ class PadelApp {
       if (campo) {
         campo.value = '';
         DOMUtils.setStyle(campo, 'backgroundColor', '#ffffff');
-        DOMUtils.setStyle(campo, 'borderColor', '#dce5df');
+        DOMUtils.setStyle(campo, 'borderColor', '#dbeafe');
       }
     });
 
@@ -419,23 +492,66 @@ class PadelApp {
     });
   }
 
-  // Cambiar modo de clasificación
-  async cambiarClasificacion(mode) {
-    this.clasificacionMode = mode;
-    await this.loadJugadores(true);
-    this.actualizarBotonClasificacion();
+  // Ordenar jugadores según el criterio especificado
+  ordenarJugadores(criterio) {
+    this.ordenActual = criterio;
+    
+    if (criterio === 'victorias') {
+      // Ordenar por victorias (descendente), en caso de empate por menos partidos jugados
+      this.jugadores.sort((a, b) => {
+        const victoriasA = a.estadisticas.victorias;
+        const victoriasB = b.estadisticas.victorias;
+        const totalA = a.estadisticas.victorias + a.estadisticas.derrotas;
+        const totalB = b.estadisticas.victorias + b.estadisticas.derrotas;
+        
+        if (victoriasA !== victoriasB) {
+          return victoriasB - victoriasA; // Más victorias primero
+        } else {
+          return totalA - totalB; // Menos partidos jugados primero en caso de empate
+        }
+      });
+    } else if (criterio === 'elo') {
+      // Ordenar por ELO (descendente)
+      this.jugadores.sort((a, b) => {
+        return (b.rating_elo || 1200) - (a.rating_elo || 1200);
+      });
+    } else if (criterio === 'progresion') {
+      // Ordenar por progresión de ELO (descendente)
+      this.jugadores.sort((a, b) => {
+        return (b.progresion_elo || 0) - (a.progresion_elo || 0);
+      });
+    }
+    
+    // Actualizar la visualización
+    this.displayJugadores(this.jugadores);
+    this.actualizarBotonesOrdenacion();
   }
 
-  // Actualizar el botón de clasificación
-  actualizarBotonClasificacion() {
-    const boton = DOMUtils.getElement('cambiar-clasificacion');
-    if (boton) {
-      if (this.clasificacionMode === 'elo') {
-        boton.innerHTML = 'Ver por Victorias/Derrotas';
-        boton.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors';
-      } else {
-        boton.innerHTML = 'Ver por ELO';
-        boton.className = 'px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors';
+  // Cambiar orden de clasificación
+  cambiarOrden(criterio) {
+    this.ordenarJugadores(criterio);
+  }
+
+  // Actualizar el estado visual de los botones de ordenación
+  actualizarBotonesOrdenacion() {
+    const botonVictorias = DOMUtils.getElement('ordenar-victorias');
+    const botonELO = DOMUtils.getElement('ordenar-elo');
+    const botonProgresion = DOMUtils.getElement('ordenar-progresion');
+    
+    if (botonVictorias && botonELO && botonProgresion) {
+      // Resetear todos los botones al estado inactivo
+      const botones = [botonVictorias, botonELO, botonProgresion];
+      botones.forEach(boton => {
+        boton.className = 'px-6 py-3 text-[#64748b] rounded-lg transition-all duration-200 text-lg font-medium whitespace-nowrap hover:text-[#1e293b]';
+      });
+      
+      // Activar el botón correspondiente al orden actual
+      if (this.ordenActual === 'victorias') {
+        botonVictorias.className = 'px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap';
+      } else if (this.ordenActual === 'elo') {
+        botonELO.className = 'px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap';
+      } else if (this.ordenActual === 'progresion') {
+        botonProgresion.className = 'px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap';
       }
     }
   }
@@ -460,11 +576,11 @@ function validarInputSet(input) {
   
   // Cambiar estilo según si tiene valor (incluyendo 0) o está vacío
   if (input.value !== '') {
-    DOMUtils.setStyle(input, 'backgroundColor', '#f0f9ff');
-    DOMUtils.setStyle(input, 'borderColor', COLORS.primary);
+    DOMUtils.setStyle(input, 'backgroundColor', '#dbeafe');
+    DOMUtils.setStyle(input, 'borderColor', '#2563eb');
   } else {
     DOMUtils.setStyle(input, 'backgroundColor', '#ffffff');
-    DOMUtils.setStyle(input, 'borderColor', '#dce5df');
+    DOMUtils.setStyle(input, 'borderColor', '#dbeafe');
   }
 }
 
@@ -475,5 +591,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
   
+  // Detectar si es una nueva sesión (primera carga de la página)
+  // Si no existe sessionStorage o si es una recarga de página
+  const isNewSession = !sessionStorage.getItem('padelAppSession') || 
+                      performance.navigation.type === 1; // 1 = recarga de página
+  
+  // Marcar que la sesión está activa
+  sessionStorage.setItem('padelAppSession', 'true');
+  
   window.padelApp = new PadelApp();
+  window.padelApp.init(isNewSession);
 }); 

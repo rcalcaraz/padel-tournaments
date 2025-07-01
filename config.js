@@ -22,9 +22,9 @@ const VALIDATION_CONFIG = {
 
 // Configuración de colores
 const COLORS = {
-  primary: '#38e078',
-  secondary: '#648771',
-  dark: '#111714',
+  primary: '#2563eb',
+  secondary: '#64748b',
+  dark: '#1e293b',
   light: '#f0f4f2',
   success: '#10b981',
   error: '#ef4444',

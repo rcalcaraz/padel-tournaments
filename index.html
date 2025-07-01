@@ -34,12 +34,23 @@
     </style>
   </head>
   <body>
-    <div
-      class="relative flex size-full min-h-screen flex-col bg-white justify-between group/design-root overflow-x-hidden max-w-screen-xl mx-auto"
-      style='--select-button-svg: url(&apos;data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(100,135,113)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e&apos;); font-family: "Public Sans", "Noto Sans", sans-serif;'
-    >
+        <!-- Pantalla inicial de carga -->
+    <div id="loading-screen" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50 transition-transform duration-500 ease-in-out overflow-hidden">
+      <div class="text-center flex flex-col items-center justify-center w-full h-full">
+        <div class="w-[48rem] h-[48rem] mx-auto">
+          <img src="logo/1751396683_c6e2f82efd2848dfbb21758d81fc7ecf.svg" alt="Logo Pádel" class="w-full h-full">
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div id="main-content" class="transition-transform duration-500 ease-in-out transform translate-y-full overflow-hidden">
+      <div
+        class="relative flex size-full min-h-screen flex-col bg-white justify-between group/design-root overflow-x-hidden max-w-screen-xl mx-auto"
+        style='--select-button-svg: url(&apos;data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(100,135,113)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e&apos;); font-family: "Public Sans", "Noto Sans", sans-serif;'
+      >
       <div class="w-full px-2 sm:px-4 lg:px-6">
-        <h2 class="text-[#111714] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Clasificaciones</h2>
+        <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Clasificación</h2>
         
         <!-- Mensaje de configuración -->
         <div id="config-message" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
@@ -47,16 +58,7 @@
           <p>Por favor, actualiza las credenciales de Supabase en el código JavaScript al final de la página.</p>
         </div>
         
-        <!-- Loading indicator -->
-        <div id="loading" class="text-center py-10">
-          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-[#38e078] transition ease-in-out duration-150">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Cargando jugadores...
-          </div>
-        </div>
+
         
         <!-- Error message -->
         <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
@@ -64,14 +66,28 @@
           <p id="error-text"></p>
         </div>
         
-        <!-- Botón para cambiar clasificación -->
+        <!-- Selector de ordenación -->
         <div class="flex justify-center mb-10">
-          <button
-            id="cambiar-clasificacion"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xl font-medium"
-          >
-            Ver por ELO
-          </button>
+          <div class="bg-gray-100 rounded-xl p-2 inline-flex">
+            <button
+              id="ordenar-victorias"
+              class="px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap"
+            >
+              Victorias
+            </button>
+            <button
+              id="ordenar-elo"
+              class="px-6 py-3 text-[#64748b] rounded-lg transition-all duration-200 text-lg font-medium whitespace-nowrap hover:text-[#1e293b]"
+            >
+              ELO
+            </button>
+            <button
+              id="ordenar-progresion"
+              class="px-6 py-3 text-[#64748b] rounded-lg transition-all duration-200 text-lg font-medium whitespace-nowrap hover:text-[#1e293b]"
+            >
+              Progresión
+            </button>
+          </div>
         </div>
         
         <!-- Jugadores container -->
@@ -79,15 +95,15 @@
           <!-- Los jugadores se cargarán aquí dinámicamente -->
         </div>
         
-        <h2 class="text-[#111714] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Añadir Partido</h2>
+        <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Añadir Partido</h2>
         <div class="max-w-full mx-auto space-y-12 bg-white rounded-xl border border-[#e5e7e6] p-10">
           <div class="space-y-10">
-            <h3 class="text-[#111714] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja 1</h3>
+            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
             <div class="space-y-10">
               <label class="flex flex-col">
                 <select
                   id="jugador1"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                 >
                   <option value="">Seleccionar Jugador 1</option>
                 </select>
@@ -95,7 +111,7 @@
               <label class="flex flex-col">
                 <select
                   id="jugador2"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                 >
                   <option value="">Seleccionar Jugador 2</option>
                 </select>
@@ -103,12 +119,12 @@
             </div>
           </div>
           <div class="space-y-10">
-            <h3 class="text-[#111714] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja 2</h3>
+            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
             <div class="space-y-10">
               <label class="flex flex-col">
                 <select
                   id="jugador3"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                 >
                   <option value="">Seleccionar Jugador 3</option>
                 </select>
@@ -116,7 +132,7 @@
               <label class="flex flex-col">
                 <select
                   id="jugador4"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 bg-[image:--select-button-svg] placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                 >
                   <option value="">Seleccionar Jugador 4</option>
                 </select>
@@ -126,7 +142,7 @@
         </div>
         <div class="max-w-full mx-auto space-y-12 mt-20 bg-white rounded-xl border border-[#e5e7e6] p-10">
           <div class="space-y-10">
-            <h3 class="text-[#111714] text-4xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja 1</h3>
+            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja A</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10">
               <label class="flex flex-col">
                 <input
@@ -136,7 +152,7 @@
                   max="99"
                   step="1"
                   placeholder="Set 1"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                   value=""
                   oninput="validarInputSet(this)"
                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
@@ -150,7 +166,7 @@
                   max="99"
                   step="1"
                   placeholder="Set 2"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                   value=""
                   oninput="validarInputSet(this)"
                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
@@ -164,7 +180,7 @@
                   max="99"
                   step="1"
                   placeholder="Set 3"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                   value=""
                   oninput="validarInputSet(this)"
                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
@@ -173,7 +189,7 @@
             </div>
           </div>
           <div class="space-y-10">
-            <h3 class="text-[#111714] text-4xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja 2</h3>
+            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja B</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10">
               <label class="flex flex-col">
                 <input
@@ -183,7 +199,7 @@
                   max="99"
                   step="1"
                   placeholder="Set 1"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                   value=""
                   oninput="validarInputSet(this)"
                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
@@ -197,7 +213,7 @@
                   max="99"
                   step="1"
                   placeholder="Set 2"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                   value=""
                   oninput="validarInputSet(this)"
                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
@@ -211,7 +227,7 @@
                   max="99"
                   step="1"
                   placeholder="Set 3"
-                  class="form-input w-full rounded-lg text-[#111714] focus:outline-0 focus:ring-0 border border-[#dce5df] bg-white focus:border-[#dce5df] h-24 placeholder:text-[#648771] p-[25px] text-3xl font-normal leading-normal"
+                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
                   value=""
                   oninput="validarInputSet(this)"
                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
@@ -223,7 +239,7 @@
         <div class="flex justify-center mt-20 mb-80">
           <button
             id="enviar-partido"
-            class="flex min-w-[400px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-24 px-12 bg-[#38e078] text-[#111714] text-4xl font-bold leading-normal tracking-[0.015em] hover:bg-[#32c86a] transition-colors"
+            class="flex min-w-[400px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-24 px-12 bg-[#2563eb] text-white text-4xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
           >
             <span class="truncate">Enviar Partido</span>
           </button>
@@ -231,25 +247,26 @@
       </div>
       <div class="w-full fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#f0f4f2]">
         <div class="flex gap-6 px-8 pb-8 pt-6 max-w-screen-xl mx-auto">
-          <a class="flex flex-1 flex-col items-center justify-center gap-3 rounded-full text-[#111714]" href="#">
-            <div class="text-[#111714] flex h-20 items-center justify-center">
+          <a class="flex flex-1 flex-col items-center justify-center gap-3 rounded-full text-[#2563eb]" href="#">
+            <div class="text-[#2563eb] flex h-20 items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 256 256">
                 <path d="M232,64H208V56a16,16,0,0,0-16-16H64A16,16,0,0,0,48,56v8H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"></path>
               </svg>
             </div>
-            <p class="text-[#111714] text-3xl font-medium">Clasificaciones</p>
+            <p class="text-[#2563eb] text-3xl font-medium">Clasificación</p>
           </a>
-          <a class="flex flex-1 flex-col items-center justify-center gap-3 text-[#648771]" href="partidos.html">
-            <div class="text-[#648771] flex h-20 items-center justify-center">
+          <a class="flex flex-1 flex-col items-center justify-center gap-3 text-[#64748b]" href="partidos.html">
+            <div class="text-[#64748b] flex h-20 items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 256 256">
                 <path d="M201.57,54.46a104,104,0,1,0,0,147.08A103.4,103.4,0,0,0,201.57,54.46ZM65.75,65.77a87.63,87.63,0,0,1,53.66-25.31A87.31,87.31,0,0,1,94,94.06a87.42,87.42,0,0,1-53.62,25.35A87.58,87.58,0,0,1,65.75,65.77ZM40.33,135.48a103.29,103.29,0,0,0,65-30.11,103.24,103.24,0,0,0,30.13-65,87.78,87.78,0,0,1,80.18,80.14,104,104,0,0,0-95.16,95.1,87.78,87.78,0,0,1-80.18-80.14Zm149.92,54.75a87.69,87.69,0,0,1-53.66,25.31,88,88,0,0,1,79-78.95A87.58,87.58,0,0,1,190.25,190.23Z"></path>
               </svg>
             </div>
-            <p class="text-[#648771] text-3xl font-medium">Partidos</p>
+            <p class="text-[#64748b] text-3xl font-medium">Partidos</p>
           </a>
         </div>
         <div class="h-12 bg-white"></div>
       </div>
+    </div>
     </div>
 
     <script>
