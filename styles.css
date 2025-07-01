@@ -159,7 +159,7 @@ select option:disabled::after {
 
 /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
 .main-content {
-  padding-bottom: calc(200px + env(safe-area-inset-bottom));
+  padding-bottom: 120px;
   min-height: 100vh;
   position: relative;
 }
@@ -243,7 +243,7 @@ select option:disabled::after {
   
   /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
   .main-content {
-    padding-bottom: calc(200px + env(safe-area-inset-bottom));
+    padding-bottom: 120px;
   }
   
   /* Inputs más grandes en móvil */
