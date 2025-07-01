@@ -383,9 +383,54 @@ class SupabaseService {
         jugador4.estadisticas.total++;
       }
 
-      // Calcular progresión de ELO (cambio total desde el rating inicial)
+      // Calcular progresión de ELO basada en los cambios de ELO a través de los partidos
       jugadoresConELO.forEach(jugador => {
-        jugador.progresion_elo = (jugador.rating_elo || EloUtils.INITIAL_RATING) - EloUtils.INITIAL_RATING;
+        // Inicializar progresión en 0
+        jugador.progresion_elo = 0;
+        
+        // Calcular la progresión sumando todos los cambios de ELO en los partidos
+        for (const partido of partidos) {
+          if (!partido.ganador_pareja) continue;
+          
+          // Verificar si el jugador participó en este partido
+          const participoEnPartido = 
+            partido.pareja1_jugador1_id === jugador.id ||
+            partido.pareja1_jugador2_id === jugador.id ||
+            partido.pareja2_jugador1_id === jugador.id ||
+            partido.pareja2_jugador2_id === jugador.id;
+            
+          if (participoEnPartido) {
+            // Obtener jugadores del partido
+            const jugador1 = jugadoresConELO.find(j => j.id === partido.pareja1_jugador1_id);
+            const jugador2 = jugadoresConELO.find(j => j.id === partido.pareja1_jugador2_id);
+            const jugador3 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador1_id);
+            const jugador4 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador2_id);
+
+            if (!jugador1 || !jugador2 || !jugador3 || !jugador4) continue;
+
+            // Calcular rating promedio de cada pareja
+            const ratingPareja1 = EloUtils.calculateTeamRating(jugador1.rating_elo, jugador2.rating_elo);
+            const ratingPareja2 = EloUtils.calculateTeamRating(jugador3.rating_elo, jugador4.rating_elo);
+
+            // Calcular nuevos ratings
+            const nuevosRatings = EloUtils.calculateMatchRatings(ratingPareja1, ratingPareja2, partido.ganador_pareja);
+
+            // Determinar a qué pareja pertenece el jugador y calcular su cambio
+            let cambioJugador = 0;
+            if (partido.pareja1_jugador1_id === jugador.id || partido.pareja1_jugador2_id === jugador.id) {
+              // Jugador está en pareja 1
+              const diferencia1 = nuevosRatings.pareja1 - ratingPareja1;
+              cambioJugador = diferencia1;
+            } else if (partido.pareja2_jugador1_id === jugador.id || partido.pareja2_jugador2_id === jugador.id) {
+              // Jugador está en pareja 2
+              const diferencia2 = nuevosRatings.pareja2 - ratingPareja2;
+              cambioJugador = diferencia2;
+            }
+            
+            // Sumar el cambio a la progresión total
+            jugador.progresion_elo += cambioJugador;
+          }
+        }
       });
 
       return { success: true, data: jugadoresConELO };

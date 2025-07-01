@@ -229,27 +229,27 @@ class PadelApp {
     const totalPartidos = jugador.estadisticas.victorias + jugador.estadisticas.derrotas;
     
     const estadisticasHTML = `
-      <div class="flex items-center gap-4">
-        <span class="text-[#64748b] text-2xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
+      <div class="flex items-center gap-6">
+        <span class="text-[#64748b] text-3xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
           W:${jugador.estadisticas.victorias}
         </span>
-        <span class="text-[#64748b] text-2xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
+        <span class="text-[#64748b] text-3xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
           L:${jugador.estadisticas.derrotas}
         </span>
-        <span class="text-[#64748b] text-xl font-normal leading-normal">
+        <span class="text-[#64748b] text-2xl font-normal leading-normal">
           (${totalPartidos} partidos)
         </span>
       </div>
-      <div class="flex items-center gap-4 mt-2">
-        <span class="text-[#64748b] text-xl font-normal leading-normal">
+      <div class="flex items-center gap-6 mt-3">
+        <span class="text-[#64748b] text-2xl font-normal leading-normal">
           ELO: <span style="color: ${ratingColor}; font-weight: bold;">${jugador.rating_elo || 1200}</span>
         </span>
-        <span class="text-[#64748b] text-lg font-normal leading-normal">
+        <span class="text-[#64748b] text-xl font-normal leading-normal">
           ${ratingTitle}
         </span>
       </div>
-      <div class="flex items-center gap-4 mt-2">
-        <span class="text-[#64748b] text-lg font-normal leading-normal">
+      <div class="flex items-center gap-6 mt-3">
+        <span class="text-[#64748b] text-xl font-normal leading-normal">
           Progresión: <span style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'}; font-weight: bold;">
             ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
           </span>
@@ -258,15 +258,15 @@ class PadelApp {
     `;
     
     return `
-      <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow player-card ${claseAnimacion}">
-        <div class="flex items-center justify-center w-16 h-16 bg-[#111714] text-white text-3xl font-bold rounded-full flex-shrink-0">
+      <div class="flex items-center gap-12 bg-white p-12 rounded-lg shadow-sm hover:shadow-md transition-shadow player-card ${claseAnimacion}">
+        <div class="flex items-center justify-center w-20 h-20 bg-[#111714] text-white text-4xl font-bold rounded-full flex-shrink-0">
           ${posicion}
         </div>
-        <div class="bg-[#2563eb] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
+        <div class="bg-[#2563eb] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-40 w-40 flex-shrink-0 flex items-center justify-center text-white text-5xl font-bold">
           ${StringUtils.capitalize(jugador.nombre.charAt(0))}
         </div>
         <div class="flex flex-col justify-center min-w-0">
-          <p class="text-[#1e293b] text-4xl font-medium leading-normal truncate">${jugador.nombre}</p>
+          <p class="text-[#1e293b] text-5xl font-medium leading-normal truncate">${jugador.nombre}</p>
           ${estadisticasHTML}
         </div>
       </div>
@@ -542,16 +542,16 @@ class PadelApp {
       // Resetear todos los botones al estado inactivo
       const botones = [botonVictorias, botonELO, botonProgresion];
       botones.forEach(boton => {
-        boton.className = 'px-6 py-3 text-[#64748b] rounded-lg transition-all duration-200 text-lg font-medium whitespace-nowrap hover:text-[#1e293b]';
+        boton.className = 'px-8 py-4 text-[#64748b] rounded-xl transition-all duration-200 text-2xl font-medium whitespace-nowrap hover:text-[#1e293b]';
       });
       
       // Activar el botón correspondiente al orden actual
       if (this.ordenActual === 'victorias') {
-        botonVictorias.className = 'px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap';
+        botonVictorias.className = 'px-8 py-4 bg-white text-[#1e293b] rounded-xl shadow-sm transition-all duration-200 text-2xl font-medium whitespace-nowrap';
       } else if (this.ordenActual === 'elo') {
-        botonELO.className = 'px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap';
+        botonELO.className = 'px-8 py-4 bg-white text-[#1e293b] rounded-xl shadow-sm transition-all duration-200 text-2xl font-medium whitespace-nowrap';
       } else if (this.ordenActual === 'progresion') {
-        botonProgresion.className = 'px-6 py-3 bg-white text-[#1e293b] rounded-lg shadow-sm transition-all duration-200 text-lg font-medium whitespace-nowrap';
+        botonProgresion.className = 'px-8 py-4 bg-white text-[#1e293b] rounded-xl shadow-sm transition-all duration-200 text-2xl font-medium whitespace-nowrap';
       }
     }
   }
