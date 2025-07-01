@@ -155,6 +155,16 @@ select option:disabled::after {
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
+/* Menú de navegación inferior sticky */
+.bottom-nav {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Estilos para responsive */
 @media (max-width: 768px) {
   .text-4xl {
@@ -206,7 +216,7 @@ select option:disabled::after {
   
   /* Solución para el menú de navegación inferior en móviles */
   .bottom-nav {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     left: 0;
     right: 0;
