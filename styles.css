@@ -3,6 +3,23 @@ html, body {
   height: 100%;
   overflow-x: hidden;
   position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+/* Asegurar que el menú sea visible en móviles */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 0;
+  }
+  
+  .fixed.bottom-0 {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+  }
 }
 
 /* Estilos para opciones deshabilitadas en selectores */
@@ -159,9 +176,10 @@ select option:disabled::after {
 
 /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
 .main-content {
-  padding-bottom: 120px;
+  padding-bottom: 200px;
   min-height: 100vh;
   position: relative;
+  overflow-y: auto;
 }
 
 /* Menú de navegación inferior fijo */
@@ -243,7 +261,7 @@ select option:disabled::after {
   
   /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
   .main-content {
-    padding-bottom: 120px;
+    padding-bottom: 200px;
   }
   
   /* Inputs más grandes en móvil */
