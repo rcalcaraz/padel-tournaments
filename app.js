@@ -209,6 +209,9 @@ class PadelApp {
     // Guardar estadísticas actuales para la próxima comparación
     this.guardarEstadisticasActuales(jugadores);
     
+    // Añadir event listeners para el destacado de tarjetas
+    this.setupPlayerCardListeners();
+    
     // Detener animaciones después de 3 segundos
     setTimeout(() => {
       this.detenerAnimaciones();
@@ -258,11 +261,11 @@ class PadelApp {
     `;
     
     return `
-      <div class="flex items-center gap-12 bg-white p-12 rounded-lg shadow-sm hover:shadow-md transition-shadow player-card ${claseAnimacion}">
+      <div class="flex items-center gap-12 bg-white p-12 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
         <div class="flex items-center justify-center w-20 h-20 bg-[#111714] text-white text-4xl font-bold rounded-full flex-shrink-0">
           ${posicion}
         </div>
-        <div class="bg-[#2563eb] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-40 w-40 flex-shrink-0 flex items-center justify-center text-white text-5xl font-bold">
+        <div class="bg-[#2563eb] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
           ${StringUtils.capitalize(jugador.nombre.charAt(0))}
         </div>
         <div class="flex flex-col justify-center min-w-0">
@@ -488,6 +491,30 @@ class PadelApp {
           DOMUtils.removeClass(span, 'text-red-600');
           DOMUtils.removeClass(span, 'font-bold');
         }
+      });
+    });
+  }
+
+  setupPlayerCardListeners() {
+    const playerCards = DOMUtils.getElements('.player-card');
+    
+    playerCards.forEach(card => {
+      card.addEventListener('click', () => {
+        // Remover destacado de todas las tarjetas
+        playerCards.forEach(c => {
+          DOMUtils.removeClass(c, 'ring-4');
+          DOMUtils.removeClass(c, 'ring-blue-500');
+          DOMUtils.removeClass(c, 'ring-opacity-50');
+          DOMUtils.removeClass(c, 'scale-105');
+          DOMUtils.removeClass(c, 'shadow-lg');
+        });
+        
+        // Añadir destacado a la tarjeta clickeada
+        DOMUtils.addClass(card, 'ring-4');
+        DOMUtils.addClass(card, 'ring-blue-500');
+        DOMUtils.addClass(card, 'ring-opacity-50');
+        DOMUtils.addClass(card, 'scale-105');
+        DOMUtils.addClass(card, 'shadow-lg');
       });
     });
   }

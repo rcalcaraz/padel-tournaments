@@ -199,6 +199,21 @@ select option:disabled::after {
     font-size: 1.125rem;
   }
   
+  /* Solución para el menú de navegación inferior en móviles */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Ajustar el contenido principal para evitar que se oculte detrás del menú */
+  .main-content {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+  
   /* Inputs más grandes en móvil */
   input, select {
     font-size: 1.125rem;
