@@ -150,6 +150,11 @@ select option:disabled::after {
   color: #1e293b;
 }
 
+/* Ajustar el contenido principal para evitar que se oculte detrás del menú */
+.main-content {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
 /* Estilos para responsive */
 @media (max-width: 768px) {
   .text-4xl {
