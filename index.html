@@ -187,17 +187,17 @@
           <span class="close" id="cerrar-modal">&times;</span>
           
           <div class="p-10">
-            <h2 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em] pb-8 text-center">Añadir Partido</h2>
+            <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-8 text-center">Añadir Partido</h2>
             
             <form id="form-partido" class="space-y-8">
               <!-- Pareja A -->
               <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
+                <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
                 <div class="space-y-6">
                   <label class="flex flex-col">
                     <select
                       id="jugador1"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
                     >
                       <option value="">Seleccionar Jugador 1</option>
                     </select>
@@ -205,7 +205,7 @@
                   <label class="flex flex-col">
                     <select
                       id="jugador2"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
                     >
                       <option value="">Seleccionar Jugador 2</option>
                     </select>
@@ -215,12 +215,12 @@
               
               <!-- Pareja B -->
               <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
+                <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
                 <div class="space-y-6">
                   <label class="flex flex-col">
                     <select
                       id="jugador3"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
                     >
                       <option value="">Seleccionar Jugador 3</option>
                     </select>
@@ -228,7 +228,7 @@
                   <label class="flex flex-col">
                     <select
                       id="jugador4"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
                     >
                       <option value="">Seleccionar Jugador 4</option>
                     </select>
@@ -236,101 +236,119 @@
                 </div>
               </div>
               
-              <!-- Puntuación Pareja A -->
+              <!-- Resultado del Partido -->
               <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja A</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  <label class="flex flex-col">
-                    <input
-                      id="pareja1-set1"
-                      type="number"
-                      min="0"
-                      max="99"
-                      step="1"
-                      placeholder="Set 1"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
-                      value=""
-                      oninput="validarInputSet(this)"
-                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                    />
-                  </label>
-                  <label class="flex flex-col">
-                    <input
-                      id="pareja1-set2"
-                      type="number"
-                      min="0"
-                      max="99"
-                      step="1"
-                      placeholder="Set 2"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
-                      value=""
-                      oninput="validarInputSet(this)"
-                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                    />
-                  </label>
-                  <label class="flex flex-col">
-                    <input
-                      id="pareja1-set3"
-                      type="number"
-                      min="0"
-                      max="99"
-                      step="1"
-                      placeholder="Set 3"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
-                      value=""
-                      oninput="validarInputSet(this)"
-                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                    />
-                  </label>
+                <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Resultado del Partido</h3>
+                
+                <!-- Set 1 -->
+                <div class="space-y-4">
+                  <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 1</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <label class="flex flex-col">
+                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
+                      <input
+                        id="pareja1-set1"
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        placeholder="0"
+                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
+                        value=""
+                        oninput="validarInputSet(this)"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                      />
+                    </label>
+                    <label class="flex flex-col">
+                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
+                      <input
+                        id="pareja2-set1"
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        placeholder="0"
+                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
+                        value=""
+                        oninput="validarInputSet(this)"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                      />
+                    </label>
+                  </div>
                 </div>
-              </div>
-              
-              <!-- Puntuación Pareja B -->
-              <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja B</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  <label class="flex flex-col">
-                    <input
-                      id="pareja2-set1"
-                      type="number"
-                      min="0"
-                      max="99"
-                      step="1"
-                      placeholder="Set 1"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
-                      value=""
-                      oninput="validarInputSet(this)"
-                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                    />
-                  </label>
-                  <label class="flex flex-col">
-                    <input
-                      id="pareja2-set2"
-                      type="number"
-                      min="0"
-                      max="99"
-                      step="1"
-                      placeholder="Set 2"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
-                      value=""
-                      oninput="validarInputSet(this)"
-                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                    />
-                  </label>
-                  <label class="flex flex-col">
-                    <input
-                      id="pareja2-set3"
-                      type="number"
-                      min="0"
-                      max="99"
-                      step="1"
-                      placeholder="Set 3"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
-                      value=""
-                      oninput="validarInputSet(this)"
-                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                    />
-                  </label>
+                
+                <!-- Set 2 -->
+                <div class="space-y-4">
+                  <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 2</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <label class="flex flex-col">
+                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
+                      <input
+                        id="pareja1-set2"
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        placeholder="0"
+                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
+                        value=""
+                        oninput="validarInputSet(this)"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                      />
+                    </label>
+                    <label class="flex flex-col">
+                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
+                      <input
+                        id="pareja2-set2"
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        placeholder="0"
+                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
+                        value=""
+                        oninput="validarInputSet(this)"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                      />
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- Set 3 -->
+                <div class="space-y-4">
+                  <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 3</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <label class="flex flex-col">
+                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
+                      <input
+                        id="pareja1-set3"
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        placeholder="0"
+                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
+                        value=""
+                        oninput="validarInputSet(this)"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                      />
+                    </label>
+                    <label class="flex flex-col">
+                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
+                      <input
+                        id="pareja2-set3"
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        placeholder="0"
+                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
+                        value=""
+                        oninput="validarInputSet(this)"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
               

@@ -8,19 +8,23 @@
 En el sistema ELO básico, todos los jugadores de una pareja recibían la misma cantidad de puntos, sin importar su nivel individual.
 
 #### **Solución Implementada**
-- **Jugador de menor nivel**: Recibe **más recompensa** (hasta 1.3x)
-- **Jugador de mayor nivel**: Recibe **menos recompensa** (hasta 0.7x)
+- **Jugador de menor nivel**: Recibe **menos castigo** cuando pierde, **más recompensa** cuando gana (hasta 0.7x castigo, 1.3x recompensa)
+- **Jugador de mayor nivel**: Recibe **más castigo** cuando pierde, **menos recompensa** cuando gana (hasta 1.3x castigo, 0.7x recompensa)
 - **Jugadores del mismo nivel**: Reciben recompensa normal (1.0x)
 
 #### **Fórmula de Recompensa Diferencial**
 ```javascript
-factor = 1.0 + (diferencia_rating / 400.0) * 0.3
+// Para jugador de menor nivel (diferencia > 0)
+factor = 1.0 - (diferencia_rating / 400.0) * 0.3
+
+// Para jugador de mayor nivel (diferencia < 0)
+factor = 1.0 - (diferencia_rating / 400.0) * 0.3
 ```
 
 **Ejemplo**:
 - Pareja: Jugador A (1400) + Jugador B (1200) = Promedio 1300
-- Jugador A (1400): factor = 0.85 (menos recompensa)
-- Jugador B (1200): factor = 1.15 (más recompensa)
+- Jugador A (1400): factor = 1.15 (más castigo cuando pierde, menos recompensa cuando gana)
+- Jugador B (1200): factor = 0.85 (menos castigo cuando pierde, más recompensa cuando gana)
 
 ### 2. **Factor de Resultado por Diferencia de Sets**
 
@@ -65,16 +69,16 @@ cambio_final = K_FACTOR * (resultado_real - probabilidad_esperada) * factor_resu
 - Victoria clara (2-0): factor = 1.2x
 
 #### **Paso 4: Factores de Recompensa**
-- Jugador 1 (1200): factor = 1.15 (menor nivel)
-- Jugador 2 (1400): factor = 0.85 (mayor nivel)
-- Jugador 3 (1100): factor = 1.20 (menor nivel)
-- Jugador 4 (1250): factor = 0.90 (mayor nivel)
+- Jugador 1 (1200): factor = 0.85 (menor nivel - menos castigo cuando pierde)
+- Jugador 2 (1400): factor = 1.15 (mayor nivel - más castigo cuando pierde)
+- Jugador 3 (1100): factor = 0.80 (menor nivel - menos castigo cuando pierde)
+- Jugador 4 (1250): factor = 1.10 (mayor nivel - más castigo cuando pierde)
 
 #### **Paso 5: Cálculo Final**
 - **Jugador 1**: +18 puntos (más recompensa por ser menor nivel)
 - **Jugador 2**: +13 puntos (menos recompensa por ser mayor nivel)
-- **Jugador 3**: -15 puntos (más penalización por ser menor nivel)
-- **Jugador 4**: -11 puntos (menos penalización por ser mayor nivel)
+- **Jugador 3**: -12 puntos (menos penalización por ser menor nivel)
+- **Jugador 4**: -16 puntos (más penalización por ser mayor nivel)
 
 ## 🎯 Beneficios del Sistema Mejorado
 
@@ -82,11 +86,13 @@ cambio_final = K_FACTOR * (resultado_real - probabilidad_esperada) * factor_resu
 - **Más motivación** para jugar con mejores jugadores
 - **Progresión más rápida** cuando juegan bien
 - **Menos penalización** cuando pierden contra mejores
+- **Protección** contra castigos excesivos
 
 ### **Para Jugadores de Mayor Nivel**
 - **Responsabilidad** por el rendimiento del equipo
 - **Menos recompensa** por ganar partidos fáciles
-- **Incentivo** para ayudar a mejorar a compañeros
+- **Mayor castigo** cuando pierden contra jugadores de menor nivel
+- **Incentivo** para mantener un alto nivel de juego
 
 ### **Para la Competitividad**
 - **Partidos más ajustados** = menos puntos

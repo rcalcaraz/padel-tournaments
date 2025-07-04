@@ -147,12 +147,35 @@ class SupabaseService {
 
   async createPartido(datosPartido) {
     try {
+      console.log('📝 Datos del partido recibidos:', datosPartido);
+      
+      // Validar que todos los jugadores estén seleccionados
+      if (!datosPartido.pareja1_jugador1_id || !datosPartido.pareja1_jugador2_id || 
+          !datosPartido.pareja2_jugador1_id || !datosPartido.pareja2_jugador2_id) {
+        throw new Error('Todos los jugadores deben estar seleccionados');
+      }
+      
+      // Validar que al menos un set tenga puntuación
+      const setsConPuntuacion = [
+        datosPartido.pareja1_set1, datosPartido.pareja1_set2, datosPartido.pareja1_set3,
+        datosPartido.pareja2_set1, datosPartido.pareja2_set2, datosPartido.pareja2_set3
+      ].filter(score => score !== null && score !== undefined);
+      
+      if (setsConPuntuacion.length === 0) {
+        throw new Error('Debe haber al menos un set con puntuación');
+      }
+      
       // Calcular ganador en el frontend para evitar el trigger
       const ganador = this.calcularGanador(datosPartido);
+      console.log('🏆 Ganador calculado:', ganador);
+      
       const datosConGanador = {
         ...datosPartido,
-        ganador_pareja: ganador
+        ganador_pareja: ganador,
+        fecha_partido: new Date().toISOString()
       };
+      
+      console.log('📊 Datos finales para insertar:', datosConGanador);
       
       // Insertar el partido con el ganador ya calculado
       const { data, error } = await this.supabase
@@ -161,13 +184,14 @@ class SupabaseService {
         .select('*');
 
       if (error) {
-        console.error('Error en Supabase:', error);
-        throw error;
+        console.error('❌ Error en Supabase:', error);
+        throw new Error(`Error en la base de datos: ${error.message}`);
       }
       
+      console.log('✅ Partido creado exitosamente:', data[0]);
       return { success: true, data: data[0] };
     } catch (error) {
-      console.error('Error creando partido:', error);
+      console.error('❌ Error creando partido:', error);
       return { success: false, error: error.message };
     }
   }

@@ -261,13 +261,13 @@ class EloUtils {
     const diferencia = teamAverageRating - playerRating;
     
     if (diferencia > 0) {
-      // Jugador de menor nivel: más recompensa (hasta 1.8x)
-      const factor = 1.0 + (diferencia / 200.0) * 0.8;
-      return Math.min(1.8, factor);
-    } else if (diferencia < 0) {
-      // Jugador de mayor nivel: menos recompensa (hasta 0.5x)
-      const factor = 1.0 + (diferencia / 200.0) * 0.5;
+      // Jugador de menor nivel: menos castigo cuando pierde, más recompensa cuando gana (hasta 0.5x castigo, 1.8x recompensa)
+      const factor = 1.0 - (diferencia / 200.0) * 0.5;
       return Math.max(0.5, factor);
+    } else if (diferencia < 0) {
+      // Jugador de mayor nivel: más castigo cuando pierde, menos recompensa cuando gana (hasta 1.8x castigo, 0.5x recompensa)
+      const factor = 1.0 - (diferencia / 200.0) * 0.8;
+      return Math.min(1.8, factor);
     } else {
       // Mismo nivel
       return 1.0;

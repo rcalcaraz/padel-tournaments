@@ -25,7 +25,22 @@ class PartidosApp {
   async loadPartidos() {
     try {
       this.showLoading();
+      
+      // Guardar el tiempo de inicio
+      const startTime = Date.now();
+      
+      // Cargar los partidos
       const partidos = await this.supabaseService.getPartidos();
+      
+      // Calcular cuánto tiempo ha pasado
+      const elapsedTime = Date.now() - startTime;
+      const minLoadTime = 1000; // 1 segundo mínimo
+      
+      // Si ha pasado menos de 2 segundos, esperar el tiempo restante
+      if (elapsedTime < minLoadTime) {
+        const remainingTime = minLoadTime - elapsedTime;
+        await new Promise(resolve => setTimeout(resolve, remainingTime));
+      }
       
       this.hideLoading();
       this.displayPartidos(partidos);

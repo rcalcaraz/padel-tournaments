@@ -72,14 +72,28 @@ class PadelApp {
     const loadingScreen = DOMUtils.getElement('loading-screen');
     const mainContent = DOMUtils.getElement('main-content');
     
-    // Ocultar pantalla de carga
+    // Añadir transición de fade out a la pantalla de carga
     if (loadingScreen) {
-      loadingScreen.style.display = 'none';
+      loadingScreen.style.transition = 'opacity 0.5s ease-out';
+      loadingScreen.style.opacity = '0';
+      
+      // Ocultar completamente después de la transición
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+      }, 500);
     }
     
-    // Mostrar contenido principal
+    // Mostrar contenido principal con fade in
     if (mainContent) {
       mainContent.classList.remove('hidden');
+      mainContent.style.opacity = '0';
+      mainContent.style.transition = 'opacity 0.5s ease-in';
+      
+      // Trigger reflow para que la transición funcione
+      mainContent.offsetHeight;
+      
+      // Aplicar opacidad completa
+      mainContent.style.opacity = '1';
     }
   }
 
@@ -129,11 +143,26 @@ class PadelApp {
 
   async loadJugadores() {
     try {
+      this.showLoading();
+      
+      // Guardar el tiempo de inicio
+      const startTime = Date.now();
+      
       // Siempre obtener estadísticas con ELO
       const result = await this.supabaseService.getEstadisticasConELO();
       
       if (!result.success) {
         throw new Error(result.error);
+      }
+
+      // Calcular cuánto tiempo ha pasado
+      const elapsedTime = Date.now() - startTime;
+      const minLoadTime = 1000; // 1 segundo mínimo
+      
+      // Si ha pasado menos de 1 segundo, esperar el tiempo restante
+      if (elapsedTime < minLoadTime) {
+        const remainingTime = minLoadTime - elapsedTime;
+        await new Promise(resolve => setTimeout(resolve, remainingTime));
       }
 
       // Guardar jugadores para ordenar localmente
@@ -142,6 +171,7 @@ class PadelApp {
       // Ordenar por defecto por victorias
       this.ordenarJugadores('victorias');
       
+      this.hideLoading();
       this.displayJugadores(this.jugadores);
       this.fillPlayerSelectors(this.jugadores);
       this.actualizarBotonesOrdenacion();
@@ -149,9 +179,180 @@ class PadelApp {
       return result;
     } catch (error) {
       console.error('Error cargando jugadores:', error);
+      this.hideLoading();
       this.showError(MESSAGES.ERROR_LOADING + error.message);
       throw error;
     }
+  }
+
+  showLoading() {
+    const container = DOMUtils.getElement('jugadores-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-1 gap-10 max-w-full mx-auto">
+        <!-- Skeleton 1 -->
+        <div class="bg-gray-50 p-8 rounded-lg shadow-sm">
+          <div class="flex items-center gap-8">
+            <!-- Posición -->
+            <div class="w-20 h-20 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+            
+            <!-- Información del Jugador -->
+            <div class="flex-1">
+              <div class="h-16 bg-gray-200 rounded animate-pulse mb-8 w-full"></div>
+              
+              <!-- Estadísticas en dos columnas -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Columna 1: Estadísticas de partidos -->
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                  <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-56"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-56"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-64"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Columna 2: Información ELO -->
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                  <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-60"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-60"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skeleton 2 -->
+        <div class="bg-gray-50 p-8 rounded-lg shadow-sm">
+          <div class="flex items-center gap-8">
+            <!-- Posición -->
+            <div class="w-20 h-20 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+            
+            <!-- Información del Jugador -->
+            <div class="flex-1">
+              <div class="h-16 bg-gray-200 rounded animate-pulse mb-8 w-full"></div>
+              
+              <!-- Estadísticas en dos columnas -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Columna 1: Estadísticas de partidos -->
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                  <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-56"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-56"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-64"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Columna 2: Información ELO -->
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                  <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-60"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-60"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skeleton 3 -->
+        <div class="bg-gray-50 p-8 rounded-lg shadow-sm">
+          <div class="flex items-center gap-8">
+            <!-- Posición -->
+            <div class="w-20 h-20 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+            
+            <!-- Información del Jugador -->
+            <div class="flex-1">
+              <div class="h-16 bg-gray-200 rounded animate-pulse mb-8 w-full"></div>
+              
+              <!-- Estadísticas en dos columnas -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Columna 1: Estadísticas de partidos -->
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                  <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-56"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-56"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-64"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Columna 2: Información ELO -->
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                  <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-60"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-60"></div>
+                      <div class="h-8 bg-gray-200 rounded animate-pulse w-28"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  hideLoading() {
+    // Esta función se llama después de cargar los datos
+    // El contenido se reemplaza automáticamente en displayJugadores
   }
 
   showError(message) {
@@ -424,7 +625,7 @@ class PadelApp {
       botonEnviar.disabled = true;
       
       // Enviar partido
-      const resultado = await this.supabaseService.crearPartido(formData);
+      const resultado = await this.supabaseService.createPartido(formData);
       
       if (resultado.success) {
         // Mostrar mensaje de éxito
@@ -435,15 +636,16 @@ class PadelApp {
         
         // Recargar datos
         await this.loadJugadores();
-        
-        // Mostrar animaciones
-        this.mostrarAnimaciones();
       } else {
         throw new Error(resultado.error || 'Error desconocido');
       }
       
     } catch (error) {
-      console.error('Error enviando partido:', error);
+      console.error('❌ Error enviando partido:', error);
+      console.error('📋 Detalles del error:', {
+        message: error.message,
+        stack: error.stack
+      });
       alert('Error al enviar el partido: ' + error.message);
     } finally {
       // Restaurar botón

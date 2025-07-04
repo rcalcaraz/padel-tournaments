@@ -72,15 +72,15 @@ DECLARE
 BEGIN
   diferencia := rating_promedio_pareja - rating_jugador;
   
-  -- Si el jugador tiene rating más bajo que el promedio de su pareja, recibe más recompensa
+  -- Si el jugador tiene rating más bajo que el promedio de su pareja
   IF diferencia > 0 THEN
-    -- Jugador de menor nivel: más recompensa (hasta 1.3x)
-    factor := 1.0 + (diferencia / 400.0) * 0.3;
-    RETURN LEAST(1.3, factor);
-  ELSIF diferencia < 0 THEN
-    -- Jugador de mayor nivel: menos recompensa (hasta 0.7x)
-    factor := 1.0 + (diferencia / 400.0) * 0.3;
+    -- Jugador de menor nivel: menos castigo cuando pierde, más recompensa cuando gana (hasta 0.7x castigo, 1.3x recompensa)
+    factor := 1.0 - (diferencia / 400.0) * 0.3;
     RETURN GREATEST(0.7, factor);
+  ELSIF diferencia < 0 THEN
+    -- Jugador de mayor nivel: más castigo cuando pierde, menos recompensa cuando gana (hasta 1.3x castigo, 0.7x recompensa)
+    factor := 1.0 - (diferencia / 400.0) * 0.3;
+    RETURN LEAST(1.3, factor);
   ELSE
     -- Mismo nivel
     RETURN 1.0;
