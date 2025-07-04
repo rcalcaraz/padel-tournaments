@@ -139,6 +139,9 @@ class PadelApp {
         selector.addEventListener('change', () => this.updateAvailableOptions());
       }
     });
+
+    // Event listeners para el wizard
+    this.setupWizardListeners();
   }
 
   async loadJugadores() {
@@ -816,6 +819,116 @@ class PadelApp {
     DOMUtils.getElement('modal-partido').classList.remove('show');
     document.body.style.overflow = 'auto';
     this.resetForm();
+    this.resetWizard();
+  }
+
+  // Funciones para el wizard
+  setupWizardListeners() {
+    // Botón siguiente
+    const btnSiguiente = DOMUtils.getElement('btn-siguiente');
+    if (btnSiguiente) {
+      btnSiguiente.addEventListener('click', () => this.nextStep());
+    }
+
+    // Botón anterior
+    const btnAnterior = DOMUtils.getElement('btn-anterior');
+    if (btnAnterior) {
+      btnAnterior.addEventListener('click', () => this.previousStep());
+    }
+  }
+
+  nextStep() {
+    // Validar que todos los jugadores estén seleccionados
+    const jugador1 = DOMUtils.getElement('jugador1').value;
+    const jugador2 = DOMUtils.getElement('jugador2').value;
+    const jugador3 = DOMUtils.getElement('jugador3').value;
+    const jugador4 = DOMUtils.getElement('jugador4').value;
+
+    if (!jugador1 || !jugador2 || !jugador3 || !jugador4) {
+      alert('Por favor, selecciona todos los jugadores antes de continuar.');
+      return;
+    }
+
+    // Actualizar nombres de las parejas
+    this.updateParejaNames();
+
+    // Ocultar paso 1 y mostrar paso 2
+    DOMUtils.getElement('step1').classList.add('hidden');
+    DOMUtils.getElement('step2').classList.remove('hidden');
+
+    // Actualizar indicadores
+    this.updateStepIndicators(2);
+  }
+
+  previousStep() {
+    // Ocultar paso 2 y mostrar paso 1
+    DOMUtils.getElement('step2').classList.add('hidden');
+    DOMUtils.getElement('step1').classList.remove('hidden');
+
+    // Actualizar indicadores
+    this.updateStepIndicators(1);
+  }
+
+  updateParejaNames() {
+    // Obtener nombres de los jugadores
+    const jugador1 = DOMUtils.getElement('jugador1');
+    const jugador2 = DOMUtils.getElement('jugador2');
+    const jugador3 = DOMUtils.getElement('jugador3');
+    const jugador4 = DOMUtils.getElement('jugador4');
+
+    const nombre1 = jugador1.options[jugador1.selectedIndex].text;
+    const nombre2 = jugador2.options[jugador2.selectedIndex].text;
+    const nombre3 = jugador3.options[jugador3.selectedIndex].text;
+    const nombre4 = jugador4.options[jugador4.selectedIndex].text;
+
+    // Actualizar información de parejas
+    DOMUtils.getElement('pareja-a-names').textContent = `${nombre1} y ${nombre2}`;
+    DOMUtils.getElement('pareja-b-names').textContent = `${nombre3} y ${nombre4}`;
+
+    // Actualizar etiquetas de los sets
+    const parejaAName = `${nombre1} y ${nombre2}`;
+    const parejaBName = `${nombre3} y ${nombre4}`;
+
+    DOMUtils.getElement('pareja-a-set1-label').textContent = parejaAName;
+    DOMUtils.getElement('pareja-b-set1-label').textContent = parejaBName;
+    DOMUtils.getElement('pareja-a-set2-label').textContent = parejaAName;
+    DOMUtils.getElement('pareja-b-set2-label').textContent = parejaBName;
+    DOMUtils.getElement('pareja-a-set3-label').textContent = parejaAName;
+    DOMUtils.getElement('pareja-b-set3-label').textContent = parejaBName;
+  }
+
+  updateStepIndicators(step) {
+    const step1Indicator = DOMUtils.getElement('step1-indicator');
+    const step2Indicator = DOMUtils.getElement('step2-indicator');
+    const step1Text = step1Indicator.nextElementSibling;
+    const step2Text = step2Indicator.nextElementSibling;
+
+    if (step === 1) {
+      // Paso 1 activo
+      step1Indicator.className = 'w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold';
+      step1Text.className = 'ml-3 text-2xl font-medium text-blue-600';
+      step2Indicator.className = 'w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-2xl font-bold';
+      step2Text.className = 'ml-3 text-2xl font-medium text-gray-500';
+    } else {
+      // Paso 2 activo
+      step1Indicator.className = 'w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-2xl font-bold';
+      step1Text.className = 'ml-3 text-2xl font-medium text-gray-500';
+      step2Indicator.className = 'w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold';
+      step2Text.className = 'ml-3 text-2xl font-medium text-blue-600';
+    }
+  }
+
+  resetWizard() {
+    // Volver al paso 1
+    DOMUtils.getElement('step1').classList.remove('hidden');
+    DOMUtils.getElement('step2').classList.add('hidden');
+
+    // Resetear indicadores
+    this.updateStepIndicators(1);
+
+    // Resetear nombres de parejas
+    DOMUtils.getElement('pareja-a-names').textContent = 'Selecciona los jugadores';
+    DOMUtils.getElement('pareja-b-names').textContent = 'Selecciona los jugadores';
   }
 }
 

@@ -214,65 +214,112 @@
           <span class="close" id="cerrar-modal">&times;</span>
           
           <div class="p-10">
-            <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-8 text-center">Añadir Partido</h2>
+            <!-- Indicador de pasos -->
+            <div class="flex justify-center mb-16">
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                  <div id="step1-indicator" class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold">1</div>
+                  <span class="ml-3 text-2xl font-medium text-blue-600">Parejas</span>
+                </div>
+                <div class="w-16 h-1 bg-gray-300"></div>
+                <div class="flex items-center">
+                  <div id="step2-indicator" class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-2xl font-bold">2</div>
+                  <span class="ml-3 text-2xl font-medium text-gray-500">Resultado</span>
+                </div>
+              </div>
+            </div>
             
             <form id="form-partido" class="space-y-8">
-              <!-- Pareja A -->
-              <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
+              <!-- Paso 1: Selección de Parejas -->
+              <div id="step1" class="step-content">
+                <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-12 text-center">Seleccionar Parejas</h2>
+                
+                <!-- Pareja A -->
                 <div class="space-y-6">
-                  <label class="flex flex-col">
-                    <select
+                  <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
+                  <div class="space-y-6">
+                    <label class="flex flex-col">
+                                          <select
                       id="jugador1"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
+                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 1</option>
                     </select>
-                  </label>
-                  <label class="flex flex-col">
-                    <select
+                    </label>
+                    <label class="flex flex-col">
+                                          <select
                       id="jugador2"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
+                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 2</option>
                     </select>
-                  </label>
+                    </label>
+                  </div>
                 </div>
-              </div>
-              
-              <!-- Pareja B -->
-              <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
-                <div class="space-y-6">
-                  <label class="flex flex-col">
-                    <select
+                
+                <!-- Pareja B -->
+                <div class="space-y-6 mt-12">
+                  <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
+                  <div class="space-y-6">
+                    <label class="flex flex-col">
+                                          <select
                       id="jugador3"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
+                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 3</option>
                     </select>
-                  </label>
-                  <label class="flex flex-col">
-                    <select
+                    </label>
+                    <label class="flex flex-col">
+                                          <select
                       id="jugador4"
-                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
+                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 4</option>
                     </select>
-                  </label>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- Botón Siguiente -->
+                <div class="flex justify-center pt-8">
+                  <button
+                    id="btn-siguiente"
+                    type="button"
+                    class="flex min-w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-[#2563eb] text-white text-3xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
+                  >
+                    <span class="truncate">Siguiente</span>
+                  </button>
                 </div>
               </div>
               
-              <!-- Resultado del Partido -->
-              <div class="space-y-6">
-                <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Resultado del Partido</h3>
+              <!-- Paso 2: Resultado del Partido -->
+              <div id="step2" class="step-content hidden">
+                <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-8 text-center">Resultado del Partido</h2>
+                
+                <!-- Información de las parejas -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-[#1e293b] text-2xl font-bold mb-2">Pareja A</h4>
+                      <p id="pareja-a-names" class="text-[#64748b] text-xl">Selecciona los jugadores</p>
+                    </div>
+                    <div>
+                      <h4 class="text-[#1e293b] text-2xl font-bold mb-2">Pareja B</h4>
+                      <p id="pareja-b-names" class="text-[#64748b] text-xl">Selecciona los jugadores</p>
+                    </div>
+                  </div>
+                </div>
                 
                 <!-- Set 1 -->
                 <div class="space-y-4">
                   <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 1</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <label class="flex flex-col">
-                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
+                      <span id="pareja-a-set1-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
                       <input
                         id="pareja1-set1"
                         type="number"
@@ -287,7 +334,7 @@
                       />
                     </label>
                     <label class="flex flex-col">
-                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
+                      <span id="pareja-b-set1-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
                       <input
                         id="pareja2-set1"
                         type="number"
@@ -309,7 +356,7 @@
                   <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 2</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <label class="flex flex-col">
-                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
+                      <span id="pareja-a-set2-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
                       <input
                         id="pareja1-set2"
                         type="number"
@@ -324,7 +371,7 @@
                       />
                     </label>
                     <label class="flex flex-col">
-                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
+                      <span id="pareja-b-set2-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
                       <input
                         id="pareja2-set2"
                         type="number"
@@ -346,7 +393,7 @@
                   <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 3</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <label class="flex flex-col">
-                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
+                      <span id="pareja-a-set3-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
                       <input
                         id="pareja1-set3"
                         type="number"
@@ -361,7 +408,7 @@
                       />
                     </label>
                     <label class="flex flex-col">
-                      <span class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
+                      <span id="pareja-b-set3-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
                       <input
                         id="pareja2-set3"
                         type="number"
@@ -377,17 +424,24 @@
                     </label>
                   </div>
                 </div>
-              </div>
-              
-              <!-- Botón de envío -->
-              <div class="flex justify-center pt-8">
-                <button
-                  id="enviar-partido"
-                  type="submit"
-                  class="flex min-w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-[#2563eb] text-white text-3xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
-                >
-                  <span class="truncate">Enviar Partido</span>
-                </button>
+                
+                <!-- Botones de navegación -->
+                <div class="flex justify-between pt-8">
+                  <button
+                    id="btn-anterior"
+                    type="button"
+                    class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-8 bg-gray-500 text-white text-2xl font-bold leading-normal tracking-[0.015em] hover:bg-gray-600 transition-colors"
+                  >
+                    <span class="truncate">Anterior</span>
+                  </button>
+                  <button
+                    id="enviar-partido"
+                    type="submit"
+                    class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-8 bg-[#2563eb] text-white text-2xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
+                  >
+                    <span class="truncate">Enviar Partido</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -261,9 +261,11 @@ class PartidosApp {
 
     if (!partidos || partidos.length === 0) {
       container.innerHTML = `
-        <div class="text-center py-10">
-          <p class="text-[#64748b] text-2xl sm:text-2xl font-medium">${MESSAGES.NO_MATCHES}</p>
-          <p class="text-[#64748b] text-lg sm:text-lg mt-4">${MESSAGES.PLAY_MATCHES}</p>
+        <div class="flex items-center justify-center min-h-[60vh] text-center">
+          <div>
+            <p class="text-[#64748b] text-4xl sm:text-5xl font-bold mb-6">${MESSAGES.NO_MATCHES}</p>
+            <p class="text-[#64748b] text-2xl sm:text-3xl font-medium">${MESSAGES.PLAY_MATCHES}</p>
+          </div>
         </div>
       `;
       return;
