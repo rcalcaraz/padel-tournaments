@@ -275,11 +275,11 @@ class PartidosApp {
           <!-- Encabezado del partido -->
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div>
-              <h3 class="text-[#1e293b] text-3xl sm:text-4xl font-bold mb-3">Partido #${partido.id}</h3>
-              <p class="text-[#64748b] text-xl sm:text-2xl">${fecha}</p>
+              <h3 class="text-[#1e293b] text-4xl sm:text-5xl font-bold mb-3">Partido #${partido.id}</h3>
+              <p class="text-[#64748b] text-2xl sm:text-3xl">${fecha}</p>
             </div>
             <div class="text-center sm:text-right">
-              <span class="inline-block px-6 py-3 rounded-full text-white text-xl sm:text-2xl font-bold bg-[#2563eb]">
+              <span class="inline-block px-8 py-4 rounded-full text-white text-2xl sm:text-3xl font-bold bg-[#2563eb]">
                 Ganador: ${partido.ganador_pareja === 1 ? 'Pareja A' : partido.ganador_pareja === 2 ? 'Pareja B' : 'No determinado'}
               </span>
             </div>
@@ -289,42 +289,74 @@ class PartidosApp {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
             <!-- Pareja A -->
             <div class="bg-gray-50 rounded-lg p-8">
-              <h4 class="text-[#1e293b] text-2xl sm:text-3xl font-bold mb-6 text-center ${partido.ganador_pareja === 1 ? 'text-[#2563eb]' : 'text-[#64748b]'}">
+              <h4 class="text-[#1e293b] text-3xl sm:text-4xl font-bold mb-8 text-center ${partido.ganador_pareja === 1 ? 'text-[#2563eb]' : 'text-[#64748b]'}">
                 Pareja A
               </h4>
-              <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                  <p class="text-[#1e293b] text-xl sm:text-2xl font-medium">${partido.pareja1_jugador1?.nombre || 'Jugador 1'}</p>
-                  <span class="text-sm px-3 py-2 rounded-full font-bold ${cambiosELO.jugador1 >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                    ${cambiosELO.jugador1 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador1 >= 0 ? '+' : ''}${cambiosELO.jugador1}
-                  </span>
+              <div class="space-y-8">
+                <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                  <div class="flex-1">
+                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja1_jugador1?.nombre || 'Jugador 1'}</p>
+                    <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja1_jugador1?.rating_elo || 1200}</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl sm:text-4xl font-bold ${cambiosELO.jugador1 >= 0 ? 'text-green-600' : 'text-red-600'} mb-2">
+                      ${cambiosELO.jugador1 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador1 >= 0 ? '+' : ''}${cambiosELO.jugador1}
+                    </div>
+                    <div class="text-base text-[#64748b] font-medium">
+                      ${cambiosELO.jugador1 >= 0 ? 'Ganancia' : 'Pérdida'} ELO
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between">
-                  <p class="text-[#1e293b] text-xl sm:text-2xl font-medium">${partido.pareja1_jugador2?.nombre || 'Jugador 2'}</p>
-                  <span class="text-sm px-3 py-2 rounded-full font-bold ${cambiosELO.jugador2 >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                    ${cambiosELO.jugador2 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador2 >= 0 ? '+' : ''}${cambiosELO.jugador2}
-                  </span>
+                <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                  <div class="flex-1">
+                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja1_jugador2?.nombre || 'Jugador 2'}</p>
+                    <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja1_jugador2?.rating_elo || 1200}</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl sm:text-4xl font-bold ${cambiosELO.jugador2 >= 0 ? 'text-green-600' : 'text-red-600'} mb-2">
+                      ${cambiosELO.jugador2 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador2 >= 0 ? '+' : ''}${cambiosELO.jugador2}
+                    </div>
+                    <div class="text-base text-[#64748b] font-medium">
+                      ${cambiosELO.jugador2 >= 0 ? 'Ganancia' : 'Pérdida'} ELO
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             
             <!-- Pareja B -->
             <div class="bg-gray-50 rounded-lg p-8">
-              <h4 class="text-[#1e293b] text-2xl sm:text-3xl font-bold mb-6 text-center ${partido.ganador_pareja === 2 ? 'text-[#2563eb]' : 'text-[#64748b]'}">
+              <h4 class="text-[#1e293b] text-3xl sm:text-4xl font-bold mb-8 text-center ${partido.ganador_pareja === 2 ? 'text-[#2563eb]' : 'text-[#64748b]'}">
                 Pareja B
               </h4>
-              <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                  <p class="text-[#1e293b] text-xl sm:text-2xl font-medium">${partido.pareja2_jugador1?.nombre || 'Jugador 3'}</p>
-                  <span class="text-sm px-3 py-2 rounded-full font-bold ${cambiosELO.jugador3 >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                    ${cambiosELO.jugador3 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador3 >= 0 ? '+' : ''}${cambiosELO.jugador3}
-                  </span>
+              <div class="space-y-8">
+                <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                  <div class="flex-1">
+                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja2_jugador1?.nombre || 'Jugador 3'}</p>
+                    <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja2_jugador1?.rating_elo || 1200}</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl sm:text-4xl font-bold ${cambiosELO.jugador3 >= 0 ? 'text-green-600' : 'text-red-600'} mb-2">
+                      ${cambiosELO.jugador3 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador3 >= 0 ? '+' : ''}${cambiosELO.jugador3}
+                    </div>
+                    <div class="text-base text-[#64748b] font-medium">
+                      ${cambiosELO.jugador3 >= 0 ? 'Ganancia' : 'Pérdida'} ELO
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between">
-                  <p class="text-[#1e293b] text-xl sm:text-2xl font-medium">${partido.pareja2_jugador2?.nombre || 'Jugador 4'}</p>
-                  <span class="text-sm px-3 py-2 rounded-full font-bold ${cambiosELO.jugador4 >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                    ${cambiosELO.jugador4 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador4 >= 0 ? '+' : ''}${cambiosELO.jugador4}
-                  </span>
+                <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                  <div class="flex-1">
+                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja2_jugador2?.nombre || 'Jugador 4'}</p>
+                    <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja2_jugador2?.rating_elo || 1200}</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl sm:text-4xl font-bold ${cambiosELO.jugador4 >= 0 ? 'text-green-600' : 'text-red-600'} mb-2">
+                      ${cambiosELO.jugador4 >= 0 ? '↗' : '↘'} ${cambiosELO.jugador4 >= 0 ? '+' : ''}${cambiosELO.jugador4}
+                    </div>
+                    <div class="text-base text-[#64748b] font-medium">
+                      ${cambiosELO.jugador4 >= 0 ? 'Ganancia' : 'Pérdida'} ELO
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -332,21 +364,21 @@ class PartidosApp {
           
           <!-- Resultado final -->
           <div class="text-center border-t pt-8">
-            <div class="bg-[#2563eb] text-white rounded-lg p-8 mb-6">
-              <p class="text-3xl sm:text-4xl font-bold mb-3">
-                🏆 ${ganador}
-              </p>
-              <p class="text-xl sm:text-2xl opacity-90">
+            <div class="bg-[#2563eb] text-white rounded-lg p-10 mb-8">
+              <p class="text-4xl sm:text-5xl font-bold mb-4">
+              🏆 ${ganador}
+            </p>
+              <p class="text-2xl sm:text-3xl opacity-90">
                 ${puntuacion}
-              </p>
+            </p>
             </div>
-            <div class="text-sm text-gray-500">
-              <span class="inline-flex items-center gap-2 mr-6">
-                <span class="w-4 h-4 bg-green-100 rounded-full"></span>
+            <div class="text-xl sm:text-2xl text-gray-600 font-medium">
+              <span class="inline-flex items-center gap-4 mr-10">
+                <span class="w-6 h-6 bg-green-100 rounded-full"></span>
                 ↗ Ganancia ELO
               </span>
-              <span class="inline-flex items-center gap-2">
-                <span class="w-4 h-4 bg-red-100 rounded-full"></span>
+              <span class="inline-flex items-center gap-4">
+                <span class="w-6 h-6 bg-red-100 rounded-full"></span>
                 ↘ Pérdida ELO
               </span>
             </div>

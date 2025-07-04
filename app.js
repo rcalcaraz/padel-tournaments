@@ -21,7 +21,7 @@ class PadelApp {
       this.startLoadingScreen();
     } else {
       this.showMainContent();
-      this.loadJugadores();
+    this.loadJugadores();
     }
   }
 
@@ -51,7 +51,7 @@ class PadelApp {
     
     if (mainContent) {
       mainContent.classList.add('hidden');
-    }
+  }
 
     // Cargar datos en segundo plano
     this.loadJugadores().then(() => {
@@ -217,46 +217,69 @@ class PadelApp {
     const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
     const totalPartidos = jugador.estadisticas.victorias + jugador.estadisticas.derrotas;
     
-    const estadisticasHTML = `
-      <div class="flex items-center gap-6">
-        <span class="text-[#64748b] text-3xl font-normal leading-normal ${victoriasCambiaron ? 'text-green-600 font-bold' : ''}">
-          W:${jugador.estadisticas.victorias}
-        </span>
-        <span class="text-[#64748b] text-3xl font-normal leading-normal ${derrotasCambiaron ? 'text-red-600 font-bold' : ''}">
-          L:${jugador.estadisticas.derrotas}
-        </span>
-        <span class="text-[#64748b] text-2xl font-normal leading-normal">
-          (${totalPartidos} partidos)
-        </span>
-      </div>
-      <div class="flex items-center gap-6 mt-3">
-        <span class="text-[#64748b] text-2xl font-normal leading-normal">
-          ELO: <span style="color: ${ratingColor}; font-weight: bold;">${jugador.rating_elo || 1200}</span>
-        </span>
-        <span class="text-[#64748b] text-xl font-normal leading-normal">
-          ${ratingTitle}
-        </span>
-      </div>
-      <div class="flex items-center gap-6 mt-3">
-        <span class="text-[#64748b] text-xl font-normal leading-normal">
-          Progresión: <span style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'}; font-weight: bold;">
-            ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
-          </span>
-        </span>
-      </div>
-    `;
-    
     return `
-      <div class="flex items-center gap-12 bg-white p-12 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
-        <div class="flex items-center justify-center w-20 h-20 bg-[#111714] text-white text-4xl font-bold rounded-full flex-shrink-0">
-          ${posicion}
-        </div>
-        <div class="bg-[#2563eb] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
-          ${StringUtils.capitalize(jugador.nombre.charAt(0))}
-        </div>
-        <div class="flex flex-col justify-center min-w-0">
-          <p class="text-[#1e293b] text-5xl font-medium leading-normal truncate">${jugador.nombre}</p>
-          ${estadisticasHTML}
+      <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
+        <div class="flex items-center gap-8">
+          <!-- Posición -->
+          <div class="flex items-center justify-center w-20 h-20 bg-[#111714] text-white text-4xl font-bold rounded-full flex-shrink-0">
+            ${posicion}
+          </div>
+          
+          <!-- Información del Jugador -->
+          <div class="flex-1">
+            <h3 class="text-[#1e293b] text-5xl sm:text-6xl font-bold mb-8">${jugador.nombre}</h3>
+            
+            <!-- Estadísticas en dos columnas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Columna 1: Estadísticas de partidos -->
+              <div class="bg-white p-8 rounded-lg shadow-sm">
+                <div class="space-y-6">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Victorias:</span>
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''}">
+                      ${jugador.estadisticas.victorias}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Derrotas:</span>
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${derrotasCambiaron ? 'text-red-600' : ''}">
+                      ${jugador.estadisticas.derrotas}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Total partidos:</span>
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold">
+                      ${totalPartidos}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Columna 2: Información ELO -->
+              <div class="bg-white p-8 rounded-lg shadow-sm">
+                <div class="space-y-6">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Rating ELO:</span>
+                    <span class="text-3xl sm:text-4xl font-bold" style="color: ${ratingColor};">
+                      ${jugador.rating_elo || 1200}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Nivel:</span>
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-bold">
+                      ${ratingTitle}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Progresión:</span>
+                    <span class="text-3xl sm:text-4xl font-bold" style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'};">
+                      ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -519,7 +542,7 @@ class PadelApp {
         
         if (victoriasA !== victoriasB) {
           return victoriasB - victoriasA; // Más victorias primero
-        } else {
+      } else {
           return totalA - totalB; // Menos partidos jugados primero en caso de empate
         }
       });
