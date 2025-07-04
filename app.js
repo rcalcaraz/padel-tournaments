@@ -425,7 +425,7 @@ class PadelApp {
           
           <!-- Información del Jugador -->
           <div class="flex-1">
-            <h3 class="text-[#1e293b] text-5xl sm:text-6xl font-bold mb-8">${jugador.nombre}</h3>
+            <h3 class="text-[#1e293b] text-5xl sm:text-[2.75rem] font-bold mb-8">${jugador.nombre}</h3>
             
             <!-- Estadísticas en dos columnas -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

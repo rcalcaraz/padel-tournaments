@@ -87,6 +87,11 @@
         color: #1e293b;
         background: #f8fafc;
       }
+
+      /* Estilos para los iconos del menú */
+      .menu-icon {
+        transition: all 0.2s ease-in-out;
+      }
     </style>
   </head>
   <body>
@@ -164,18 +169,13 @@
         <!-- Menú de navegación fijo -->
         <div class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 z-[9999] p-8">
           <div class="flex justify-around items-center">
-            <a href="index.html" class="flex flex-col items-center text-blue-600">
-              <svg class="w-20 h-20 mb-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
-              </svg>
-              <span class="text-2xl font-bold">Clasificación</span>
+            <a href="index.html" class="flex flex-col items-center text-blue-600 menu-link">
+              <img src="logo/icono_clasificación.svg" alt="Clasificación" class="w-16 h-16 mb-3 menu-icon">
+              <span class="text-3xl font-bold">Clasificación</span>
             </a>
-            <a href="partidos.html" class="flex flex-col items-center text-gray-500 hover:text-blue-600">
-              <svg class="w-20 h-20 mb-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
-              </svg>
-              <span class="text-2xl font-bold">Partidos</span>
+            <a href="partidos.html" class="flex flex-col items-center text-gray-500 hover:text-blue-600 menu-link">
+              <img src="logo/icono_pelota_gris.svg" alt="Partidos" class="w-16 h-16 mb-3 menu-icon">
+              <span class="text-3xl font-bold">Partidos</span>
             </a>
           </div>
         </div>
