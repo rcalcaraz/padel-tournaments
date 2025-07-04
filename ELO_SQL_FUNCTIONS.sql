@@ -63,7 +63,7 @@ $$ LANGUAGE plpgsql;
 
 -- 5. Función para calcular el factor de recompensa diferencial
 CREATE OR REPLACE FUNCTION calcular_factor_recompensa(
-  rating_jugador INTEGER, rating_promedio_pareja INTEGER
+  rating_jugador INTEGER, rating_promedio_pareja INTEGER, es_ganador BOOLEAN
 )
 RETURNS DECIMAL AS $$
 DECLARE
@@ -72,18 +72,34 @@ DECLARE
 BEGIN
   diferencia := rating_promedio_pareja - rating_jugador;
   
-  -- Si el jugador tiene rating más bajo que el promedio de su pareja
-  IF diferencia > 0 THEN
-    -- Jugador de menor nivel: menos castigo cuando pierde, más recompensa cuando gana (hasta 0.7x castigo, 1.3x recompensa)
-    factor := 1.0 - (diferencia / 400.0) * 0.3;
-    RETURN GREATEST(0.7, factor);
-  ELSIF diferencia < 0 THEN
-    -- Jugador de mayor nivel: más castigo cuando pierde, menos recompensa cuando gana (hasta 1.3x castigo, 0.7x recompensa)
-    factor := 1.0 - (diferencia / 400.0) * 0.3;
-    RETURN LEAST(1.3, factor);
+  IF es_ganador THEN
+    -- Lógica para el equipo GANADOR
+    IF diferencia > 0 THEN
+      -- Jugador de menor nivel: más recompensa cuando gana (hasta 1.3x)
+      factor := 1.0 + (diferencia / 400.0) * 0.3;
+      RETURN LEAST(1.3, factor);
+    ELSIF diferencia < 0 THEN
+      -- Jugador de mayor nivel: menos recompensa cuando gana (hasta 0.7x)
+      factor := 1.0 + (diferencia / 400.0) * 0.3;
+      RETURN GREATEST(0.7, factor);
+    ELSE
+      -- Mismo nivel
+      RETURN 1.0;
+    END IF;
   ELSE
-    -- Mismo nivel
-    RETURN 1.0;
+    -- Lógica para el equipo PERDEDOR
+    IF diferencia > 0 THEN
+      -- Jugador de menor nivel: menos castigo cuando pierde (hasta 0.7x)
+      factor := 1.0 - (diferencia / 400.0) * 0.3;
+      RETURN GREATEST(0.7, factor);
+    ELSIF diferencia < 0 THEN
+      -- Jugador de mayor nivel: más castigo cuando pierde (hasta 1.3x)
+      factor := 1.0 - (diferencia / 400.0) * 0.3;
+      RETURN LEAST(1.3, factor);
+    ELSE
+      -- Mismo nivel
+      RETURN 1.0;
+    END IF;
   END IF;
 END;
 $$ LANGUAGE plpgsql;
@@ -177,10 +193,10 @@ BEGIN
   );
 
   -- Calcular factores de recompensa diferencial para cada jugador
-  factor_recompensa1 := calcular_factor_recompensa(jugador1_rating, pareja1_rating);
-  factor_recompensa2 := calcular_factor_recompensa(jugador2_rating, pareja1_rating);
-  factor_recompensa3 := calcular_factor_recompensa(jugador3_rating, pareja2_rating);
-  factor_recompensa4 := calcular_factor_recompensa(jugador4_rating, pareja2_rating);
+  factor_recompensa1 := calcular_factor_recompensa(jugador1_rating, pareja1_rating, NEW.ganador_pareja = 1);
+  factor_recompensa2 := calcular_factor_recompensa(jugador2_rating, pareja1_rating, NEW.ganador_pareja = 1);
+  factor_recompensa3 := calcular_factor_recompensa(jugador3_rating, pareja2_rating, NEW.ganador_pareja = 2);
+  factor_recompensa4 := calcular_factor_recompensa(jugador4_rating, pareja2_rating, NEW.ganador_pareja = 2);
 
   -- Calcular nuevos ratings individuales
   nuevo_rating1 := calcular_nuevo_rating_mejorado(

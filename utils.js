@@ -257,20 +257,37 @@ class EloUtils {
   }
   
   // Calcular el factor de recompensa diferencial
-  static getRewardFactor(playerRating, teamAverageRating) {
+  static getRewardFactor(playerRating, teamAverageRating, isWinner) {
     const diferencia = teamAverageRating - playerRating;
     
-    if (diferencia > 0) {
-      // Jugador de menor nivel: menos castigo cuando pierde, más recompensa cuando gana (hasta 0.5x castigo, 1.8x recompensa)
-      const factor = 1.0 - (diferencia / 200.0) * 0.5;
-      return Math.max(0.5, factor);
-    } else if (diferencia < 0) {
-      // Jugador de mayor nivel: más castigo cuando pierde, menos recompensa cuando gana (hasta 1.8x castigo, 0.5x recompensa)
-      const factor = 1.0 - (diferencia / 200.0) * 0.8;
-      return Math.min(1.8, factor);
+    if (isWinner) {
+      // Lógica para el equipo GANADOR
+      if (diferencia > 0) {
+        // Jugador de menor nivel: más recompensa cuando gana (hasta 1.8x)
+        const factor = 1.0 + (diferencia / 200.0) * 0.8;
+        return Math.min(1.8, factor);
+      } else if (diferencia < 0) {
+        // Jugador de mayor nivel: menos recompensa cuando gana (hasta 0.5x)
+        const factor = 1.0 + (diferencia / 200.0) * 0.5;
+        return Math.max(0.5, factor);
+      } else {
+        // Mismo nivel
+        return 1.0;
+      }
     } else {
-      // Mismo nivel
-      return 1.0;
+      // Lógica para el equipo PERDEDOR
+      if (diferencia > 0) {
+        // Jugador de menor nivel: menos castigo cuando pierde (hasta 0.5x)
+        const factor = 1.0 - (diferencia / 200.0) * 0.5;
+        return Math.max(0.5, factor);
+      } else if (diferencia < 0) {
+        // Jugador de mayor nivel: más castigo cuando pierde (hasta 1.8x)
+        const factor = 1.0 - (diferencia / 200.0) * 0.8;
+        return Math.min(1.8, factor);
+      } else {
+        // Mismo nivel
+        return 1.0;
+      }
     }
   }
   
@@ -318,10 +335,13 @@ class EloUtils {
     const resultFactor = this.getResultFactor(pareja1Sets, pareja2Sets);
     
     // Calcular factores de recompensa para cada jugador
-    const rewardFactor1 = this.getRewardFactor(pareja1Jugador1, ratingPareja1);
-    const rewardFactor2 = this.getRewardFactor(pareja1Jugador2, ratingPareja1);
-    const rewardFactor3 = this.getRewardFactor(pareja2Jugador1, ratingPareja2);
-    const rewardFactor4 = this.getRewardFactor(pareja2Jugador2, ratingPareja2);
+    const isPareja1Winner = ganadorPareja === 1;
+    const isPareja2Winner = ganadorPareja === 2;
+    
+    const rewardFactor1 = this.getRewardFactor(pareja1Jugador1, ratingPareja1, isPareja1Winner);
+    const rewardFactor2 = this.getRewardFactor(pareja1Jugador2, ratingPareja1, isPareja1Winner);
+    const rewardFactor3 = this.getRewardFactor(pareja2Jugador1, ratingPareja2, isPareja2Winner);
+    const rewardFactor4 = this.getRewardFactor(pareja2Jugador2, ratingPareja2, isPareja2Winner);
     
     // Calcular nuevos ratings individuales
     const newRating1 = this.calculateNewRatingImproved(
