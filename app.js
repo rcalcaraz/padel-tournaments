@@ -51,7 +51,7 @@ class PadelApp {
     
     if (mainContent) {
       mainContent.classList.add('hidden');
-  }
+    }
 
     // Cargar datos en segundo plano
     this.loadJugadores().then(() => {
@@ -83,8 +83,6 @@ class PadelApp {
     }
   }
 
-
-
   hideConfigMessage() {
     const configMessage = DOMUtils.getElement('config-message');
     if (configMessage) {
@@ -93,39 +91,40 @@ class PadelApp {
   }
 
   setupEventListeners() {
-    // Event listener para el botón de enviar partido
-    const botonEnviar = DOMUtils.getElement('enviar-partido');
-    if (botonEnviar) {
-      // Remover event listeners anteriores para evitar duplicados
-      const nuevoBoton = botonEnviar.cloneNode(true);
-      botonEnviar.parentNode.replaceChild(nuevoBoton, botonEnviar);
-      
-      // Agregar event listener
-      nuevoBoton.addEventListener('click', (e) => this.handleSubmitPartido(e));
-    }
-
-    // Event listeners para los botones de ordenación
-    const botonVictorias = DOMUtils.getElement('ordenar-victorias');
-    const botonELO = DOMUtils.getElement('ordenar-elo');
-    const botonProgresion = DOMUtils.getElement('ordenar-progresion');
+    // Event listeners para ordenación
+    DOMUtils.getElement('ordenar-victorias').addEventListener('click', () => this.ordenarJugadores('victorias'));
+    DOMUtils.getElement('ordenar-elo').addEventListener('click', () => this.ordenarJugadores('elo'));
+    DOMUtils.getElement('ordenar-progresion').addEventListener('click', () => this.ordenarJugadores('progresion'));
     
-    if (botonVictorias) {
-      botonVictorias.addEventListener('click', () => {
-        this.cambiarOrden('victorias');
-      });
-    }
+    // Event listeners para la modal
+    DOMUtils.getElement('abrir-modal-partido').addEventListener('click', () => this.abrirModal());
+    DOMUtils.getElement('cerrar-modal').addEventListener('click', () => this.cerrarModal());
     
-    if (botonELO) {
-      botonELO.addEventListener('click', () => {
-        this.cambiarOrden('elo');
-      });
-    }
+    // Cerrar modal al hacer clic fuera de ella
+    DOMUtils.getElement('modal-partido').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        this.cerrarModal();
+      }
+    });
     
-    if (botonProgresion) {
-      botonProgresion.addEventListener('click', () => {
-        this.cambiarOrden('progresion');
-      });
-    }
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && DOMUtils.getElement('modal-partido').classList.contains('show')) {
+        this.cerrarModal();
+      }
+    });
+    
+    // Event listener para el formulario
+    DOMUtils.getElement('form-partido').addEventListener('submit', (e) => this.handleSubmitPartido(e));
+    
+    // Event listeners para los selectores de jugadores
+    const selectores = ['jugador1', 'jugador2', 'jugador3', 'jugador4'];
+    selectores.forEach(selectorId => {
+      const selector = DOMUtils.getElement(selectorId);
+      if (selector) {
+        selector.addEventListener('change', () => this.updateAvailableOptions());
+      }
+    });
   }
 
   async loadJugadores() {
@@ -154,8 +153,6 @@ class PadelApp {
       throw error;
     }
   }
-
-
 
   showError(message) {
     const errorMessage = DOMUtils.getElement('error-message');
@@ -308,21 +305,14 @@ class PadelApp {
       const selector = DOMUtils.getElement(selectorId);
       if (!selector) return;
 
-      // Remover event listeners anteriores para evitar duplicados
-      const nuevoSelector = selector.cloneNode(true);
-      selector.parentNode.replaceChild(nuevoSelector, selector);
-
       // Limpiar opciones existentes excepto la primera
-      nuevoSelector.innerHTML = nuevoSelector.innerHTML.split('</option>')[0] + '</option>';
+      selector.innerHTML = '<option value="">Seleccionar ' + selectorId.replace('jugador', 'Jugador ') + '</option>';
       
       jugadores.forEach(jugador => {
         const option = DOMUtils.createElement('option', '', jugador.nombre);
         option.value = jugador.id;
-        nuevoSelector.appendChild(option);
+        selector.appendChild(option);
       });
-      
-      // Agregar event listener para actualizar opciones
-      nuevoSelector.addEventListener('change', () => this.updateAvailableOptions());
     });
     
     // Aplicar validación inicial
@@ -421,31 +411,46 @@ class PadelApp {
     if (!this.validateForm()) {
       return;
     }
-
-    this.isProcessing = true;
-    const botonEnviar = DOMUtils.getElement('enviar-partido');
-    const originalText = botonEnviar.innerHTML;
     
-    botonEnviar.innerHTML = `<span class="truncate">Enviando...</span>`;
-    botonEnviar.disabled = true;
-
+    this.isProcessing = true;
+    
     try {
-      const datosPartido = this.getFormData();
-      const result = await this.supabaseService.createPartido(datosPartido);
+      const formData = this.getFormData();
       
-      if (result.success) {
-        this.resetForm();
-        // Actualizar automáticamente la clasificación
+      // Mostrar loading en el botón
+      const botonEnviar = DOMUtils.getElement('enviar-partido');
+      const textoOriginal = botonEnviar.innerHTML;
+      botonEnviar.innerHTML = 'Enviando...';
+      botonEnviar.disabled = true;
+      
+      // Enviar partido
+      const resultado = await this.supabaseService.crearPartido(formData);
+      
+      if (resultado.success) {
+        // Mostrar mensaje de éxito
+        alert('¡Partido añadido exitosamente!');
+        
+        // Cerrar modal
+        this.cerrarModal();
+        
+        // Recargar datos
         await this.loadJugadores();
+        
+        // Mostrar animaciones
+        this.mostrarAnimaciones();
       } else {
-        throw new Error(result.error);
+        throw new Error(resultado.error || 'Error desconocido');
       }
+      
     } catch (error) {
-      console.error('Error en el proceso:', error);
-      alert(MESSAGES.ERROR_SAVING + error.message);
+      console.error('Error enviando partido:', error);
+      alert('Error al enviar el partido: ' + error.message);
     } finally {
-      botonEnviar.innerHTML = originalText;
+      // Restaurar botón
+      const botonEnviar = DOMUtils.getElement('enviar-partido');
+      botonEnviar.innerHTML = 'Enviar Partido';
       botonEnviar.disabled = false;
+      
       this.isProcessing = false;
     }
   }
@@ -542,7 +547,7 @@ class PadelApp {
         
         if (victoriasA !== victoriasB) {
           return victoriasB - victoriasA; // Más victorias primero
-      } else {
+        } else {
           return totalA - totalB; // Menos partidos jugados primero en caso de empate
         }
       });
@@ -590,6 +595,18 @@ class PadelApp {
         botonProgresion.className = 'px-8 py-4 bg-white text-[#1e293b] rounded-xl shadow-sm transition-all duration-200 text-2xl font-medium whitespace-nowrap';
       }
     }
+  }
+
+  // Funciones para la modal
+  abrirModal() {
+    DOMUtils.getElement('modal-partido').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  cerrarModal() {
+    DOMUtils.getElement('modal-partido').classList.remove('show');
+    document.body.style.overflow = 'auto';
+    this.resetForm();
   }
 }
 

@@ -372,16 +372,7 @@ class PartidosApp {
                 ${puntuacion}
             </p>
             </div>
-            <div class="text-xl sm:text-2xl text-gray-600 font-medium">
-              <span class="inline-flex items-center gap-4 mr-10">
-                <span class="w-6 h-6 bg-green-100 rounded-full"></span>
-                ↗ Ganancia ELO
-              </span>
-              <span class="inline-flex items-center gap-4">
-                <span class="w-6 h-6 bg-red-100 rounded-full"></span>
-                ↘ Pérdida ELO
-              </span>
-            </div>
+
           </div>
         </div>
       </div>

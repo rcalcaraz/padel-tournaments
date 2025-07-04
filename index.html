@@ -31,6 +31,62 @@
       select option:disabled::after {
         content: " (Ya seleccionado)";
       }
+
+      /* Estilos para la modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+      }
+
+      .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 20px;
+        padding: 0;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      }
+
+      .close {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1001;
+        color: #64748b;
+        background: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .close:hover {
+        color: #1e293b;
+        background: #f8fafc;
+      }
     </style>
   </head>
   <body>
@@ -43,426 +99,332 @@
         </div>
       </div>
 
-            <!-- Contenido principal -->
+      <!-- Contenido principal -->
       <div id="main-content" class="hidden">
-    <div
-      class="relative flex size-full min-h-screen flex-col bg-white justify-between group/design-root overflow-x-hidden max-w-screen-xl mx-auto"
-      style='--select-button-svg: url(&apos;data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(100,135,113)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e&apos;); font-family: "Public Sans", "Noto Sans", sans-serif;'
-    >
-      <div class="w-full px-2 sm:px-4 lg:px-6 main-content">
-        <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Clasificación</h2>
-        
-        <!-- Mensaje de configuración -->
-        <div id="config-message" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-          <p class="font-bold">⚠️ Configuración necesaria:</p>
-          <p>Por favor, actualiza las credenciales de Supabase en el código JavaScript al final de la página.</p>
+        <div
+          class="relative flex size-full min-h-screen flex-col bg-white justify-between group/design-root overflow-x-hidden max-w-screen-xl mx-auto"
+          style='--select-button-svg: url(&apos;data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(100,135,113)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e&apos;); font-family: "Public Sans", "Noto Sans", sans-serif;'
+        >
+          <div class="w-full px-2 sm:px-4 lg:px-6 main-content">
+            <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Clasificación</h2>
+            
+            <!-- Mensaje de configuración -->
+            <div id="config-message" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+              <p class="font-bold">⚠️ Configuración necesaria:</p>
+              <p>Por favor, actualiza las credenciales de Supabase en el código JavaScript al final de la página.</p>
+            </div>
+            
+            <!-- Error message -->
+            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+              <p class="font-bold">Error:</p>
+              <p id="error-text"></p>
+            </div>
+            
+            <!-- Botón para abrir modal -->
+            <div class="flex justify-center mb-12">
+              <button
+                id="abrir-modal-partido"
+                class="px-12 py-6 bg-[#2563eb] text-white rounded-xl shadow-lg hover:bg-[#1d4ed8] transition-all duration-200 text-3xl font-bold"
+              >
+                Añadir Partido
+              </button>
+            </div>
+            
+            <!-- Selector de ordenación -->
+            <div class="flex justify-center mb-12">
+              <div class="bg-gray-100 rounded-2xl p-3 inline-flex">
+                <button
+                  id="ordenar-victorias"
+                  class="px-8 py-4 bg-white text-[#1e293b] rounded-xl shadow-sm transition-all duration-200 text-2xl font-medium whitespace-nowrap"
+                >
+                  Victorias
+                </button>
+                <button
+                  id="ordenar-elo"
+                  class="px-8 py-4 text-[#64748b] rounded-xl transition-all duration-200 text-2xl font-medium whitespace-nowrap hover:text-[#1e293b]"
+                >
+                  ELO
+                </button>
+                <button
+                  id="ordenar-progresion"
+                  class="px-8 py-4 text-[#64748b] rounded-xl transition-all duration-200 text-2xl font-medium whitespace-nowrap hover:text-[#1e293b]"
+                >
+                  Progresión
+                </button>
+              </div>
+            </div>
+            
+            <!-- Jugadores container -->
+            <div id="jugadores-container" class="grid grid-cols-1 gap-10 max-w-full mx-auto">
+              <!-- Los jugadores se cargarán aquí dinámicamente -->
+            </div>
+          </div>
         </div>
-        
 
-        
-        <!-- Error message -->
-        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          <p class="font-bold">Error:</p>
-          <p id="error-text"></p>
-        </div>
-        
-        <!-- Selector de ordenación -->
-        <div class="flex justify-center mb-12">
-          <div class="bg-gray-100 rounded-2xl p-3 inline-flex">
-            <button
-              id="ordenar-victorias"
-              class="px-8 py-4 bg-white text-[#1e293b] rounded-xl shadow-sm transition-all duration-200 text-2xl font-medium whitespace-nowrap"
-            >
-              Victorias
-            </button>
-            <button
-              id="ordenar-elo"
-              class="px-8 py-4 text-[#64748b] rounded-xl transition-all duration-200 text-2xl font-medium whitespace-nowrap hover:text-[#1e293b]"
-            >
-              ELO
-            </button>
-          <button
-              id="ordenar-progresion"
-              class="px-8 py-4 text-[#64748b] rounded-xl transition-all duration-200 text-2xl font-medium whitespace-nowrap hover:text-[#1e293b]"
-          >
-              Progresión
-          </button>
+        <!-- Menú de navegación fijo -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 z-[9999] p-8">
+          <div class="flex justify-around items-center">
+            <a href="index.html" class="flex flex-col items-center text-blue-600">
+              <svg class="w-20 h-20 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+              </svg>
+              <span class="text-2xl font-bold">Clasificación</span>
+            </a>
+            <a href="partidos.html" class="flex flex-col items-center text-gray-500 hover:text-blue-600">
+              <svg class="w-20 h-20 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+              </svg>
+              <span class="text-2xl font-bold">Partidos</span>
+            </a>
           </div>
-        </div>
-        
-        <!-- Jugadores container -->
-        <div id="jugadores-container" class="grid grid-cols-1 gap-10 max-w-full mx-auto">
-          <!-- Los jugadores se cargarán aquí dinámicamente -->
-        </div>
-        
-        <h2 class="text-[#1e293b] text-5xl font-bold leading-tight tracking-[-0.015em] pb-6 pt-8 text-center">Añadir Partido</h2>
-        <div class="max-w-full mx-auto space-y-12 bg-white rounded-xl border border-[#e5e7e6] p-10">
-          <div class="space-y-10">
-            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
-            <div class="space-y-10">
-              <label class="flex flex-col">
-                <select
-                  id="jugador1"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                >
-                  <option value="">Seleccionar Jugador 1</option>
-                </select>
-              </label>
-              <label class="flex flex-col">
-                <select
-                  id="jugador2"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                >
-                  <option value="">Seleccionar Jugador 2</option>
-                </select>
-              </label>
-            </div>
-          </div>
-          <div class="space-y-10">
-            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
-            <div class="space-y-10">
-              <label class="flex flex-col">
-                <select
-                  id="jugador3"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                >
-                  <option value="">Seleccionar Jugador 3</option>
-                </select>
-              </label>
-              <label class="flex flex-col">
-                <select
-                  id="jugador4"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                >
-                  <option value="">Seleccionar Jugador 4</option>
-                </select>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="max-w-full mx-auto space-y-12 mt-20 bg-white rounded-xl border border-[#e5e7e6] p-10">
-          <div class="space-y-10">
-            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja A</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-10">
-              <label class="flex flex-col">
-                <input
-                  id="pareja1-set1"
-                  type="number"
-                  min="0"
-                  max="99"
-                  step="1"
-                  placeholder="Set 1"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                  value=""
-                  oninput="validarInputSet(this)"
-                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                />
-              </label>
-              <label class="flex flex-col">
-                <input
-                  id="pareja1-set2"
-                  type="number"
-                  min="0"
-                  max="99"
-                  step="1"
-                  placeholder="Set 2"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                  value=""
-                  oninput="validarInputSet(this)"
-                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                />
-              </label>
-              <label class="flex flex-col">
-                <input
-                  id="pareja1-set3"
-                  type="number"
-                  min="0"
-                  max="99"
-                  step="1"
-                  placeholder="Set 3"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                  value=""
-                  oninput="validarInputSet(this)"
-                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                />
-              </label>
-            </div>
-          </div>
-          <div class="space-y-10">
-            <h3 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja B</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-10">
-              <label class="flex flex-col">
-                <input
-                  id="pareja2-set1"
-                  type="number"
-                  min="0"
-                  max="99"
-                  step="1"
-                  placeholder="Set 1"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                  value=""
-                  oninput="validarInputSet(this)"
-                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                />
-              </label>
-              <label class="flex flex-col">
-                <input
-                  id="pareja2-set2"
-                  type="number"
-                  min="0"
-                  max="99"
-                  step="1"
-                  placeholder="Set 2"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                  value=""
-                  oninput="validarInputSet(this)"
-                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                />
-              </label>
-              <label class="flex flex-col">
-                <input
-                  id="pareja2-set3"
-                  type="number"
-                  min="0"
-                  max="99"
-                  step="1"
-                  placeholder="Set 3"
-                  class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-24 placeholder:text-[#64748b] p-[25px] text-3xl font-normal leading-normal"
-                  value=""
-                  oninput="validarInputSet(this)"
-                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                />
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-center mt-20 mb-8">
-          <button
-            id="enviar-partido"
-            class="flex min-w-[400px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-24 px-12 bg-[#2563eb] text-white text-4xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
-          >
-            <span class="truncate">Enviar Partido</span>
-          </button>
         </div>
       </div>
 
-    </div>
-
-          <!-- Menú de navegación fijo -->
-      <div class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 z-[9999] p-8">
-        <div class="flex justify-around items-center">
-          <a href="index.html" class="flex flex-col items-center text-blue-600">
-            <svg class="w-20 h-20 mb-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
-              </svg>
-            <span class="text-2xl font-bold">Clasificación</span>
-          </a>
-          <a href="partidos.html" class="flex flex-col items-center text-gray-500 hover:text-blue-600">
-            <svg class="w-20 h-20 mb-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
-              </svg>
-            <span class="text-2xl font-bold">Partidos</span>
-          </a>
+      <!-- Modal para añadir partido -->
+      <div id="modal-partido" class="modal">
+        <div class="modal-content">
+          <span class="close" id="cerrar-modal">&times;</span>
+          
+          <div class="p-10">
+            <h2 class="text-[#1e293b] text-4xl font-bold leading-tight tracking-[-0.015em] pb-8 text-center">Añadir Partido</h2>
+            
+            <form id="form-partido" class="space-y-8">
+              <!-- Pareja A -->
+              <div class="space-y-6">
+                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Pareja A</h3>
+                <div class="space-y-6">
+                  <label class="flex flex-col">
+                    <select
+                      id="jugador1"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                    >
+                      <option value="">Seleccionar Jugador 1</option>
+                    </select>
+                  </label>
+                  <label class="flex flex-col">
+                    <select
+                      id="jugador2"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                    >
+                      <option value="">Seleccionar Jugador 2</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Pareja B -->
+              <div class="space-y-6">
+                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Pareja B</h3>
+                <div class="space-y-6">
+                  <label class="flex flex-col">
+                    <select
+                      id="jugador3"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                    >
+                      <option value="">Seleccionar Jugador 3</option>
+                    </select>
+                  </label>
+                  <label class="flex flex-col">
+                    <select
+                      id="jugador4"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                    >
+                      <option value="">Seleccionar Jugador 4</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Puntuación Pareja A -->
+              <div class="space-y-6">
+                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja A</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <label class="flex flex-col">
+                    <input
+                      id="pareja1-set1"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="Set 1"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                  </label>
+                  <label class="flex flex-col">
+                    <input
+                      id="pareja1-set2"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="Set 2"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                  </label>
+                  <label class="flex flex-col">
+                    <input
+                      id="pareja1-set3"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="Set 3"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Puntuación Pareja B -->
+              <div class="space-y-6">
+                <h3 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Puntuación Pareja B</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <label class="flex flex-col">
+                    <input
+                      id="pareja2-set1"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="Set 1"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                  </label>
+                  <label class="flex flex-col">
+                    <input
+                      id="pareja2-set2"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="Set 2"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                  </label>
+                  <label class="flex flex-col">
+                    <input
+                      id="pareja2-set3"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="Set 3"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-2xl font-normal leading-normal"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Botón de envío -->
+              <div class="flex justify-center pt-8">
+                <button
+                  id="enviar-partido"
+                  type="submit"
+                  class="flex min-w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-[#2563eb] text-white text-3xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
+                >
+                  <span class="truncate">Enviar Partido</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <script>
-      // Mostrar contenido principal después de 2 segundos
-      setTimeout(() => {
-        document.getElementById('loading-screen').style.display = 'none';
-        document.getElementById('main-content').classList.remove('hidden');
-      }, 2000);
+      <script>
+        // Mostrar contenido principal después de 2 segundos
+        setTimeout(() => {
+          document.getElementById('loading-screen').style.display = 'none';
+          document.getElementById('main-content').classList.remove('hidden');
+        }, 2000);
 
-      // IMPORTANTE: Reemplaza estas credenciales con las de tu proyecto de Supabase
-      const SUPABASE_URL = 'https://renhtzglxihiqqvirlui.supabase.co'
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlbmh0emdseGloaXFxdmlybHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxOTMzMTMsImV4cCI6MjA2MTc2OTMxM30.TIXnK8QjBpml3l9tqeP2f7p6NJVseHQ8ziEVo7RT0Hs'
-      
-      // Inicializar cliente de Supabase
-      let supabase = null;
-      
-      try {
-        if (SUPABASE_URL === 'TU_SUPABASE_URL_AQUI' || SUPABASE_ANON_KEY === 'TU_SUPABASE_ANON_KEY_AQUI') {
-          throw new Error('Por favor configura las credenciales de Supabase');
+        // Funciones para la modal
+        function abrirModal() {
+          document.getElementById('modal-partido').classList.add('show');
+          document.body.style.overflow = 'hidden';
         }
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        document.getElementById('config-message').style.display = 'none';
-      } catch (error) {
-        console.error('Error de configuración:', error);
-        showError('Error de configuración: ' + error.message);
-      }
 
-      // Función para mostrar errores
-      function showError(message) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error-message').classList.remove('hidden');
-        document.getElementById('error-text').textContent = message;
-      }
+        function cerrarModal() {
+          document.getElementById('modal-partido').classList.remove('show');
+          document.body.style.overflow = 'auto';
+        }
 
-      // Función para calcular estadísticas de un jugador
-      async function calcularEstadisticasJugador(jugadorId, partidos) {
-        let victorias = 0;
-        let derrotas = 0;
+        // Event listeners para la modal
+        document.getElementById('abrir-modal-partido').addEventListener('click', abrirModal);
+        document.getElementById('cerrar-modal').addEventListener('click', cerrarModal);
 
-        partidos.forEach(partido => {
-          // Verificar si el jugador participó en este partido
-          const jugadoresPartido = [
-            partido.pareja1_jugador1_id,
-            partido.pareja1_jugador2_id,
-            partido.pareja2_jugador1_id,
-            partido.pareja2_jugador2_id
-          ];
-
-          if (jugadoresPartido.includes(jugadorId)) {
-            // Determinar en qué pareja está el jugador
-            const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
-            const ganadorPareja = partido.ganador_pareja;
-
-            if (ganadorPareja) {
-              if ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2)) {
-                victorias++;
-              } else {
-                derrotas++;
-              }
-            }
+        // Cerrar modal al hacer clic fuera de ella
+        document.getElementById('modal-partido').addEventListener('click', function(e) {
+          if (e.target === this) {
+            cerrarModal();
           }
         });
 
-        return { victorias, derrotas };
-      }
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && document.getElementById('modal-partido').classList.contains('show')) {
+            cerrarModal();
+          }
+        });
 
-      // Función para cargar jugadores y sus estadísticas desde Supabase
-      async function cargarJugadores() {
+        // IMPORTANTE: Reemplaza estas credenciales con las de tu proyecto de Supabase
+        const SUPABASE_URL = 'https://renhtzglxihiqqvirlui.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlbmh0emdseGloaXFxdmlybHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxOTMzMTMsImV4cCI6MjA2MTc2OTMxM30.TIXnK8QjBpml3l9tqeP2f7p6NJVseHQ8ziEVo7RT0Hs'
+        
+        // Inicializar cliente de Supabase
+        let supabase = null;
+        
         try {
-          // Cargar jugadores
-          const { data: jugadores, error: errorJugadores } = await supabase
-            .from('jugadores')
-            .select('*')
-            .order('nombre');
-
-          if (errorJugadores) {
-            throw errorJugadores;
+          if (SUPABASE_URL === 'TU_SUPABASE_URL_AQUI' || SUPABASE_ANON_KEY === 'TU_SUPABASE_ANON_KEY_AQUI') {
+            throw new Error('Por favor configura las credenciales de Supabase');
           }
-
-          // Cargar partidos para calcular estadísticas
-          const { data: partidos, error: errorPartidos } = await supabase
-            .from('partidos')
-            .select('*');
-
-          if (errorPartidos) {
-            throw errorPartidos;
-          }
-
-          document.getElementById('loading').style.display = 'none';
-          
-          if (!jugadores || jugadores.length === 0) {
-            document.getElementById('jugadores-container').innerHTML = `
-              <div class="text-center py-10">
-                <p class="text-[#648771] text-2xl">No hay jugadores registrados aún.</p>
-                <p class="text-[#648771] text-lg mt-2">Agrega algunos jugadores a tu base de datos de Supabase.</p>
-              </div>
-            `;
-            return;
-          }
-
-          // Calcular estadísticas para cada jugador
-          const jugadoresConEstadisticas = await Promise.all(
-            jugadores.map(async (jugador) => {
-              const stats = await calcularEstadisticasJugador(jugador.id, partidos || []);
-              return {
-                ...jugador,
-                victorias: stats.victorias,
-                derrotas: stats.derrotas
-              };
-            })
-          );
-
-          mostrarJugadores(jugadoresConEstadisticas);
-          llenarSelectoresJugadores(jugadoresConEstadisticas);
-
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          document.getElementById('config-message').style.display = 'none';
         } catch (error) {
-          console.error('Error cargando jugadores:', error);
-          showError('Error cargando jugadores: ' + error.message);
+          console.error('Error de configuración:', error);
+          showError('Error de configuración: ' + error.message);
         }
-      }
 
-      // Función para mostrar jugadores en la interfaz
-      function mostrarJugadores(jugadores) {
-        const container = document.getElementById('jugadores-container');
-        container.innerHTML = '';
+        // Función para mostrar errores
+        function showError(message) {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('error-message').classList.remove('hidden');
+          document.getElementById('error-text').textContent = message;
+        }
 
-        jugadores.forEach(jugador => {
-          const jugadorHTML = `
-            <div class="flex items-center gap-10 bg-white p-10 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div class="bg-[#38e078] bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 flex-shrink-0 flex items-center justify-center text-white text-4xl font-bold">
-                ${jugador.nombre.charAt(0).toUpperCase()}
-              </div>
-              <div class="flex flex-col justify-center min-w-0">
-                <p class="text-[#111714] text-4xl font-medium leading-normal truncate">${jugador.nombre}</p>
-                <p class="text-[#648771] text-3xl font-normal leading-normal truncate">W:${jugador.victorias} L:${jugador.derrotas}</p>
-              </div>
-            </div>
-          `;
-          container.innerHTML += jugadorHTML;
+        // Función para validar input de sets
+        function validarInputSet(input) {
+          const valor = parseInt(input.value);
+          if (valor < 0) {
+            input.value = 0;
+          } else if (valor > 99) {
+            input.value = 99;
+          }
+        }
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+          const app = new PadelApp();
+          app.init();
         });
-      }
-
-      // Función para actualizar opciones disponibles en los selectores
-      function actualizarOpcionesDisponibles() {
-        const selectores = ['jugador1', 'jugador2', 'jugador3', 'jugador4'];
-        const valoresSeleccionados = selectores.map(id => document.getElementById(id).value);
-        
-        selectores.forEach((selectorId, indexSelector) => {
-          const selector = document.getElementById(selectorId);
-          const valorActual = selector.value;
-          
-          // Recorrer todas las opciones del selector
-          Array.from(selector.options).forEach(option => {
-            if (option.value === '') {
-              // La opción por defecto siempre disponible
-              option.disabled = false;
-            } else {
-              // Verificar si este jugador ya está seleccionado en otro selector
-              const estaSeleccionadoEnOtro = valoresSeleccionados.some((valor, index) => 
-                valor === option.value && index !== indexSelector
-              );
-              
-              option.disabled = estaSeleccionadoEnOtro;
-              
-              // Si esta opción está deshabilitada y es la seleccionada actualmente, limpiar
-              if (estaSeleccionadoEnOtro && option.value === valorActual) {
-                selector.value = '';
-              }
-            }
-          });
-        });
-      }
-
-      // Función para llenar los selectores de jugadores
-      function llenarSelectoresJugadores(jugadores) {
-        const selectores = ['jugador1', 'jugador2', 'jugador3', 'jugador4'];
-        
-        selectores.forEach(selectorId => {
-          const selector = document.getElementById(selectorId);
-          // Limpiar opciones existentes excepto la primera
-          selector.innerHTML = selector.innerHTML.split('</option>')[0] + '</option>';
-          
-          jugadores.forEach(jugador => {
-            const option = document.createElement('option');
-            option.value = jugador.id;
-            option.textContent = jugador.nombre;
-            selector.appendChild(option);
-          });
-          
-          // Agregar event listener para actualizar opciones cuando cambie la selección
-          selector.addEventListener('change', actualizarOpcionesDisponibles);
-        });
-        
-        // Aplicar validación inicial
-        actualizarOpcionesDisponibles();
-      }
-
-
-    </script>
+      </script>
   </body>
 </html>
