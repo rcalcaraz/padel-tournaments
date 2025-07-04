@@ -25,6 +25,31 @@
       .menu-icon {
         transition: all 0.2s ease-in-out;
       }
+      
+      .menu-icon.active {
+        display: none;
+      }
+      
+      .menu-icon.inactive {
+        display: block;
+      }
+      
+      .menu-link:hover .menu-icon.inactive {
+        display: none;
+      }
+      
+      .menu-link:hover .menu-icon.active {
+        display: block;
+      }
+      
+      /* En la página de partidos, el icono de partidos debe estar activo */
+      .menu-link[href="partidos.html"] .menu-icon.active {
+        display: block;
+      }
+      
+      .menu-link[href="partidos.html"] .menu-icon.inactive {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -77,11 +102,13 @@
       <div class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 z-[9999] p-8">
         <div class="flex justify-around items-center">
           <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-blue-600 menu-link">
-            <img src="logo/icono_clasificación_gris.svg" alt="Clasificación" class="w-16 h-16 mb-3 menu-icon">
+            <img src="logo/icono_clasificación_inactivo.svg" alt="Clasificación" class="w-16 h-16 mb-3 menu-icon inactive">
+            <img src="logo/icono_clasificación_activo.svg" alt="Clasificación" class="w-16 h-16 mb-3 menu-icon active">
             <span class="text-3xl font-bold">Clasificación</span>
           </a>
           <a href="partidos.html" class="flex flex-col items-center text-blue-600 menu-link">
-            <img src="logo/icono_pelota.svg" alt="Partidos" class="w-16 h-16 mb-3 menu-icon">
+            <img src="logo/icono_pelota_activo.svg" alt="Partidos" class="w-16 h-16 mb-3 menu-icon active">
+            <img src="logo/icono_pelota_inactivo.svg" alt="Partidos" class="w-16 h-16 mb-3 menu-icon inactive">
             <span class="text-3xl font-bold">Partidos</span>
           </a>
         </div>

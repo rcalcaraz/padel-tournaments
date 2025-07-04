@@ -55,16 +55,16 @@ class PadelApp {
 
     // Cargar datos en segundo plano
     this.loadJugadores().then(() => {
-      // Esperar al menos 2 segundos
+      // Esperar al menos 1 segundo
       setTimeout(() => {
         this.hideLoadingScreen();
-      }, 2000);
+      }, 1000);
     }).catch((error) => {
       console.error('Error durante la carga:', error);
-      // Si hay error, mostrar pantalla principal después de 2 segundos
+      // Si hay error, mostrar pantalla principal después de 1 segundo
       setTimeout(() => {
         this.hideLoadingScreen();
-      }, 2000);
+      }, 1000);
     });
   }
 
@@ -415,6 +415,10 @@ class PadelApp {
     const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
     const totalPartidos = jugador.estadisticas.victorias + jugador.estadisticas.derrotas;
     
+    // Determinar qué dato resaltar según el criterio de ordenación
+    const criterioActual = this.ordenActual || 'victorias';
+    const claseDestacado = 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300';
+    
     return `
       <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
         <div class="flex items-center gap-8">
@@ -434,7 +438,7 @@ class PadelApp {
                 <div class="space-y-6">
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Victorias:</span>
-                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''}">
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''} ${criterioActual === 'victorias' ? claseDestacado : ''}">
                       ${jugador.estadisticas.victorias}
                     </span>
                   </div>
@@ -458,7 +462,7 @@ class PadelApp {
                 <div class="space-y-6">
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Rating ELO:</span>
-                    <span class="text-3xl sm:text-4xl font-bold" style="color: ${ratingColor};">
+                    <span class="text-3xl sm:text-4xl font-bold ${criterioActual === 'elo' ? claseDestacado : ''}" style="color: ${ratingColor};">
                       ${jugador.rating_elo || 1200}
                     </span>
                   </div>
@@ -470,7 +474,7 @@ class PadelApp {
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Progresión:</span>
-                    <span class="text-3xl sm:text-4xl font-bold" style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'};">
+                    <span class="text-3xl sm:text-4xl font-bold ${criterioActual === 'progresion' ? claseDestacado : ''}" style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'};">
                       ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
                     </span>
                   </div>
@@ -716,21 +720,24 @@ class PadelApp {
     
     playerCards.forEach(card => {
       card.addEventListener('click', () => {
+        // Verificar si la tarjeta ya está seleccionada
+        const isAlreadySelected = card.classList.contains('ring-4');
+        
         // Remover destacado de todas las tarjetas
         playerCards.forEach(c => {
           DOMUtils.removeClass(c, 'ring-4');
           DOMUtils.removeClass(c, 'ring-blue-500');
           DOMUtils.removeClass(c, 'ring-opacity-50');
-          DOMUtils.removeClass(c, 'scale-105');
           DOMUtils.removeClass(c, 'shadow-lg');
         });
         
-        // Añadir destacado a la tarjeta clickeada
-        DOMUtils.addClass(card, 'ring-4');
-        DOMUtils.addClass(card, 'ring-blue-500');
-        DOMUtils.addClass(card, 'ring-opacity-50');
-        DOMUtils.addClass(card, 'scale-105');
-        DOMUtils.addClass(card, 'shadow-lg');
+        // Si la tarjeta no estaba seleccionada, añadir el destacado
+        if (!isAlreadySelected) {
+          DOMUtils.addClass(card, 'ring-4');
+          DOMUtils.addClass(card, 'ring-blue-500');
+          DOMUtils.addClass(card, 'ring-opacity-50');
+          DOMUtils.addClass(card, 'shadow-lg');
+        }
       });
     });
   }
