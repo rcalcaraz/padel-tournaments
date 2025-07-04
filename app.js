@@ -644,8 +644,8 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
   
-  // Detectar si es una nueva sesión (primera carga de la página)
-  // Si no existe sessionStorage o si es una recarga de página
+  // Detectar si es una nueva sesión o recarga de página
+  // Mostrar pantalla de bienvenida si es la primera vez o si se recarga la página
   const isNewSession = !sessionStorage.getItem('padelAppSession') || 
                       performance.navigation.type === 1; // 1 = recarga de página
   

@@ -350,41 +350,6 @@
       </div>
 
       <script>
-        // Mostrar contenido principal después de 2 segundos
-        setTimeout(() => {
-          document.getElementById('loading-screen').style.display = 'none';
-          document.getElementById('main-content').classList.remove('hidden');
-        }, 2000);
-
-        // Funciones para la modal
-        function abrirModal() {
-          document.getElementById('modal-partido').classList.add('show');
-          document.body.style.overflow = 'hidden';
-        }
-
-        function cerrarModal() {
-          document.getElementById('modal-partido').classList.remove('show');
-          document.body.style.overflow = 'auto';
-        }
-
-        // Event listeners para la modal
-        document.getElementById('abrir-modal-partido').addEventListener('click', abrirModal);
-        document.getElementById('cerrar-modal').addEventListener('click', cerrarModal);
-
-        // Cerrar modal al hacer clic fuera de ella
-        document.getElementById('modal-partido').addEventListener('click', function(e) {
-          if (e.target === this) {
-            cerrarModal();
-          }
-        });
-
-        // Cerrar modal con Escape
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape' && document.getElementById('modal-partido').classList.contains('show')) {
-            cerrarModal();
-          }
-        });
-
         // IMPORTANTE: Reemplaza estas credenciales con las de tu proyecto de Supabase
         const SUPABASE_URL = 'https://renhtzglxihiqqvirlui.supabase.co'
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlbmh0emdseGloaXFxdmlybHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxOTMzMTMsImV4cCI6MjA2MTc2OTMxM30.TIXnK8QjBpml3l9tqeP2f7p6NJVseHQ8ziEVo7RT0Hs'
@@ -419,12 +384,6 @@
             input.value = 99;
           }
         }
-
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', function() {
-          const app = new PadelApp();
-          app.init();
-        });
       </script>
   </body>
 </html>
