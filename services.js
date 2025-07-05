@@ -562,6 +562,45 @@ class SupabaseService {
       console.log('❌ Error verificando triggers:', error);
     }
   }
+
+  // Métodos para el modal de estadísticas
+  async getJugador(jugadorId) {
+    try {
+      const { data, error } = await this.supabase
+        .from('jugadores')
+        .select('*')
+        .eq('id', jugadorId)
+        .single();
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error obteniendo jugador:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getPartidosJugador(jugadorId) {
+    try {
+      const { data, error } = await this.supabase
+        .from('partidos')
+        .select(`
+          *,
+          pareja1_jugador1:jugadores!partidos_pareja1_jugador1_id_fkey(nombre),
+          pareja1_jugador2:jugadores!partidos_pareja1_jugador2_id_fkey(nombre),
+          pareja2_jugador1:jugadores!partidos_pareja2_jugador1_id_fkey(nombre),
+          pareja2_jugador2:jugadores!partidos_pareja2_jugador2_id_fkey(nombre)
+        `)
+        .or(`pareja1_jugador1_id.eq.${jugadorId},pareja1_jugador2_id.eq.${jugadorId},pareja2_jugador1_id.eq.${jugadorId},pareja2_jugador2_id.eq.${jugadorId}`)
+        .order('fecha_partido', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data: data || [] };
+    } catch (error) {
+      console.error('Error obteniendo partidos del jugador:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 // Exportar servicio
