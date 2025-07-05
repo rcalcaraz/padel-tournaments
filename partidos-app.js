@@ -643,32 +643,14 @@ class PartidosApp {
     const winRate = stats.total > 0 ? Math.round((stats.victorias / stats.total) * 100) : 0;
     DOMUtils.getElement('player-winrate').textContent = winRate + '%';
     
+    // Calcular racha actual
+    const rachaActual = this.calcularRachaActual(partidos, jugador.id);
+    DOMUtils.getElement('player-streak').textContent = rachaActual;
+    
     // Calcular progresión total del ELO (usar progresion_elo de la clasificación)
     const progresionElo = jugador.progresion_elo || 0;
     const progresionTexto = progresionElo >= 0 ? `+${Math.round(progresionElo)}` : `${Math.round(progresionElo)}`;
-    const progresionColor = progresionElo >= 0 ? 'text-green-600' : 'text-red-600';
-    
-    // Añadir la progresión ELO al HTML (ahora en una cajita gris)
-    const statsContainer = document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-5');
-    if (statsContainer) {
-      // Remover progresión anterior si existe
-      const progresionAnterior = statsContainer.querySelector('.progresion-elo');
-      if (progresionAnterior) {
-        progresionAnterior.remove();
-      }
-      
-      // Crear el elemento de progresión ELO en una cajita gris
-      const progresionElement = document.createElement('div');
-      progresionElement.className = 'bg-gray-50 rounded-lg p-4 text-center progresion-elo';
-      progresionElement.innerHTML = `
-        <div class="text-xl sm:text-2xl lg:text-3xl font-bold ${progresionColor}">${progresionTexto}</div>
-        <div class="text-xs sm:text-sm text-gray-500">Progresión ELO</div>
-      `;
-      
-      // Insertar después del primer elemento (ELO actual)
-      const eloElement = statsContainer.children[0];
-      statsContainer.insertBefore(progresionElement, eloElement.nextSibling);
-    }
+    DOMUtils.getElement('player-progression').textContent = progresionTexto;
     
     // Calcular y mostrar estadísticas de parejas
     this.displayParejaStats(jugador.id, partidos);
@@ -949,7 +931,7 @@ class PartidosApp {
     if (!partidos || partidos.length === 0) {
       recentMatchesContainer.innerHTML = `
         <div class="text-center py-6 sm:py-8">
-          <p class="text-gray-500 text-sm sm:text-base">No hay partidos recientes</p>
+          <p class="text-gray-500 text-lg sm:text-xl">No hay partidos recientes</p>
         </div>
       `;
       return;
@@ -976,19 +958,19 @@ class PartidosApp {
         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
           <div class="flex-1">
             <div class="flex items-center space-x-2">
-              <span class="text-lg font-bold ${esVictoria ? 'text-green-600' : 'text-red-600'}">
+              <span class="text-3xl font-bold ${esVictoria ? 'text-green-600' : 'text-red-600'}">
                 ${esVictoria ? '🏆' : '❌'}
               </span>
-              <span class="text-sm sm:text-base font-medium text-gray-900">
+              <span class="text-xl sm:text-2xl font-medium text-gray-900">
                 ${fecha}
               </span>
             </div>
-            <div class="text-xs sm:text-sm text-gray-600 mt-1">
+            <div class="text-lg sm:text-xl text-gray-600 mt-1">
               ${pareja1Jugador1} & ${pareja1Jugador2} vs ${pareja2Jugador1} & ${pareja2Jugador2}
             </div>
           </div>
           <div class="text-right">
-            <div class="text-sm sm:text-base font-bold text-gray-900">
+            <div class="text-xl sm:text-2xl font-bold text-gray-900">
               Partido #${partido.id}
             </div>
           </div>
@@ -997,6 +979,50 @@ class PartidosApp {
     }).join('');
     
     recentMatchesContainer.innerHTML = matchesHTML;
+  }
+
+  calcularRachaActual(partidos, jugadorId) {
+    if (!partidos || partidos.length === 0) {
+      return '0';
+    }
+
+    // Ordenar partidos por fecha (más recientes primero)
+    const partidosOrdenados = partidos.sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido));
+    
+    let racha = 0;
+    let esVictoria = null;
+    
+    for (const partido of partidosOrdenados) {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      if (!ganadorPareja) continue; // Saltar partidos sin resultado
+      
+      const partidoEsVictoria = (estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2);
+      
+      // Si es el primer partido, establecer el tipo de resultado
+      if (esVictoria === null) {
+        esVictoria = partidoEsVictoria;
+        racha = 1;
+      } 
+      // Si el resultado es del mismo tipo, incrementar racha
+      else if (esVictoria === partidoEsVictoria) {
+        racha++;
+      } 
+      // Si el resultado es diferente, romper la racha
+      else {
+        break;
+      }
+    }
+    
+    // Formatear la racha
+    if (racha === 0) {
+      return '0';
+    } else if (esVictoria) {
+      return `${racha}V`;
+    } else {
+      return `${racha}D`;
+    }
   }
 }
 

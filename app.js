@@ -1066,32 +1066,14 @@ class PadelApp {
     const winRate = stats.total > 0 ? Math.round((stats.victorias / stats.total) * 100) : 0;
     DOMUtils.getElement('player-winrate').textContent = winRate + '%';
     
+    // Calcular racha actual
+    const rachaActual = this.calcularRachaActual(partidos, jugador.id);
+    DOMUtils.getElement('player-streak').textContent = rachaActual;
+    
     // Calcular progresión total del ELO (usar progresion_elo de la clasificación)
     const progresionElo = jugador.progresion_elo || 0;
     const progresionTexto = progresionElo >= 0 ? `+${Math.round(progresionElo)}` : `${Math.round(progresionElo)}`;
-    const progresionColor = progresionElo >= 0 ? 'text-green-600' : 'text-red-600';
-    
-    // Añadir la progresión ELO al HTML (ahora en una cajita gris)
-    const statsContainer = document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-5');
-    if (statsContainer) {
-      // Remover progresión anterior si existe
-      const progresionAnterior = statsContainer.querySelector('.progresion-elo');
-      if (progresionAnterior) {
-        progresionAnterior.remove();
-      }
-      
-      // Crear el elemento de progresión ELO en una cajita gris
-      const progresionElement = document.createElement('div');
-      progresionElement.className = 'bg-gray-50 rounded-lg p-4 text-center progresion-elo';
-      progresionElement.innerHTML = `
-        <div class="text-xl sm:text-2xl lg:text-3xl font-bold ${progresionColor}">${progresionTexto}</div>
-        <div class="text-xs sm:text-sm text-gray-500">Progresión ELO</div>
-      `;
-      
-      // Insertar después del primer elemento (ELO actual)
-      const eloElement = statsContainer.children[0];
-      statsContainer.insertBefore(progresionElement, eloElement.nextSibling);
-    }
+    DOMUtils.getElement('player-progression').textContent = progresionTexto;
     
     // Calcular y mostrar estadísticas de parejas
     this.displayParejaStats(jugador.id, partidos);
@@ -1430,16 +1412,16 @@ class PadelApp {
 
       return `
         <div class="bg-gray-50 rounded-lg p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div class="flex-1">
               <div class="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 mb-2">
-                <span class="text-xs sm:text-sm text-gray-500">${fecha}</span>
-                ${esGanador ? '<span class="text-green-600 font-semibold text-sm sm:text-base">🏆 Victoria</span>' : '<span class="text-red-600 font-semibold text-sm sm:text-base">❌ Derrota</span>'}
+                <span class="text-base sm:text-lg text-gray-500">${fecha}</span>
+                ${esGanador ? '<span class="text-green-600 font-semibold text-base sm:text-lg">🏆 Victoria</span>' : '<span class="text-red-600 font-semibold text-base sm:text-lg">❌ Derrota</span>'}
               </div>
-              <div class="text-sm sm:text-base lg:text-lg font-medium">
+              <div class="text-base sm:text-lg lg:text-xl font-medium">
                 ${pareja1Names} vs ${pareja2Names}
               </div>
-              <div class="text-xs sm:text-sm text-gray-600 mt-1">
+              <div class="text-sm sm:text-base text-gray-600 mt-1">
                 ${partido.pareja1_set1}-${partido.pareja2_set1}, ${partido.pareja1_set2}-${partido.pareja2_set2}${partido.pareja1_set3 ? `, ${partido.pareja1_set3}-${partido.pareja2_set3}` : ''}
               </div>
             </div>
@@ -1447,6 +1429,50 @@ class PadelApp {
         </div>
       `;
     }).join('');
+  }
+
+  calcularRachaActual(partidos, jugadorId) {
+    if (!partidos || partidos.length === 0) {
+      return '0';
+    }
+
+    // Ordenar partidos por fecha (más recientes primero)
+    const partidosOrdenados = partidos.sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido));
+    
+    let racha = 0;
+    let esVictoria = null;
+    
+    for (const partido of partidosOrdenados) {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      if (!ganadorPareja) continue; // Saltar partidos sin resultado
+      
+      const partidoEsVictoria = (estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2);
+      
+      // Si es el primer partido, establecer el tipo de resultado
+      if (esVictoria === null) {
+        esVictoria = partidoEsVictoria;
+        racha = 1;
+      } 
+      // Si el resultado es del mismo tipo, incrementar racha
+      else if (esVictoria === partidoEsVictoria) {
+        racha++;
+      } 
+      // Si el resultado es diferente, romper la racha
+      else {
+        break;
+      }
+    }
+    
+    // Formatear la racha
+    if (racha === 0) {
+      return '0';
+    } else if (esVictoria) {
+      return `${racha}V`;
+    } else {
+      return `${racha}D`;
+    }
   }
 }
 
