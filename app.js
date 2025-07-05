@@ -164,6 +164,13 @@ class PadelApp {
 
     // Event listeners para el wizard
     this.setupWizardListeners();
+
+    // Event listeners para navegación de pestañas
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tab-button')) {
+        this.cambiarPestana(e.target.dataset.tab);
+      }
+    });
   }
 
   async loadJugadores() {
@@ -616,17 +623,20 @@ class PadelApp {
   }
 
   getFormData() {
+    const pareja1_set3_value = parseInt(DOMUtils.getElement('pareja1-set3').value) || 0;
+    const pareja2_set3_value = parseInt(DOMUtils.getElement('pareja2-set3').value) || 0;
+    
     return {
       pareja1_jugador1_id: parseInt(DOMUtils.getElement('jugador1').value),
       pareja1_jugador2_id: parseInt(DOMUtils.getElement('jugador2').value),
       pareja2_jugador1_id: parseInt(DOMUtils.getElement('jugador3').value),
       pareja2_jugador2_id: parseInt(DOMUtils.getElement('jugador4').value),
-      pareja1_set1: DOMUtils.getElement('pareja1-set1').value ? parseInt(DOMUtils.getElement('pareja1-set1').value) : null,
-      pareja1_set2: DOMUtils.getElement('pareja1-set2').value ? parseInt(DOMUtils.getElement('pareja1-set2').value) : null,
-      pareja1_set3: DOMUtils.getElement('pareja1-set3').value ? parseInt(DOMUtils.getElement('pareja1-set3').value) : null,
-      pareja2_set1: DOMUtils.getElement('pareja2-set1').value ? parseInt(DOMUtils.getElement('pareja2-set1').value) : null,
-      pareja2_set2: DOMUtils.getElement('pareja2-set2').value ? parseInt(DOMUtils.getElement('pareja2-set2').value) : null,
-      pareja2_set3: DOMUtils.getElement('pareja2-set3').value ? parseInt(DOMUtils.getElement('pareja2-set3').value) : null
+      pareja1_set1: parseInt(DOMUtils.getElement('pareja1-set1').value) || 0,
+      pareja1_set2: parseInt(DOMUtils.getElement('pareja1-set2').value) || 0,
+      pareja1_set3: (pareja1_set3_value > 0 || pareja2_set3_value > 0) ? pareja1_set3_value : null,
+      pareja2_set1: parseInt(DOMUtils.getElement('pareja2-set1').value) || 0,
+      pareja2_set2: parseInt(DOMUtils.getElement('pareja2-set2').value) || 0,
+      pareja2_set3: (pareja1_set3_value > 0 || pareja2_set3_value > 0) ? pareja2_set3_value : null
     };
   }
 
@@ -1047,9 +1057,13 @@ class PadelApp {
     // Nombre del jugador
     DOMUtils.getElement('player-name').textContent = jugador.nombre;
     
-    // Avatar (primera letra del nombre)
-    const avatar = DOMUtils.getElement('player-avatar');
-    avatar.textContent = jugador.nombre.charAt(0).toUpperCase();
+    // Calcular y mostrar nivel del jugador
+    const rating = jugador.rating_elo || 1200;
+    const level = window.EloUtils ? window.EloUtils.getRatingTitle(rating) : this.getRatingTitle(rating);
+    const levelElement = DOMUtils.getElement('player-level');
+    if (levelElement) {
+      levelElement.textContent = level;
+    }
     
     // ELO actual (usar rating_elo como en la clasificación)
     const eloActual = jugador.rating_elo || 1500;
@@ -1474,6 +1488,50 @@ class PadelApp {
       return `${racha}D`;
     }
   }
+
+  // Función fallback para obtener el título del rating ELO
+  getRatingTitle(rating) {
+    if (rating >= 2000) return 'Maestro';
+    if (rating >= 1800) return 'Experto';
+    if (rating >= 1600) return 'Avanzado';
+    if (rating >= 1400) return 'Intermedio';
+    if (rating >= 1200) return 'Principiante';
+    return 'Novato';
+  }
+
+  // Función para cambiar entre pestañas
+  cambiarPestana(tabName) {
+    // Remover clase active de todos los botones
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.classList.remove('active');
+    });
+
+    // Ocultar todos los contenidos de pestañas
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.remove('active');
+      content.classList.add('hidden');
+    });
+
+    // Activar el botón seleccionado
+    const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeButton) {
+      activeButton.classList.add('active');
+    }
+
+    // Mostrar el contenido de la pestaña seleccionada
+    const activeContent = document.getElementById(`tab-${tabName}-content`);
+    if (activeContent) {
+      activeContent.classList.remove('hidden');
+      activeContent.classList.add('active');
+    }
+
+    // Si es la pestaña de ELO, asegurar que la gráfica se renderice correctamente
+    if (tabName === 'elo' && window.eloChart) {
+      setTimeout(() => {
+        window.eloChart.resize();
+      }, 100);
+    }
+  }
 }
 
 // Función global para validar inputs de sets
@@ -1482,15 +1540,32 @@ function validarInputSet(input) {
   
   let valor = input.value;
   
+  // Si el campo está vacío, no hacer nada y salir
+  if (valor === '') {
+    return;
+  }
+  
   // Remover caracteres no numéricos
   valor = valor.replace(/[^0-9]/g, '');
   
-  // Convertir a número
-  let numero = parseInt(valor) || 0;
+  // Si después de remover caracteres no numéricos está vacío, limpiar el campo
+  if (valor === '') {
+    input.value = '';
+    return;
+  }
   
-  // Aplicar límites
+  // Convertir a número
+  let numero = parseInt(valor);
+  
+  // Verificar que sea un número válido
+  if (isNaN(numero)) {
+    input.value = '';
+    return;
+  }
+  
+  // Aplicar límites (el navegador ya maneja max="7", pero por seguridad)
   if (numero < 0) numero = 0;
-  if (numero > 99) numero = 99;
+  if (numero > 7) numero = 7;
   
   // Actualizar el valor del input
   input.value = numero;

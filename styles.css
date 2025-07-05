@@ -298,4 +298,80 @@ select option:disabled::after {
 .stats-updated.defeat {
   color: #dc2626 !important;
   font-weight: bold;
+}
+
+/* Estilos para el sistema de pestañas del modal de estadísticas */
+.tab-button {
+  background-color: white;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+  min-height: 60px;
+}
+
+.tab-button:hover {
+  color: #2563eb;
+  border-color: #93c5fd;
+  background-color: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.tab-button.active {
+  background-color: white;
+  color: #2563eb;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+  transform: translateY(-2px);
+}
+
+.tab-button svg {
+  transition: all 0.3s ease-in-out;
+}
+
+.tab-button:hover svg {
+  transform: scale(1.15);
+}
+
+.tab-button.active svg {
+  transform: scale(1.15);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive para pestañas */
+@media (max-width: 768px) {
+  .tab-button {
+    padding: 0.75rem 0.5rem;
+    min-height: 50px;
+  }
+  
+  .tab-button svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  .tab-content h2 {
+    font-size: 1.5rem;
+  }
 } 

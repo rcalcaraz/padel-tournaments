@@ -294,7 +294,7 @@ class PartidosApp {
           <!-- Encabezado del partido -->
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div>
-              <h3 class="text-[#1e293b] text-4xl sm:text-5xl font-bold mb-3">Partido #${partido.id}</h3>
+              <h3 class="text-[#1e293b] text-4xl sm:text-5xl font-bold mb-3">Partido</h3>
               <p class="text-[#64748b] text-2xl sm:text-3xl">${fecha}</p>
             </div>
             <div class="text-center sm:text-right">
@@ -540,6 +540,13 @@ class PartidosApp {
         }
       });
     }
+
+    // Event listeners para navegación de pestañas
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tab-button')) {
+        this.cambiarPestana(e.target.dataset.tab);
+      }
+    });
   }
 
   // Abrir modal de estadísticas del jugador
@@ -624,9 +631,13 @@ class PartidosApp {
     // Nombre del jugador
     DOMUtils.getElement('player-name').textContent = jugador.nombre;
     
-    // Avatar (primera letra del nombre)
-    const avatar = DOMUtils.getElement('player-avatar');
-    avatar.textContent = jugador.nombre.charAt(0).toUpperCase();
+    // Calcular y mostrar nivel del jugador
+    const rating = jugador.rating_elo || 1200;
+    const level = window.EloUtils ? window.EloUtils.getRatingTitle(rating) : this.getRatingTitle(rating);
+    const levelElement = DOMUtils.getElement('player-level');
+    if (levelElement) {
+      levelElement.textContent = level;
+    }
     
     // ELO actual (usar rating_elo como en la clasificación)
     const eloActual = jugador.rating_elo || 1500;
@@ -1022,6 +1033,50 @@ class PartidosApp {
       return `${racha}V`;
     } else {
       return `${racha}D`;
+    }
+  }
+
+  // Función fallback para obtener el título del rating ELO
+  getRatingTitle(rating) {
+    if (rating >= 2000) return 'Maestro';
+    if (rating >= 1800) return 'Experto';
+    if (rating >= 1600) return 'Avanzado';
+    if (rating >= 1400) return 'Intermedio';
+    if (rating >= 1200) return 'Principiante';
+    return 'Novato';
+  }
+
+  // Función para cambiar entre pestañas
+  cambiarPestana(tabName) {
+    // Remover clase active de todos los botones
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.classList.remove('active');
+    });
+
+    // Ocultar todos los contenidos de pestañas
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.remove('active');
+      content.classList.add('hidden');
+    });
+
+    // Activar el botón seleccionado
+    const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeButton) {
+      activeButton.classList.add('active');
+    }
+
+    // Mostrar el contenido de la pestaña seleccionada
+    const activeContent = document.getElementById(`tab-${tabName}-content`);
+    if (activeContent) {
+      activeContent.classList.remove('hidden');
+      activeContent.classList.add('active');
+    }
+
+    // Si es la pestaña de ELO, asegurar que la gráfica se renderice correctamente
+    if (tabName === 'elo' && window.eloChart) {
+      setTimeout(() => {
+        window.eloChart.resize();
+      }, 100);
     }
   }
 }

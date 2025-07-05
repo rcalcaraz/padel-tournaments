@@ -21,6 +21,7 @@
     <script src="config.js"></script>
     <script src="utils.js"></script>
     <script src="services.js"></script>
+    <script src="estadisticas-modal.js"></script>
     <script src="app.js"></script>
     <style>
       /* Estilos para opciones deshabilitadas en selectores */
@@ -58,8 +59,8 @@
         margin: 20px;
         padding: 0;
         border-radius: 16px;
-        width: 90%;
-        max-width: 800px;
+        width: 95%;
+        max-width: 1200px;
         max-height: 90vh;
         overflow-y: auto;
         position: relative;
@@ -335,7 +336,7 @@
                       id="pareja1-set1"
                       type="number"
                       min="0"
-                      max="99"
+                      max="7"
                       step="1"
                       placeholder="0"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
@@ -348,7 +349,7 @@
                       id="pareja2-set1"
                       type="number"
                       min="0"
-                      max="99"
+                      max="7"
                       step="1"
                       placeholder="0"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
@@ -368,7 +369,7 @@
                       id="pareja1-set2"
                       type="number"
                       min="0"
-                      max="99"
+                      max="7"
                       step="1"
                       placeholder="0"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
@@ -381,7 +382,7 @@
                       id="pareja2-set2"
                       type="number"
                       min="0"
-                      max="99"
+                      max="7"
                       step="1"
                       placeholder="0"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
@@ -401,7 +402,7 @@
                       id="pareja1-set3"
                       type="number"
                       min="0"
-                      max="99"
+                      max="7"
                       step="1"
                       placeholder="0"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
@@ -414,7 +415,7 @@
                       id="pareja2-set3"
                       type="number"
                       min="0"
-                      max="99"
+                      max="7"
                       step="1"
                       placeholder="0"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
@@ -444,7 +445,7 @@
 
       <!-- Modal de estadísticas del jugador -->
       <div id="modal-estadisticas" class="modal">
-        <div class="modal-content" style="max-width: 95vw; max-height: 95vh; overflow-y: auto;">
+        <div class="modal-content">
           <span class="close" id="cerrar-modal-estadisticas" style="top: 32px; right: 20px; font-size: 24px;">&times;</span>
           
           <!-- Pantalla de carga -->
@@ -471,15 +472,15 @@
             <!-- Contenido de la página -->
             <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
               <!-- Información del jugador -->
-              <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+              <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12">
                 <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
-                  <div class="flex-shrink-0">
-                    <div id="player-avatar" class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-blue-100 rounded-full flex items-center justify-center text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600">
-                      J
-                    </div>
-                  </div>
                   <div class="flex-1 text-center sm:text-left">
-                    <h1 id="player-name" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Cargando...</h1>
+                    <div class="flex items-center justify-center sm:justify-start space-x-4">
+                      <h1 id="player-name" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900">Cargando...</h1>
+                      <div id="player-level" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold">
+                        -
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
@@ -512,48 +513,75 @@
                 </div>
               </div>
 
-              <!-- Estadísticas de parejas -->
-              <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4 sm:mb-6">Estadísticas de Parejas</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                  <div class="bg-gray-50 rounded-lg p-4 text-center">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Pareja Favorita</div>
-                    <div id="pareja-favorita" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
-                    <div id="pareja-favorita-partidos" class="text-sm sm:text-base lg:text-lg text-gray-500">0 partidos</div>
-                  </div>
-                  <div class="bg-gray-50 rounded-lg p-4 text-center">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Pareja Óptima</div>
-                    <div id="pareja-optima" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
-                    <div id="pareja-optima-wins" class="text-sm sm:text-base lg:text-lg text-gray-500">0 victorias</div>
-                  </div>
-                  <div class="bg-gray-50 rounded-lg p-4 text-center">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Víctima Favorita</div>
-                    <div id="victima-favorita" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
-                    <div id="victima-favorita-wins" class="text-sm sm:text-base lg:text-lg text-gray-500">0 victorias</div>
-                  </div>
-                  <div class="bg-gray-50 rounded-lg p-4 text-center">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Némesis</div>
-                    <div id="nemesis" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
-                    <div id="nemesis-losses" class="text-sm sm:text-base lg:text-lg text-gray-500">0 derrotas</div>
-                  </div>
+              <!-- Menú de navegación de pestañas -->
+              <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12">
+                <div class="flex space-x-3">
+                  <button id="tab-parejas" class="tab-button active flex-1 py-4 px-6 rounded-lg border-2 transition-all duration-200 flex items-center justify-center" data-tab="parejas" title="Estadísticas de Parejas">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z"/>
+                      <path d="M19 15L19.5 16.5L21 17L19.5 17.5L19 19L18.5 17.5L17 17L18.5 16.5L19 15Z"/>
+                      <path d="M5 15L5.5 16.5L7 17L5.5 17.5L5 19L4.5 17.5L3 17L4.5 16.5L5 15Z"/>
+                      <path d="M12 18L12.5 19.5L14 20L12.5 20.5L12 22L11.5 20.5L10 20L11.5 19.5L12 18Z"/>
+                    </svg>
+                  </button>
+                  <button id="tab-elo" class="tab-button flex-1 py-4 px-6 rounded-lg border-2 transition-all duration-200 flex items-center justify-center" data-tab="elo" title="Progresión ELO">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3.5 18.5L9.5 12.5L13.5 16.5L22 8L20.5 6.5L13.5 13.5L9.5 9.5L2 17L3.5 18.5Z"/>
+                    </svg>
+                  </button>
+                  <button id="tab-partidos" class="tab-button flex-1 py-4 px-6 rounded-lg border-2 transition-all duration-200 flex items-center justify-center" data-tab="partidos" title="Últimos Partidos">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
-              <!-- Gráfica de progresión ELO -->
-              <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4 sm:mb-6">Progresión ELO</h2>
-                <div class="h-64 sm:h-80 lg:h-96">
-                  <canvas id="eloChart"></canvas>
+              <!-- Contenido de las pestañas -->
+              <div id="tab-content" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8">
+                <!-- Pestaña: Estadísticas de parejas -->
+                <div id="tab-parejas-content" class="tab-content active">
+                  <h2 class="text-4xl font-bold text-gray-900 mb-6 sm:mb-8">Estadísticas de Parejas</h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                      <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Pareja Favorita</div>
+                      <div id="pareja-favorita" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
+                      <div id="pareja-favorita-partidos" class="text-sm sm:text-base lg:text-lg text-gray-500">0 partidos</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                      <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Pareja Óptima</div>
+                      <div id="pareja-optima" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
+                      <div id="pareja-optima-wins" class="text-sm sm:text-base lg:text-lg text-gray-500">0 victorias</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                      <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Víctima Favorita</div>
+                      <div id="victima-favorita" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
+                      <div id="victima-favorita-wins" class="text-sm sm:text-base lg:text-lg text-gray-500">0 victorias</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                      <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Némesis</div>
+                      <div id="nemesis" class="text-lg sm:text-xl lg:text-2xl text-gray-600">-</div>
+                      <div id="nemesis-losses" class="text-sm sm:text-base lg:text-lg text-gray-500">0 derrotas</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Últimos partidos -->
-              <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4 sm:mb-6">Últimos Partidos</h2>
-                <div id="recent-matches" class="space-y-3 sm:space-y-4">
-                  <div class="text-center py-6 sm:py-8">
-                    <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-3 sm:mb-4"></div>
-                    <p class="text-2xl sm:text-3xl text-gray-600">Cargando partidos...</p>
+                <!-- Pestaña: Progresión ELO -->
+                <div id="tab-elo-content" class="tab-content hidden">
+                  <h2 class="text-4xl font-bold text-gray-900 mb-6 sm:mb-8">Progresión ELO</h2>
+                  <div class="h-64 sm:h-80 lg:h-96">
+                    <canvas id="eloChart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Pestaña: Últimos partidos -->
+                <div id="tab-partidos-content" class="tab-content hidden">
+                  <h2 class="text-4xl font-bold text-gray-900 mb-6 sm:mb-8">Últimos Partidos</h2>
+                  <div id="recent-matches" class="space-y-3 sm:space-y-4">
+                    <div class="text-center py-6 sm:py-8">
+                      <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-3 sm:mb-4"></div>
+                      <p class="text-2xl sm:text-3xl text-gray-600">Cargando partidos...</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -597,6 +625,14 @@
             input.value = 99;
           }
         }
+
+        // Inicializar modal de estadísticas
+        document.addEventListener('DOMContentLoaded', function() {
+          if (window.EstadisticasModal) {
+            window.estadisticasModal = new window.EstadisticasModal();
+            window.estadisticasModal.init();
+          }
+        });
       </script>
   </body>
 </html>

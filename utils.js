@@ -444,6 +444,12 @@ if (typeof module !== 'undefined' && module.exports) {
     ArrayUtils,
     StringUtils,
     EventUtils,
-    StorageUtils
+    StorageUtils,
+    EloUtils
   };
+}
+
+// Exportar globalmente para uso en el navegador
+if (typeof window !== 'undefined') {
+  window.EloUtils = EloUtils;
 } 
