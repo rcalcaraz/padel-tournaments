@@ -14,6 +14,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Chart.js para gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Archivos de la aplicación -->
     <link rel="stylesheet" href="styles.css">
     <script src="config.js"></script>
@@ -49,6 +51,63 @@
       
       .menu-link[href="partidos.html"] .menu-icon.inactive {
         display: none !important;
+      }
+
+      /* Estilos para el modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease-in-out;
+      }
+
+      .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        position: relative;
+        animation: modalSlideIn 0.3s ease-out;
+      }
+
+      @keyframes modalSlideIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: absolute;
+        z-index: 10001;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: #000;
+        text-decoration: none;
       }
     </style>
   </head>
@@ -111,6 +170,118 @@
             <img src="logo/icono_pelota_inactivo.svg" alt="Partidos" class="w-16 h-16 mb-3 menu-icon inactive">
             <span class="text-3xl font-bold">Partidos</span>
           </a>
+        </div>
+      </div>
+
+      <!-- Modal de estadísticas del jugador -->
+      <div id="modal-estadisticas" class="modal">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+          <span class="close" id="cerrar-modal-estadisticas" style="top: 32px; right: 20px; font-size: 24px;">&times;</span>
+          
+          <!-- Pantalla de carga -->
+          <div id="loading-estadisticas" class="flex items-center justify-center py-8">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h2 class="text-lg font-bold text-gray-800 mb-2">Cargando estadísticas...</h2>
+              <p class="text-gray-600 text-sm">Preparando la información del jugador</p>
+            </div>
+          </div>
+
+          <!-- Mensaje de error -->
+          <div id="error-message-estadisticas" class="hidden text-center py-8">
+            <div class="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Error</h2>
+            <p id="error-text-estadisticas" class="text-gray-600 mb-6"></p>
+            <button id="reintentar-estadisticas" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Reintentar
+            </button>
+          </div>
+
+          <!-- Contenido principal -->
+          <div id="main-content-estadisticas" class="hidden">
+            <!-- Contenido de la página -->
+            <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+              <!-- Información del jugador -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+                <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
+                  <div class="flex-shrink-0">
+                    <div id="player-avatar" class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-blue-100 rounded-full flex items-center justify-center text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600">
+                      J
+                    </div>
+                  </div>
+                  <div class="flex-1 text-center sm:text-left">
+                    <h1 id="player-name" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Cargando...</h1>
+                  </div>
+                </div>
+                
+                <!-- Estadísticas en cajitas grises -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div id="player-elo" class="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">-</div>
+                    <div class="text-xs sm:text-sm text-gray-500">ELO</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div id="player-wins" class="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">-</div>
+                    <div class="text-xs sm:text-sm text-gray-500">Victorias</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div id="player-losses" class="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">-</div>
+                    <div class="text-xs sm:text-sm text-gray-500">Derrotas</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div id="player-winrate" class="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600">-</div>
+                    <div class="text-xs sm:text-sm text-gray-500">% Victoria</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Estadísticas de parejas -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Estadísticas de Parejas</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Pareja Favorita</div>
+                    <div id="pareja-favorita" class="text-sm sm:text-base text-gray-600">-</div>
+                    <div id="pareja-favorita-partidos" class="text-xs text-gray-500">0 partidos</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Pareja Óptima</div>
+                    <div id="pareja-optima" class="text-sm sm:text-base text-gray-600">-</div>
+                    <div id="pareja-optima-wins" class="text-xs text-gray-500">0 victorias</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Víctima Favorita</div>
+                    <div id="victima-favorita" class="text-sm sm:text-base text-gray-600">-</div>
+                    <div id="victima-favorita-wins" class="text-xs text-gray-500">0 victorias</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Némesis</div>
+                    <div id="nemesis" class="text-sm sm:text-base text-gray-600">-</div>
+                    <div id="nemesis-losses" class="text-xs text-gray-500">0 derrotas</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Gráfica de progresión ELO -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Progresión ELO</h2>
+                <div class="h-64 sm:h-80 lg:h-96">
+                  <canvas id="eloChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Últimos partidos -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Últimos Partidos</h2>
+                <div id="recent-matches" class="space-y-3 sm:space-y-4">
+                  <div class="text-center py-6 sm:py-8">
+                    <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-3 sm:mb-4"></div>
+                    <p class="text-sm sm:text-base text-gray-600">Cargando partidos...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

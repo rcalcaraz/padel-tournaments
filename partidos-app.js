@@ -2,6 +2,7 @@
 class PartidosApp {
   constructor() {
     this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
+    this.currentJugadorId = null; // Para el modal de estadísticas
     this.init();
   }
 
@@ -12,6 +13,7 @@ class PartidosApp {
     }
 
     this.hideConfigMessage();
+    this.setupEventListeners();
     this.loadPartidos();
   }
 
@@ -312,7 +314,13 @@ class PartidosApp {
               <div class="space-y-8">
                 <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
                   <div class="flex-1">
-                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja1_jugador1?.nombre || 'Jugador 1'}</p>
+                    <button 
+                      class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3 hover:text-[#2563eb] transition-colors cursor-pointer text-left w-full"
+                      onclick="window.partidosApp.abrirModalEstadisticas(${partido.pareja1_jugador1?.id || 0})"
+                      ${!partido.pareja1_jugador1?.id ? 'disabled' : ''}
+                    >
+                      ${partido.pareja1_jugador1?.nombre || 'Jugador 1'}
+                    </button>
                     <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja1_jugador1?.rating_elo || 1200}</p>
                   </div>
                   <div class="text-right">
@@ -326,7 +334,13 @@ class PartidosApp {
                 </div>
                 <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
                   <div class="flex-1">
-                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja1_jugador2?.nombre || 'Jugador 2'}</p>
+                    <button 
+                      class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3 hover:text-[#2563eb] transition-colors cursor-pointer text-left w-full"
+                      onclick="window.partidosApp.abrirModalEstadisticas(${partido.pareja1_jugador2?.id || 0})"
+                      ${!partido.pareja1_jugador2?.id ? 'disabled' : ''}
+                    >
+                      ${partido.pareja1_jugador2?.nombre || 'Jugador 2'}
+                    </button>
                     <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja1_jugador2?.rating_elo || 1200}</p>
                   </div>
                   <div class="text-right">
@@ -349,7 +363,13 @@ class PartidosApp {
               <div class="space-y-8">
                 <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
                   <div class="flex-1">
-                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja2_jugador1?.nombre || 'Jugador 3'}</p>
+                    <button 
+                      class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3 hover:text-[#2563eb] transition-colors cursor-pointer text-left w-full"
+                      onclick="window.partidosApp.abrirModalEstadisticas(${partido.pareja2_jugador1?.id || 0})"
+                      ${!partido.pareja2_jugador1?.id ? 'disabled' : ''}
+                    >
+                      ${partido.pareja2_jugador1?.nombre || 'Jugador 3'}
+                    </button>
                     <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja2_jugador1?.rating_elo || 1200}</p>
                   </div>
                   <div class="text-right">
@@ -363,7 +383,13 @@ class PartidosApp {
                 </div>
                 <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
                   <div class="flex-1">
-                    <p class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3">${partido.pareja2_jugador2?.nombre || 'Jugador 4'}</p>
+                    <button 
+                      class="text-[#1e293b] text-2xl sm:text-3xl font-medium mb-3 hover:text-[#2563eb] transition-colors cursor-pointer text-left w-full"
+                      onclick="window.partidosApp.abrirModalEstadisticas(${partido.pareja2_jugador2?.id || 0})"
+                      ${!partido.pareja2_jugador2?.id ? 'disabled' : ''}
+                    >
+                      ${partido.pareja2_jugador2?.nombre || 'Jugador 4'}
+                    </button>
                     <p class="text-[#64748b] text-xl sm:text-2xl">ELO: ${partido.pareja2_jugador2?.rating_elo || 1200}</p>
                   </div>
                   <div class="text-right">
@@ -483,6 +509,494 @@ class PartidosApp {
       console.error('Error calculando cambios de ELO:', error);
       return { jugador1: 0, jugador2: 0, jugador3: 0, jugador4: 0 };
     }
+  }
+
+  // Event listeners para el modal de estadísticas
+  setupEventListeners() {
+    // Cerrar modal de estadísticas al hacer clic fuera de ella
+    const modalEstadisticas = DOMUtils.getElement('modal-estadisticas');
+    if (modalEstadisticas) {
+      modalEstadisticas.addEventListener('click', (e) => {
+        if (e.target === modalEstadisticas) {
+          this.cerrarModalEstadisticas();
+        }
+      });
+    }
+
+    // Botón de cerrar modal de estadísticas
+    const btnCerrarEstadisticas = DOMUtils.getElement('cerrar-modal-estadisticas');
+    if (btnCerrarEstadisticas) {
+      btnCerrarEstadisticas.addEventListener('click', () => {
+        this.cerrarModalEstadisticas();
+      });
+    }
+
+    // Botón de reintentar estadísticas
+    const btnReintentarEstadisticas = DOMUtils.getElement('reintentar-estadisticas');
+    if (btnReintentarEstadisticas) {
+      btnReintentarEstadisticas.addEventListener('click', () => {
+        if (this.currentJugadorId) {
+          this.cargarEstadisticasJugador(this.currentJugadorId);
+        }
+      });
+    }
+  }
+
+  // Abrir modal de estadísticas del jugador
+  abrirModalEstadisticas(jugadorId) {
+    // Guardar el jugadorId actual
+    this.currentJugadorId = jugadorId;
+    
+    // Mostrar modal
+    DOMUtils.getElement('modal-estadisticas').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // Mostrar pantalla de carga
+    DOMUtils.getElement('loading-estadisticas').classList.remove('hidden');
+    DOMUtils.getElement('error-message-estadisticas').classList.add('hidden');
+    DOMUtils.getElement('main-content-estadisticas').classList.add('hidden');
+    
+    // Cargar datos del jugador
+    this.cargarEstadisticasJugador(jugadorId);
+  }
+
+  cerrarModalEstadisticas() {
+    DOMUtils.getElement('modal-estadisticas').classList.remove('show');
+    document.body.style.overflow = 'auto';
+    
+    // Limpiar gráfica si existe
+    if (window.eloChart && typeof window.eloChart.destroy === 'function') {
+      window.eloChart.destroy();
+      window.eloChart = null;
+    }
+    
+    // Limpiar jugadorId actual
+    this.currentJugadorId = null;
+  }
+
+  async cargarEstadisticasJugador(jugadorId) {
+    try {
+      // Obtener datos del jugador con ELO calculado (igual que en la clasificación)
+      const estadisticasResult = await this.supabaseService.getEstadisticasConELO();
+      
+      if (!estadisticasResult.success) {
+        throw new Error(estadisticasResult.error);
+      }
+      
+      // Buscar el jugador en los datos de la clasificación
+      console.log('Buscando jugador con ID:', jugadorId, 'Tipo:', typeof jugadorId);
+      console.log('Jugadores disponibles:', estadisticasResult.data.map(j => ({ id: j.id, nombre: j.nombre })));
+      
+      const jugadorConELO = estadisticasResult.data.find(j => j.id === jugadorId);
+      
+      if (!jugadorConELO) {
+        console.error('Jugador no encontrado. ID buscado:', jugadorId);
+        console.error('IDs disponibles:', estadisticasResult.data.map(j => j.id));
+        throw new Error('Jugador no encontrado');
+      }
+      
+      // Obtener partidos del jugador
+      const partidosResult = await this.supabaseService.getPartidosJugador(jugadorId);
+      const partidos = partidosResult.success ? partidosResult.data : [];
+
+      // Mostrar información del jugador usando los datos de la clasificación
+      this.displayJugadorInfo(jugadorConELO, partidos);
+      
+      // Crear gráfica ELO
+      this.createEloChart(partidos, jugadorId);
+      
+      // Mostrar últimos partidos
+      this.displayRecentMatches(partidos, jugadorId);
+      
+      // Ocultar pantalla de carga y mostrar contenido
+      DOMUtils.getElement('loading-estadisticas').classList.add('hidden');
+      DOMUtils.getElement('main-content-estadisticas').classList.remove('hidden');
+      
+    } catch (error) {
+      console.error('Error cargando estadísticas del jugador:', error);
+      DOMUtils.getElement('loading-estadisticas').classList.add('hidden');
+      DOMUtils.getElement('error-message-estadisticas').classList.remove('hidden');
+      DOMUtils.getElement('error-text-estadisticas').textContent = error.message;
+    }
+  }
+
+  displayJugadorInfo(jugador, partidos) {
+    // Nombre del jugador
+    DOMUtils.getElement('player-name').textContent = jugador.nombre;
+    
+    // Avatar (primera letra del nombre)
+    const avatar = DOMUtils.getElement('player-avatar');
+    avatar.textContent = jugador.nombre.charAt(0).toUpperCase();
+    
+    // ELO actual (usar rating_elo como en la clasificación)
+    const eloActual = jugador.rating_elo || 1500;
+    DOMUtils.getElement('player-elo').textContent = eloActual;
+    
+    // Usar estadísticas del jugador (ya calculadas en la clasificación)
+    const stats = jugador.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
+    
+    // Victorias y derrotas
+    DOMUtils.getElement('player-wins').textContent = stats.victorias;
+    DOMUtils.getElement('player-losses').textContent = stats.derrotas;
+    
+    // Porcentaje de victoria
+    const winRate = stats.total > 0 ? Math.round((stats.victorias / stats.total) * 100) : 0;
+    DOMUtils.getElement('player-winrate').textContent = winRate + '%';
+    
+    // Calcular progresión total del ELO (usar progresion_elo de la clasificación)
+    const progresionElo = jugador.progresion_elo || 0;
+    const progresionTexto = progresionElo >= 0 ? `+${Math.round(progresionElo)}` : `${Math.round(progresionElo)}`;
+    const progresionColor = progresionElo >= 0 ? 'text-green-600' : 'text-red-600';
+    
+    // Añadir la progresión ELO al HTML (ahora en una cajita gris)
+    const statsContainer = document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-5');
+    if (statsContainer) {
+      // Remover progresión anterior si existe
+      const progresionAnterior = statsContainer.querySelector('.progresion-elo');
+      if (progresionAnterior) {
+        progresionAnterior.remove();
+      }
+      
+      // Crear el elemento de progresión ELO en una cajita gris
+      const progresionElement = document.createElement('div');
+      progresionElement.className = 'bg-gray-50 rounded-lg p-4 text-center progresion-elo';
+      progresionElement.innerHTML = `
+        <div class="text-xl sm:text-2xl lg:text-3xl font-bold ${progresionColor}">${progresionTexto}</div>
+        <div class="text-xs sm:text-sm text-gray-500">Progresión ELO</div>
+      `;
+      
+      // Insertar después del primer elemento (ELO actual)
+      const eloElement = statsContainer.children[0];
+      statsContainer.insertBefore(progresionElement, eloElement.nextSibling);
+    }
+    
+    // Calcular y mostrar estadísticas de parejas
+    this.displayParejaStats(jugador.id, partidos);
+  }
+
+  createEloChart(partidos, jugadorId) {
+    const ctx = document.getElementById('eloChart').getContext('2d');
+    
+    // Preparar datos para la gráfica
+    const chartData = this.prepareChartData(partidos, jugadorId);
+    
+    // Destruir gráfica anterior si existe
+    if (window.eloChart && typeof window.eloChart.destroy === 'function') {
+      window.eloChart.destroy();
+    }
+    
+    window.eloChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'ELO',
+          data: chartData.eloValues,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#2563eb',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            borderColor: '#2563eb',
+            borderWidth: 1,
+            cornerRadius: 8,
+            displayColors: false,
+            callbacks: {
+              title: function(context) {
+                return `Partido #${context[0].label}`;
+              },
+              label: function(context) {
+                return `ELO: ${context.parsed.y}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Partidos',
+              color: '#64748b',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: '#e2e8f0'
+            },
+            ticks: {
+              color: '#64748b',
+              font: {
+                size: 12
+              }
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: 'ELO',
+              color: '#64748b',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: '#e2e8f0'
+            },
+            ticks: {
+              color: '#64748b',
+              font: {
+                size: 12
+              }
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+  }
+
+  prepareChartData(partidos, jugadorId) {
+    // Ordenar partidos por fecha
+    const partidosOrdenados = partidos.sort((a, b) => new Date(a.fecha_partido) - new Date(b.fecha_partido));
+    
+    const labels = [];
+    const eloValues = [];
+    let eloActual = 1200; // ELO inicial
+    
+    partidosOrdenados.forEach((partido, index) => {
+      // Calcular el ELO después de este partido
+      const cambiosELO = this.calcularCambiosELO(partido);
+      
+      // Determinar qué cambio aplicar según el jugador
+      let cambioELO = 0;
+      if (partido.pareja1_jugador1_id === jugadorId) {
+        cambioELO = cambiosELO.jugador1;
+      } else if (partido.pareja1_jugador2_id === jugadorId) {
+        cambioELO = cambiosELO.jugador2;
+      } else if (partido.pareja2_jugador1_id === jugadorId) {
+        cambioELO = cambiosELO.jugador3;
+      } else if (partido.pareja2_jugador2_id === jugadorId) {
+        cambioELO = cambiosELO.jugador4;
+      }
+      
+      eloActual += cambioELO;
+      
+      labels.push(`#${partido.id}`);
+      eloValues.push(eloActual);
+    });
+    
+    return { labels, eloValues };
+  }
+
+  displayParejaStats(jugadorId, partidos) {
+    // Obtener todos los jugadores para calcular estadísticas de parejas
+    this.supabaseService.getEstadisticasConELO().then(result => {
+      if (result.success) {
+        const jugadores = result.data;
+        const parejaStats = this.calculateParejaStats(jugadorId, partidos, jugadores);
+        
+        // Actualizar elementos del DOM
+        DOMUtils.getElement('pareja-favorita').textContent = parejaStats.parejaFavorita.nombre || '-';
+        DOMUtils.getElement('pareja-favorita-partidos').textContent = `${parejaStats.parejaFavorita.partidos} partidos`;
+        
+        DOMUtils.getElement('pareja-optima').textContent = parejaStats.parejaOptima.nombre || '-';
+        DOMUtils.getElement('pareja-optima-wins').textContent = `${parejaStats.parejaOptima.victorias} victorias`;
+        
+        DOMUtils.getElement('victima-favorita').textContent = parejaStats.victimaFavorita.nombre || '-';
+        DOMUtils.getElement('victima-favorita-wins').textContent = `${parejaStats.victimaFavorita.victorias} victorias`;
+        
+        DOMUtils.getElement('nemesis').textContent = parejaStats.nemesis.nombre || '-';
+        DOMUtils.getElement('nemesis-losses').textContent = `${parejaStats.nemesis.derrotas} derrotas`;
+      }
+    });
+  }
+
+  calculateParejaStats(jugadorId, partidos, jugadores) {
+    const parejas = {};
+    const oponentes = {};
+    
+    partidos.forEach(partido => {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      // Identificar pareja actual
+      let parejaId = null;
+      if (estaEnPareja1) {
+        parejaId = partido.pareja1_jugador1_id === jugadorId ? partido.pareja1_jugador2_id : partido.pareja1_jugador1_id;
+      } else {
+        parejaId = partido.pareja2_jugador1_id === jugadorId ? partido.pareja2_jugador2_id : partido.pareja2_jugador1_id;
+      }
+      
+      // Identificar oponentes
+      const oponente1Id = estaEnPareja1 ? partido.pareja2_jugador1_id : partido.pareja1_jugador1_id;
+      const oponente2Id = estaEnPareja1 ? partido.pareja2_jugador2_id : partido.pareja1_jugador2_id;
+      
+      // Contar partidos con pareja
+      if (parejaId) {
+        if (!parejas[parejaId]) {
+          parejas[parejaId] = { partidos: 0, victorias: 0 };
+        }
+        parejas[parejaId].partidos++;
+        if (ganadorPareja && ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2))) {
+          parejas[parejaId].victorias++;
+        }
+      }
+      
+      // Contar enfrentamientos con oponentes
+      [oponente1Id, oponente2Id].forEach(oponenteId => {
+        if (oponenteId) {
+          if (!oponentes[oponenteId]) {
+            oponentes[oponenteId] = { victorias: 0, derrotas: 0 };
+          }
+          if (ganadorPareja && ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2))) {
+            oponentes[oponenteId].victorias++;
+          } else if (ganadorPareja) {
+            oponentes[oponenteId].derrotas++;
+          }
+        }
+      });
+    });
+    
+    // Encontrar pareja favorita (más partidos jugados)
+    let parejaFavorita = { nombre: '-', partidos: 0 };
+    Object.keys(parejas).forEach(parejaId => {
+      const pareja = parejas[parejaId];
+      if (pareja.partidos > parejaFavorita.partidos) {
+        const jugador = jugadores.find(j => j.id === parseInt(parejaId));
+        parejaFavorita = {
+          nombre: jugador ? jugador.nombre : 'Jugador desconocido',
+          partidos: pareja.partidos
+        };
+      }
+    });
+    
+    // Encontrar pareja óptima (más victorias)
+    let parejaOptima = { nombre: '-', victorias: 0 };
+    Object.keys(parejas).forEach(parejaId => {
+      const pareja = parejas[parejaId];
+      if (pareja.victorias > parejaOptima.victorias) {
+        const jugador = jugadores.find(j => j.id === parseInt(parejaId));
+        parejaOptima = {
+          nombre: jugador ? jugador.nombre : 'Jugador desconocido',
+          victorias: pareja.victorias
+        };
+      }
+    });
+    
+    // Encontrar víctima favorita (más victorias contra)
+    let victimaFavorita = { nombre: '-', victorias: 0 };
+    Object.keys(oponentes).forEach(oponenteId => {
+      const oponente = oponentes[oponenteId];
+      if (oponente.victorias > victimaFavorita.victorias) {
+        const jugador = jugadores.find(j => j.id === parseInt(oponenteId));
+        victimaFavorita = {
+          nombre: jugador ? jugador.nombre : 'Jugador desconocido',
+          victorias: oponente.victorias
+        };
+      }
+    });
+    
+    // Encontrar némesis (más derrotas contra)
+    let nemesis = { nombre: '-', derrotas: 0 };
+    Object.keys(oponentes).forEach(oponenteId => {
+      const oponente = oponentes[oponenteId];
+      if (oponente.derrotas > nemesis.derrotas) {
+        const jugador = jugadores.find(j => j.id === parseInt(oponenteId));
+        nemesis = {
+          nombre: jugador ? jugador.nombre : 'Jugador desconocido',
+          derrotas: oponente.derrotas
+        };
+      }
+    });
+    
+    return {
+      parejaFavorita,
+      parejaOptima,
+      victimaFavorita,
+      nemesis
+    };
+  }
+
+  displayRecentMatches(partidos, jugadorId) {
+    const recentMatchesContainer = DOMUtils.getElement('recent-matches');
+    
+    if (!partidos || partidos.length === 0) {
+      recentMatchesContainer.innerHTML = `
+        <div class="text-center py-6 sm:py-8">
+          <p class="text-gray-500 text-sm sm:text-base">No hay partidos recientes</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Ordenar partidos por fecha (más recientes primero)
+    const partidosOrdenados = partidos
+      .sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido))
+      .slice(0, 5); // Mostrar solo los últimos 5 partidos
+    
+    const matchesHTML = partidosOrdenados.map(partido => {
+      const fecha = DateUtils.formatDate(partido.fecha_partido);
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      const esVictoria = ganadorPareja && ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2));
+      
+      // Obtener nombres de los jugadores
+      const pareja1Jugador1 = partido.pareja1_jugador1?.nombre || 'Jugador 1';
+      const pareja1Jugador2 = partido.pareja1_jugador2?.nombre || 'Jugador 2';
+      const pareja2Jugador1 = partido.pareja2_jugador1?.nombre || 'Jugador 3';
+      const pareja2Jugador2 = partido.pareja2_jugador2?.nombre || 'Jugador 4';
+      
+      return `
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2">
+              <span class="text-lg font-bold ${esVictoria ? 'text-green-600' : 'text-red-600'}">
+                ${esVictoria ? '🏆' : '❌'}
+              </span>
+              <span class="text-sm sm:text-base font-medium text-gray-900">
+                ${fecha}
+              </span>
+            </div>
+            <div class="text-xs sm:text-sm text-gray-600 mt-1">
+              ${pareja1Jugador1} & ${pareja1Jugador2} vs ${pareja2Jugador1} & ${pareja2Jugador2}
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm sm:text-base font-bold text-gray-900">
+              Partido #${partido.id}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    recentMatchesContainer.innerHTML = matchesHTML;
   }
 }
 

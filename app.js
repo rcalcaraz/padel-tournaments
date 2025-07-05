@@ -1191,10 +1191,7 @@ class PadelApp {
             },
             ticks: {
               color: '#6b7280'
-            },
-            min: 1000,
-            max: 2200,
-            beginAtZero: false
+            }
           }
         },
         interaction: {
