@@ -1,5 +1,6 @@
 -- Funciones SQL para el sistema ELO de Pádel MEJORADO
 -- Ejecutar estas funciones en el SQL Editor de Supabase
+-- ACTUALIZADO para usar la misma lógica que el frontend (EloUtils)
 
 -- 1. Agregar columna rating_elo a la tabla jugadores (si no existe)
 ALTER TABLE jugadores ADD COLUMN IF NOT EXISTS rating_elo INTEGER DEFAULT 1200;
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS historial_elo (
   fecha_cambio TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Función para calcular la probabilidad esperada de victoria
+-- 3. Función para calcular la probabilidad esperada de victoria (igual que frontend)
 CREATE OR REPLACE FUNCTION calcular_probabilidad_esperada(rating_a INTEGER, rating_b INTEGER)
 RETURNS DECIMAL AS $$
 BEGIN
@@ -22,7 +23,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 4. Función para calcular el factor de resultado basado en la diferencia de sets
+-- 4. Función para calcular el factor de resultado basado en la diferencia de sets (igual que frontend)
 CREATE OR REPLACE FUNCTION calcular_factor_resultado(
   pareja1_set1 INTEGER, pareja1_set2 INTEGER, pareja1_set3 INTEGER,
   pareja2_set1 INTEGER, pareja2_set2 INTEGER, pareja2_set3 INTEGER
@@ -46,22 +47,22 @@ BEGIN
   -- Calcular diferencia de sets
   diferencia_sets := ABS(sets_pareja1 - sets_pareja2);
   
-  -- Factor de resultado: 1.0 para partidos muy ajustados, hasta 1.5 para victorias aplastantes
+  -- Factor de resultado: igual que frontend (EloUtils.getResultFactor)
   IF diferencia_sets = 0 THEN
     factor := 1.0; -- Empate
   ELSIF diferencia_sets = 1 THEN
-    factor := 1.0; -- Partido ajustado (2-1, 2-0)
+    factor := 1.1; -- Partido ajustado (2-1, 2-0) - aumentado de 1.0
   ELSIF diferencia_sets = 2 THEN
-    factor := 1.2; -- Victoria clara (2-0, 3-1)
+    factor := 1.4; -- Victoria clara (2-0, 3-1) - aumentado de 1.2
   ELSE
-    factor := 1.5; -- Victoria aplastante (3-0)
+    factor := 1.8; -- Victoria aplastante (3-0) - aumentado de 1.5
   END IF;
   
   RETURN factor;
 END;
 $$ LANGUAGE plpgsql;
 
--- 5. Función para calcular el factor de recompensa diferencial
+-- 5. Función para calcular el factor de recompensa diferencial (igual que frontend)
 CREATE OR REPLACE FUNCTION calcular_factor_recompensa(
   rating_jugador INTEGER, rating_promedio_pareja INTEGER, es_ganador BOOLEAN
 )
@@ -73,29 +74,29 @@ BEGIN
   diferencia := rating_promedio_pareja - rating_jugador;
   
   IF es_ganador THEN
-    -- Lógica para el equipo GANADOR
+    -- Lógica para el equipo GANADOR (igual que frontend)
     IF diferencia > 0 THEN
-      -- Jugador de menor nivel: más recompensa cuando gana (hasta 1.3x)
-      factor := 1.0 + (diferencia / 400.0) * 0.3;
-      RETURN LEAST(1.3, factor);
+      -- Jugador de menor nivel: más recompensa cuando gana (hasta 1.8x)
+      factor := 1.0 + (diferencia / 200.0) * 0.8;
+      RETURN LEAST(1.8, factor);
     ELSIF diferencia < 0 THEN
-      -- Jugador de mayor nivel: menos recompensa cuando gana (hasta 0.7x)
-      factor := 1.0 + (diferencia / 400.0) * 0.3;
-      RETURN GREATEST(0.7, factor);
+      -- Jugador de mayor nivel: menos recompensa cuando gana (hasta 0.5x)
+      factor := 1.0 + (diferencia / 200.0) * 0.5;
+      RETURN GREATEST(0.5, factor);
     ELSE
       -- Mismo nivel
       RETURN 1.0;
     END IF;
   ELSE
-    -- Lógica para el equipo PERDEDOR
+    -- Lógica para el equipo PERDEDOR (igual que frontend)
     IF diferencia > 0 THEN
-      -- Jugador de menor nivel: menos castigo cuando pierde (hasta 0.7x)
-      factor := 1.0 - (diferencia / 400.0) * 0.3;
-      RETURN GREATEST(0.7, factor);
+      -- Jugador de menor nivel: menos castigo cuando pierde (hasta 0.5x)
+      factor := 1.0 - (diferencia / 200.0) * 0.5;
+      RETURN GREATEST(0.5, factor);
     ELSIF diferencia < 0 THEN
-      -- Jugador de mayor nivel: más castigo cuando pierde (hasta 1.3x)
-      factor := 1.0 - (diferencia / 400.0) * 0.3;
-      RETURN LEAST(1.3, factor);
+      -- Jugador de mayor nivel: más castigo cuando pierde (hasta 1.8x)
+      factor := 1.0 - (diferencia / 200.0) * 0.8;
+      RETURN LEAST(1.8, factor);
     ELSE
       -- Mismo nivel
       RETURN 1.0;
@@ -104,7 +105,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 6. Función para calcular nuevo rating ELO mejorado
+-- 6. Función para calcular nuevo rating ELO mejorado (igual que frontend)
 CREATE OR REPLACE FUNCTION calcular_nuevo_rating_mejorado(
   rating_actual INTEGER, 
   probabilidad_esperada DECIMAL, 
@@ -114,7 +115,7 @@ CREATE OR REPLACE FUNCTION calcular_nuevo_rating_mejorado(
 )
 RETURNS INTEGER AS $$
 DECLARE
-  k_factor INTEGER := 32;
+  k_factor INTEGER := 48; -- Cambiado de 32 a 48 para coincidir con frontend
   cambio_base INTEGER;
   cambio_final INTEGER;
 BEGIN
@@ -128,7 +129,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 7. Función principal para calcular ELO después de un partido (MEJORADA)
+-- 7. Función principal para calcular ELO después de un partido (MEJORADA - igual que frontend)
 CREATE OR REPLACE FUNCTION calcular_elo_partido()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -237,7 +238,7 @@ CREATE TRIGGER trigger_calcular_elo
   FOR EACH ROW
   EXECUTE FUNCTION calcular_elo_partido();
 
--- 9. Función para recalcular todos los ELO desde el principio
+-- 9. Función para recalcular todos los ELO desde el principio (CORREGIDA)
 CREATE OR REPLACE FUNCTION recalcular_todos_elo()
 RETURNS VOID AS $$
 DECLARE
@@ -261,7 +262,51 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 10. Función para obtener estadísticas ELO de un jugador
+-- 10. Función para recalcular ELO de un partido específico (NUEVA)
+CREATE OR REPLACE FUNCTION recalcular_elo_partido(partido_id_param BIGINT)
+RETURNS VOID AS $$
+DECLARE
+  partido_record RECORD;
+BEGIN
+  -- Obtener el partido específico
+  SELECT * INTO partido_record FROM partidos WHERE id = partido_id_param;
+  
+  IF partido_record IS NULL THEN
+    RAISE EXCEPTION 'Partido con ID % no encontrado', partido_id_param;
+  END IF;
+  
+  -- Simular inserción para recalcular ELO
+  PERFORM calcular_elo_partido() FROM (SELECT partido_record.*) AS temp;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 11. Función para recalcular ELO de todos los partidos con ganador (NUEVA)
+CREATE OR REPLACE FUNCTION recalcular_elo_partidos_existentes()
+RETURNS VOID AS $$
+DECLARE
+  partido_record RECORD;
+BEGIN
+  -- Resetear todos los ratings a 1200
+  UPDATE jugadores SET rating_elo = 1200;
+  
+  -- Limpiar historial
+  DELETE FROM historial_elo;
+  
+  -- Recalcular basado en todos los partidos con ganador en orden cronológico
+  FOR partido_record IN 
+    SELECT * FROM partidos 
+    WHERE ganador_pareja IS NOT NULL 
+    ORDER BY fecha_partido ASC
+  LOOP
+    -- Simular inserción para recalcular ELO
+    PERFORM calcular_elo_partido() FROM (SELECT partido_record.*) AS temp;
+  END LOOP;
+  
+  RAISE NOTICE 'Recálculo de ELO completado para todos los partidos existentes';
+END;
+$$ LANGUAGE plpgsql;
+
+-- 12. Función para obtener estadísticas ELO de un jugador
 CREATE OR REPLACE FUNCTION obtener_estadisticas_elo(jugador_id_param BIGINT)
 RETURNS TABLE(
   jugador_id BIGINT,

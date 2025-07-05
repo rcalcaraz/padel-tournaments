@@ -23,6 +23,7 @@
     <script src="services.js"></script>
     <script src="estadisticas-modal.js"></script>
     <script src="app.js"></script>
+    <script src="recalcular-elo.js"></script>
     <style>
       /* Estilos para opciones deshabilitadas en selectores */
       select option:disabled {
@@ -596,6 +597,10 @@
                       <div class="bg-gray-50 rounded-lg p-6 text-center">
                         <div id="porcentaje-derrotas-aplastantes" class="text-3xl sm:text-4xl lg:text-5xl font-bold text-red-600">-</div>
                         <div class="text-lg sm:text-xl lg:text-2xl text-gray-500">% derrotas aplastantes</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-6 text-center">
+                        <div id="porcentaje-victorias-ajustadas" class="text-3xl sm:text-4xl lg:text-5xl font-bold text-teal-600">-</div>
+                        <div class="text-lg sm:text-xl lg:text-2xl text-gray-500">% victorias ajustadas</div>
                       </div>
                     </div>
                   </div>

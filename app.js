@@ -6,6 +6,10 @@ class PadelApp {
     this.ordenActual = 'victorias'; // 'victorias' o 'elo'
     this.jugadores = []; // Almacenar jugadores para ordenar localmente
     this.currentJugadorId = null; // Para el modal de estadísticas
+    
+    // Hacer disponible globalmente para el script de recálculo
+    window.supabaseService = this.supabaseService;
+    
     this.init();
   }
 
@@ -182,12 +186,16 @@ class PadelApp {
       // Guardar el tiempo de inicio
       const startTime = Date.now();
       
-      // Siempre obtener estadísticas con ELO
-      const result = await this.supabaseService.getEstadisticasConELO();
+      // Obtener estadísticas con ELO (incluye progresión calculada desde la base de datos)
+      const estadisticasResult = await this.supabaseService.getEstadisticasConELO();
       
-      if (!result.success) {
-        throw new Error(result.error);
+      if (!estadisticasResult.success) {
+        throw new Error(estadisticasResult.error);
       }
+      
+
+      
+      const result = estadisticasResult;
 
       // Calcular cuánto tiempo ha pasado
       const elapsedTime = Date.now() - startTime;
@@ -436,10 +444,34 @@ class PadelApp {
     }, 3000);
   }
 
+  calcularEstadisticasJugador(jugadorId) {
+    // Obtener todos los partidos del jugador
+    const partidos = this.partidos || [];
+    let victorias = 0;
+    let derrotas = 0;
+    
+    partidos.forEach(partido => {
+      if (!partido.ganador_pareja) return;
+      
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const esGanador = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+      
+      if (esGanador) {
+        victorias++;
+      } else {
+        derrotas++;
+      }
+    });
+    
+    return { victorias, derrotas };
+  }
+
   createJugadorHTML(jugador, estadisticasAnteriores, posicion) {
+    // Usar estadísticas ya calculadas en el objeto jugador
+    const estadisticas = jugador.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
     const statsAnteriores = estadisticasAnteriores[jugador.id] || { victorias: 0, derrotas: 0 };
-    const victoriasCambiaron = statsAnteriores.victorias !== jugador.estadisticas.victorias;
-    const derrotasCambiaron = statsAnteriores.derrotas !== jugador.estadisticas.derrotas;
+    const victoriasCambiaron = statsAnteriores.victorias !== estadisticas.victorias;
+    const derrotasCambiaron = statsAnteriores.derrotas !== estadisticas.derrotas;
     const tieneCambios = victoriasCambiaron || derrotasCambiaron;
     
     const claseAnimacion = tieneCambios ? 'animate-pulse bg-green-50' : '';
@@ -447,7 +479,7 @@ class PadelApp {
     // Siempre mostrar victorias, derrotas y ELO
     const ratingColor = EloUtils.getRatingColor(jugador.rating_elo || 1200);
     const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
-    const totalPartidos = jugador.estadisticas.victorias + jugador.estadisticas.derrotas;
+    const totalPartidos = estadisticas.total || (estadisticas.victorias + estadisticas.derrotas);
     
     // Determinar qué dato resaltar según el criterio de ordenación
     const criterioActual = this.ordenActual || 'victorias';
@@ -473,13 +505,13 @@ class PadelApp {
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Victorias:</span>
                     <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''} ${criterioActual === 'victorias' ? claseDestacado : ''}">
-                      ${jugador.estadisticas.victorias}
+                      ${estadisticas.victorias}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Derrotas:</span>
                     <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${derrotasCambiaron ? 'text-red-600' : ''}">
-                      ${jugador.estadisticas.derrotas}
+                      ${estadisticas.derrotas}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
@@ -529,9 +561,10 @@ class PadelApp {
   guardarEstadisticasActuales(jugadores) {
     const estadisticas = {};
     jugadores.forEach(jugador => {
+      const stats = jugador.estadisticas || { victorias: 0, derrotas: 0 };
       estadisticas[jugador.id] = {
-        victorias: jugador.estadisticas.victorias,
-        derrotas: jugador.estadisticas.derrotas
+        victorias: stats.victorias,
+        derrotas: stats.derrotas
       };
     });
     StorageUtils.set('estadisticas_anteriores', estadisticas);
@@ -773,13 +806,19 @@ class PadelApp {
   ordenarJugadores(criterio) {
     this.ordenActual = criterio;
     
+
+    
     if (criterio === 'victorias') {
       // Ordenar por victorias (descendente), en caso de empate por menos partidos jugados
       this.jugadores.sort((a, b) => {
-        const victoriasA = a.estadisticas.victorias;
-        const victoriasB = b.estadisticas.victorias;
-        const totalA = a.estadisticas.victorias + a.estadisticas.derrotas;
-        const totalB = b.estadisticas.victorias + b.estadisticas.derrotas;
+        const statsA = a.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
+        const statsB = b.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
+        const victoriasA = statsA.victorias;
+        const victoriasB = statsB.victorias;
+        const totalA = statsA.total || (statsA.victorias + statsA.derrotas);
+        const totalB = statsB.total || (statsB.victorias + statsB.derrotas);
+        
+
         
         if (victoriasA !== victoriasB) {
           return victoriasB - victoriasA; // Más victorias primero
@@ -798,6 +837,8 @@ class PadelApp {
         return (b.progresion_elo || 0) - (a.progresion_elo || 0);
       });
     }
+    
+
     
     // Actualizar la visualización
     this.displayJugadores(this.jugadores);
@@ -1019,8 +1060,6 @@ class PadelApp {
       }
       
       // Buscar el jugador en los datos de la clasificación
-      console.log('Buscando jugador con ID:', jugadorId, 'Tipo:', typeof jugadorId);
-      console.log('Jugadores disponibles:', estadisticasResult.data.map(j => ({ id: j.id, nombre: j.nombre })));
       
       const jugadorConELO = estadisticasResult.data.find(j => j.id === jugadorId);
       
@@ -1038,13 +1077,13 @@ class PadelApp {
       this.displayJugadorInfo(jugadorConELO, partidos);
       
       // Crear gráfica ELO
-      this.createEloChart(partidos, jugadorId);
+      await this.createEloChart(partidos, jugadorId);
       
       // Calcular y mostrar estadísticas detalladas
-      this.calcularEstadisticasDetalladas(partidos, jugadorId);
+      await this.calcularEstadisticasDetalladas(partidos, jugadorId);
       
       // Mostrar últimos partidos
-      this.displayRecentMatches(partidos, jugadorId);
+      await this.displayRecentMatches(partidos, jugadorId);
       
       // Ocultar pantalla de carga y mostrar contenido
       DOMUtils.getElement('loading-estadisticas').classList.add('hidden');
@@ -1122,11 +1161,11 @@ class PadelApp {
     };
   }
 
-  createEloChart(partidos, jugadorId) {
+  async createEloChart(partidos, jugadorId) {
     const ctx = document.getElementById('eloChart').getContext('2d');
     
-    // Preparar datos para la gráfica
-    const chartData = this.prepareChartData(partidos, jugadorId);
+    // Preparar datos para la gráfica (ahora asíncrono)
+    const chartData = await this.prepareChartData(partidos, jugadorId);
     
     // Destruir gráfica anterior si existe
     if (window.eloChart && typeof window.eloChart.destroy === 'function') {
@@ -1204,7 +1243,7 @@ class PadelApp {
   }
 
   // Función para calcular y mostrar estadísticas detalladas
-  calcularEstadisticasDetalladas(partidos, jugadorId) {
+  async calcularEstadisticasDetalladas(partidos, jugadorId) {
     if (!partidos || partidos.length === 0) {
       // Mostrar valores por defecto si no hay partidos
       DOMUtils.getElement('elo-ultimos-5').textContent = '0';
@@ -1212,6 +1251,7 @@ class PadelApp {
       DOMUtils.getElement('porcentaje-remontadas').textContent = '0%';
       DOMUtils.getElement('porcentaje-victorias-aplastantes').textContent = '0%';
       DOMUtils.getElement('porcentaje-derrotas-aplastantes').textContent = '0%';
+      DOMUtils.getElement('porcentaje-victorias-ajustadas').textContent = '0%';
       return;
     }
 
@@ -1221,10 +1261,26 @@ class PadelApp {
     // 1. ELO últimos 5 partidos
     const ultimos5Partidos = partidosOrdenados.slice(0, 5);
     let progresionELOUltimos5 = 0;
-    ultimos5Partidos.forEach(partido => {
-      progresionELOUltimos5 += this.calcularCambioELOPartido(partido, jugadorId);
-    });
-    DOMUtils.getElement('elo-ultimos-5').textContent = progresionELOUltimos5 >= 0 ? `+${progresionELOUltimos5}` : `${progresionELOUltimos5}`;
+    
+    // Obtener cambios reales de ELO desde la base de datos para los últimos 5 partidos
+    for (const partido of ultimos5Partidos) {
+      try {
+        const cambiosResult = await this.supabaseService.getCambiosELOPartido(partido.id);
+        if (cambiosResult.success) {
+          // Buscar el cambio específico para este jugador
+          const cambioJugador = cambiosResult.data[`jugador_${jugadorId}`];
+          if (cambioJugador !== undefined) {
+            progresionELOUltimos5 += cambioJugador;
+          }
+        }
+      } catch (error) {
+        console.warn(`Error obteniendo cambios de ELO para partido ${partido.id}:`, error);
+        // Fallback al cálculo local si hay error
+        progresionELOUltimos5 += this.calcularCambioELOPartido(partido, jugadorId);
+      }
+    }
+    
+    DOMUtils.getElement('elo-ultimos-5').textContent = progresionELOUltimos5 >= 0 ? `+${Math.round(progresionELOUltimos5)}` : `${Math.round(progresionELOUltimos5)}`;
 
     // 2. Media de puntos por set
     let totalPuntos = 0;
@@ -1336,9 +1392,53 @@ class PadelApp {
       Math.round((derrotasAplastantes / totalDerrotas) * 100) : 0;
     DOMUtils.getElement('porcentaje-derrotas-aplastantes').textContent = `${porcentajeDerrotasAplastantes}%`;
     DOMUtils.getElement('porcentaje-derrotas-aplastantes').innerHTML = `${porcentajeDerrotasAplastantes}% <span class="text-sm sm:text-base lg:text-lg text-gray-500">(${derrotasAplastantes} de ${totalDerrotas})</span>`;
+
+    // 6. Porcentaje de victorias ajustadas
+    let victoriasAjustadas = 0;
+    let totalVictoriasParaAjustadas = 0;
+    partidos.forEach(partido => {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      if (!ganadorPareja) return;
+      
+      const esGanador = (estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2);
+      
+      if (esGanador) {
+        totalVictoriasParaAjustadas++;
+        
+        // Una victoria se considera ajustada si:
+        // 1. Es un partido de 3 sets, O
+        // 2. La diferencia total de juegos no es mayor de 4
+        
+        const esPartido3Sets = partido.pareja1_set3 || partido.pareja2_set3;
+        
+        if (esPartido3Sets) {
+          // Partido de 3 sets - siempre es victoria ajustada
+          victoriasAjustadas++;
+        } else {
+          // Partido de 2 sets - verificar diferencia de juegos
+          const puntosGanados = estaEnPareja1 ? 
+            (partido.pareja1_set1 + partido.pareja1_set2) : 
+            (partido.pareja2_set1 + partido.pareja2_set2);
+          const puntosPerdidos = estaEnPareja1 ? 
+            (partido.pareja2_set1 + partido.pareja2_set2) : 
+            (partido.pareja1_set1 + partido.pareja1_set2);
+          
+          const diferenciaJuegos = puntosGanados - puntosPerdidos;
+          if (diferenciaJuegos <= 4) {
+            victoriasAjustadas++;
+          }
+        }
+      }
+    });
+    const porcentajeVictoriasAjustadas = totalVictoriasParaAjustadas > 0 ? 
+      Math.round((victoriasAjustadas / totalVictoriasParaAjustadas) * 100) : 0;
+    DOMUtils.getElement('porcentaje-victorias-ajustadas').textContent = `${porcentajeVictoriasAjustadas}%`;
+    DOMUtils.getElement('porcentaje-victorias-ajustadas').innerHTML = `${porcentajeVictoriasAjustadas}% <span class="text-sm sm:text-base lg:text-lg text-gray-500">(${victoriasAjustadas} de ${totalVictoriasParaAjustadas})</span>`;
   }
 
-  prepareChartData(partidos, jugadorId) {
+  async prepareChartData(partidos, jugadorId) {
     // Ordenar partidos por fecha
     const sortedPartidos = [...partidos].sort((a, b) => 
       new Date(a.fecha_partido) - new Date(b.fecha_partido)
@@ -1346,28 +1446,42 @@ class PadelApp {
 
     const labels = [];
     const eloValues = [];
-    let currentElo = 1500; // ELO inicial
+    
+    // Obtener ELO inicial desde la base de datos
+    let currentElo = 1200; // ELO inicial por defecto
+    try {
+      const eloInicialResult = await this.supabaseService.getELOInicialJugador(jugadorId);
+      if (eloInicialResult.success) {
+        currentElo = eloInicialResult.data;
+      }
+    } catch (error) {
+      console.warn('Error obteniendo ELO inicial, usando 1200 por defecto:', error);
+    }
 
-    // Simular progresión ELO (en una implementación real, esto vendría de la base de datos)
-    sortedPartidos.forEach((partido, index) => {
-      labels.push(`P${index + 1}`);
+    // Obtener progresión ELO real desde la base de datos
+    for (let i = 0; i < sortedPartidos.length; i++) {
+      const partido = sortedPartidos[i];
+      labels.push(`P${i + 1}`);
       
-      // Simular cambio de ELO basado en el resultado
-      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
-      const ganadorPareja = partido.ganador_pareja;
-      
-      if (ganadorPareja) {
-        if ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2)) {
-          // Victoria: +15 ELO
-          currentElo += 15;
-        } else {
-          // Derrota: -10 ELO
-          currentElo -= 10;
+      // Obtener cambio de ELO real desde la base de datos
+      let cambioELO = 0;
+      try {
+        const cambiosResult = await this.supabaseService.getCambiosELOPartido(partido.id);
+        if (cambiosResult.success) {
+          const cambioJugador = cambiosResult.data[`jugador_${jugadorId}`];
+          if (cambioJugador !== undefined) {
+            cambioELO = cambioJugador;
+          }
         }
+      } catch (error) {
+        console.warn(`Error obteniendo cambios de ELO para partido ${partido.id}:`, error);
+        // Fallback al cálculo local si hay error
+        cambioELO = this.calcularCambioELOPartido(partido, jugadorId);
       }
       
+      currentElo += cambioELO;
       eloValues.push(currentElo);
-    });
+    }
 
     // Asegurar que el eje X tenga al menos 5 divisiones
     const minDivisiones = 5;
@@ -1531,7 +1645,7 @@ class PadelApp {
     };
   }
 
-  displayRecentMatches(partidos, jugadorId) {
+  async displayRecentMatches(partidos, jugadorId) {
     const container = DOMUtils.getElement('recent-matches');
     
     if (partidos.length === 0) {
@@ -1548,7 +1662,10 @@ class PadelApp {
     // Mostrar solo los últimos 10 partidos
     const recentPartidos = partidos.slice(0, 10);
     
-    container.innerHTML = recentPartidos.map(partido => {
+    // Generar HTML con placeholders para los cambios de ELO
+    let html = '';
+    
+    for (const partido of recentPartidos) {
       const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
       const ganadorPareja = partido.ganador_pareja;
       const esGanador = ganadorPareja && ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2));
@@ -1556,9 +1673,23 @@ class PadelApp {
       const pareja1Names = `${partido.pareja1_jugador1?.nombre || 'N/A'} y ${partido.pareja1_jugador2?.nombre || 'N/A'}`;
       const pareja2Names = `${partido.pareja2_jugador1?.nombre || 'N/A'} y ${partido.pareja2_jugador2?.nombre || 'N/A'}`;
       
-      // Calcular cambio de ELO
-      const cambioELO = this.calcularCambioELOPartido(partido, jugadorId);
-      const cambioELOTexto = cambioELO >= 0 ? `+${cambioELO}` : `${cambioELO}`;
+      // Obtener cambio de ELO real desde la base de datos
+      let cambioELO = 0;
+      try {
+        const cambiosResult = await this.supabaseService.getCambiosELOPartido(partido.id);
+        if (cambiosResult.success) {
+          const cambioJugador = cambiosResult.data[`jugador_${jugadorId}`];
+          if (cambioJugador !== undefined) {
+            cambioELO = cambioJugador;
+          }
+        }
+      } catch (error) {
+        console.warn(`Error obteniendo cambios de ELO para partido ${partido.id}:`, error);
+        // Fallback al cálculo local si hay error
+        cambioELO = this.calcularCambioELOPartido(partido, jugadorId);
+      }
+      
+      const cambioELOTexto = cambioELO >= 0 ? `+${Math.round(cambioELO)}` : `${Math.round(cambioELO)}`;
       const cambioELOColor = cambioELO >= 0 ? 'text-green-600' : 'text-red-600';
       
       const fecha = new Date(partido.fecha_partido).toLocaleDateString('es-ES', {
@@ -1569,7 +1700,7 @@ class PadelApp {
         minute: '2-digit'
       });
 
-      return `
+      html += `
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <!-- Información principal -->
@@ -1601,7 +1732,9 @@ class PadelApp {
           </div>
         </div>
       `;
-    }).join('');
+    }
+    
+    container.innerHTML = html;
   }
 
   calcularRachaActual(partidos, jugadorId) {
@@ -1733,7 +1866,6 @@ class PadelApp {
 
 // Función global para validar inputs de sets
 function validarInputSet(input) {
-  console.log('validarInputSet ejecutada con:', input.id, input.value);
   
   let valor = input.value;
   
@@ -1772,14 +1904,14 @@ function validarInputSet(input) {
   const pareja1Input = document.getElementById(`pareja1-${setId}`);
   const pareja2Input = document.getElementById(`pareja2-${setId}`);
   
-  console.log('Set ID:', setId, 'Pareja1:', pareja1Input, 'Pareja2:', pareja2Input);
+
   
   // Aplicar sombreado a ambos inputs del set
   if (pareja1Input && pareja2Input) {
     const valor1 = parseInt(pareja1Input.value) || 0;
     const valor2 = parseInt(pareja2Input.value) || 0;
     
-    console.log('Valores:', valor1, valor2);
+
     
     // Color base para inputs con valor (mismo que bg-gray-50)
     const colorBase = '#f9fafb'; // Equivalente a bg-gray-50
@@ -1801,7 +1933,7 @@ function validarInputSet(input) {
       pareja2Input.style.backgroundColor = '#ffffff';
     }
     
-    console.log('Colores aplicados:', pareja1Input.style.backgroundColor, pareja2Input.style.backgroundColor);
+
   }
   
   // Calcular ganador del partido y mostrar copita
@@ -1832,7 +1964,7 @@ function calcularGanadorPartido() {
   if (pareja2_set2 > pareja1_set2) pareja2_sets++;
   if (pareja2_set3 > pareja1_set3) pareja2_sets++;
   
-  console.log('Sets ganados - Pareja 1:', pareja1_sets, 'Pareja 2:', pareja2_sets);
+
   
   // Determinar ganador
   let ganador = null;
@@ -1870,7 +2002,7 @@ function actualizarCopitas(ganador) {
     parejaBNames.appendChild(copita);
   }
   
-  console.log('Ganador del partido:', ganador === 1 ? 'Pareja A' : ganador === 2 ? 'Pareja B' : 'Empate');
+
 }
 
 // Inicializar aplicación cuando el DOM esté listo

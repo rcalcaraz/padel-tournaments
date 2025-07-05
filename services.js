@@ -147,7 +147,7 @@ class SupabaseService {
 
   async createPartido(datosPartido) {
     try {
-      console.log('📝 Datos del partido recibidos:', datosPartido);
+  
       
       // Validar que todos los jugadores estén seleccionados
       if (!datosPartido.pareja1_jugador1_id || !datosPartido.pareja1_jugador2_id || 
@@ -167,7 +167,7 @@ class SupabaseService {
       
       // Calcular ganador en el frontend para evitar el trigger
       const ganador = this.calcularGanador(datosPartido);
-      console.log('🏆 Ganador calculado:', ganador);
+
       
       const datosConGanador = {
         ...datosPartido,
@@ -175,7 +175,7 @@ class SupabaseService {
         fecha_partido: new Date().toISOString()
       };
       
-      console.log('📊 Datos finales para insertar:', datosConGanador);
+
       
       // Insertar el partido con el ganador ya calculado
       const { data, error } = await this.supabase
@@ -188,7 +188,17 @@ class SupabaseService {
         throw new Error(`Error en la base de datos: ${error.message}`);
       }
       
-      console.log('✅ Partido creado exitosamente:', data[0]);
+
+      
+      // Actualizar ELO de los jugadores después de crear el partido
+      try {
+        await this.getEstadisticasConELO();
+  
+      } catch (eloError) {
+        console.error('⚠️ Error actualizando ELO:', eloError);
+        // No fallar la creación del partido si falla la actualización del ELO
+      }
+      
       return { success: true, data: data[0] };
     } catch (error) {
       console.error('❌ Error creando partido:', error);
@@ -360,7 +370,8 @@ class SupabaseService {
         estadisticas: { victorias: 0, derrotas: 0, total: 0 }
       }));
 
-      // Calcular estadísticas y ELO basado en todos los partidos
+      // Calcular solo las estadísticas de partidos (no el ELO)
+  
       for (const partido of partidos) {
         if (!partido.ganador_pareja) continue;
 
@@ -371,22 +382,6 @@ class SupabaseService {
         const jugador4 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador2_id);
 
         if (!jugador1 || !jugador2 || !jugador3 || !jugador4) continue;
-
-        // Calcular rating promedio de cada pareja
-        const ratingPareja1 = EloUtils.calculateTeamRating(jugador1.rating_elo, jugador2.rating_elo);
-        const ratingPareja2 = EloUtils.calculateTeamRating(jugador3.rating_elo, jugador4.rating_elo);
-
-        // Calcular nuevos ratings
-        const nuevosRatings = EloUtils.calculateMatchRatings(ratingPareja1, ratingPareja2, partido.ganador_pareja);
-
-        // Actualizar ratings de los jugadores
-        const diferencia1 = nuevosRatings.pareja1 - ratingPareja1;
-        const diferencia2 = nuevosRatings.pareja2 - ratingPareja2;
-
-        jugador1.rating_elo = Math.max(100, jugador1.rating_elo + diferencia1);
-        jugador2.rating_elo = Math.max(100, jugador2.rating_elo + diferencia1);
-        jugador3.rating_elo = Math.max(100, jugador3.rating_elo + diferencia2);
-        jugador4.rating_elo = Math.max(100, jugador4.rating_elo + diferencia2);
 
         // Actualizar estadísticas
         if (partido.ganador_pareja === 1) {
@@ -406,56 +401,27 @@ class SupabaseService {
         jugador3.estadisticas.total++;
         jugador4.estadisticas.total++;
       }
+      
 
-      // Calcular progresión de ELO basada en los cambios de ELO a través de los partidos
-      jugadoresConELO.forEach(jugador => {
-        // Inicializar progresión en 0
-        jugador.progresion_elo = 0;
-        
-        // Calcular la progresión sumando todos los cambios de ELO en los partidos
-        for (const partido of partidos) {
-          if (!partido.ganador_pareja) continue;
-          
-          // Verificar si el jugador participó en este partido
-          const participoEnPartido = 
-            partido.pareja1_jugador1_id === jugador.id ||
-            partido.pareja1_jugador2_id === jugador.id ||
-            partido.pareja2_jugador1_id === jugador.id ||
-            partido.pareja2_jugador2_id === jugador.id;
-            
-          if (participoEnPartido) {
-            // Obtener jugadores del partido
-            const jugador1 = jugadoresConELO.find(j => j.id === partido.pareja1_jugador1_id);
-            const jugador2 = jugadoresConELO.find(j => j.id === partido.pareja1_jugador2_id);
-            const jugador3 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador1_id);
-            const jugador4 = jugadoresConELO.find(j => j.id === partido.pareja2_jugador2_id);
 
-            if (!jugador1 || !jugador2 || !jugador3 || !jugador4) continue;
+      // Obtener progresión de ELO real desde la base de datos para cada jugador
+      for (const jugador of jugadoresConELO) {
+        try {
+          const progresionResult = await this.getProgresionELOJugador(jugador.id);
+          if (progresionResult.success) {
+            jugador.progresion_elo = progresionResult.data;
 
-            // Calcular rating promedio de cada pareja
-            const ratingPareja1 = EloUtils.calculateTeamRating(jugador1.rating_elo, jugador2.rating_elo);
-            const ratingPareja2 = EloUtils.calculateTeamRating(jugador3.rating_elo, jugador4.rating_elo);
-
-            // Calcular nuevos ratings
-            const nuevosRatings = EloUtils.calculateMatchRatings(ratingPareja1, ratingPareja2, partido.ganador_pareja);
-
-            // Determinar a qué pareja pertenece el jugador y calcular su cambio
-            let cambioJugador = 0;
-            if (partido.pareja1_jugador1_id === jugador.id || partido.pareja1_jugador2_id === jugador.id) {
-              // Jugador está en pareja 1
-              const diferencia1 = nuevosRatings.pareja1 - ratingPareja1;
-              cambioJugador = diferencia1;
-            } else if (partido.pareja2_jugador1_id === jugador.id || partido.pareja2_jugador2_id === jugador.id) {
-              // Jugador está en pareja 2
-              const diferencia2 = nuevosRatings.pareja2 - ratingPareja2;
-              cambioJugador = diferencia2;
-            }
-            
-            // Sumar el cambio a la progresión total
-            jugador.progresion_elo += cambioJugador;
+          } else {
+            console.warn(`❌ No se pudo obtener progresión para jugador ${jugador.nombre} (ID: ${jugador.id}):`, progresionResult.error);
+            jugador.progresion_elo = 0;
           }
+        } catch (error) {
+          console.error(`❌ Error obteniendo progresión para jugador ${jugador.nombre} (ID: ${jugador.id}):`, error);
+          jugador.progresion_elo = 0;
         }
-      });
+      }
+
+      // No actualizar los ratings ELO en la base de datos - usar los valores existentes
 
       return { success: true, data: jugadoresConELO };
     } catch (error) {
@@ -493,48 +459,139 @@ class SupabaseService {
   // Método para verificar triggers en la tabla partidos
   async checkTableTriggers() {
     try {
-      console.log('🔍 Verificando triggers en la tabla partidos...');
-      
       const { data, error } = await this.supabase
         .rpc('get_table_triggers', { table_name: 'partidos' });
       
       if (error) {
-        console.log('❌ No se pudo verificar triggers:', error);
         return;
       }
       
-      console.log('📋 Triggers encontrados:', data);
     } catch (error) {
-      console.log('❌ Error verificando triggers:', error);
+      // Error silencioso
     }
   }
 
   // Método para verificar la estructura de la tabla
   async checkTableStructure() {
     try {
-      console.log('🔍 Verificando estructura de la tabla partidos...');
-      
       const { data, error } = await this.supabase
         .from('partidos')
         .select('*')
         .limit(0);
       
       if (error) {
-        console.log('❌ Error verificando estructura:', error);
         return;
       }
       
-      console.log('📋 Estructura de la tabla verificada');
     } catch (error) {
-      console.log('❌ Error verificando estructura:', error);
+      // Error silencioso
+    }
+  }
+
+  // Obtener cambios de ELO de un partido desde la base de datos
+  async getCambiosELOPartido(partidoId) {
+    try {
+      // Obtener el historial de ELO para este partido
+      const { data: historial, error } = await this.supabase
+        .from('historial_elo')
+        .select(`
+          jugador_id,
+          rating_anterior,
+          rating_nuevo,
+          jugadores!inner(nombre)
+        `)
+        .eq('partido_id', partidoId);
+
+      if (error) throw error;
+
+      // Convertir a formato de cambios
+      const cambios = {};
+      historial.forEach(cambio => {
+        const diferencia = cambio.rating_nuevo - cambio.rating_anterior;
+        cambios[`jugador_${cambio.jugador_id}`] = diferencia;
+      });
+
+      return { success: true, data: cambios };
+    } catch (error) {
+      console.error('Error obteniendo cambios de ELO:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Obtener progresión total de ELO de un jugador desde la base de datos
+  async getProgresionELOJugador(jugadorId) {
+    try {
+      // Obtener todo el historial de ELO del jugador
+      const { data: historial, error } = await this.supabase
+        .from('historial_elo')
+        .select(`
+          rating_anterior,
+          rating_nuevo,
+          partido_id,
+          fecha_cambio
+        `)
+        .eq('jugador_id', jugadorId)
+        .order('fecha_cambio', { ascending: true });
+
+      if (error) throw error;
+
+      // Calcular la progresión total sumando todos los cambios
+      let progresionTotal = 0;
+      historial.forEach(cambio => {
+        const diferencia = cambio.rating_nuevo - cambio.rating_anterior;
+        progresionTotal += diferencia;
+      });
+
+      return { success: true, data: progresionTotal };
+    } catch (error) {
+      console.error('Error obteniendo progresión de ELO:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Obtener ELO inicial de un jugador calculándolo desde el ELO actual y el histórico
+  async getELOInicialJugador(jugadorId) {
+    try {
+      // Obtener el ELO actual del jugador
+      const { data: jugador, error: jugadorError } = await this.supabase
+        .from('jugadores')
+        .select('rating_elo')
+        .eq('id', jugadorId)
+        .single();
+
+      if (jugadorError) throw jugadorError;
+
+      const eloActual = jugador.rating_elo || 1200;
+
+      // Obtener todo el historial de ELO del jugador
+      const { data: historial, error: historialError } = await this.supabase
+        .from('historial_elo')
+        .select(`
+          rating_anterior,
+          rating_nuevo
+        `)
+        .eq('jugador_id', jugadorId)
+        .order('fecha_cambio', { ascending: true });
+
+      if (historialError) throw historialError;
+
+      // Calcular el ELO inicial restando todos los cambios del histórico al ELO actual
+      let eloInicial = eloActual;
+      historial.forEach(cambio => {
+        const diferencia = cambio.rating_nuevo - cambio.rating_anterior;
+        eloInicial -= diferencia; // Restamos la diferencia para "deshacer" cada cambio
+      });
+
+      return { success: true, data: eloInicial };
+    } catch (error) {
+      console.error('Error obteniendo ELO inicial:', error);
+      return { success: false, error: error.message };
     }
   }
 
   // Método para verificar todos los triggers de la tabla partidos
   async checkAllTriggers() {
     try {
-      console.log('🔍 Verificando todos los triggers de la tabla partidos...');
-      
       // Consulta para obtener información de triggers
       const { data, error } = await this.supabase
         .from('information_schema.triggers')
@@ -542,24 +599,11 @@ class SupabaseService {
         .eq('event_object_table', 'partidos');
       
       if (error) {
-        console.log('❌ No se pudo verificar triggers:', error);
         return;
       }
       
-      console.log('📋 Triggers encontrados en la tabla partidos:');
-      data.forEach(trigger => {
-        console.log(`   - Nombre: ${trigger.trigger_name}`);
-        console.log(`   - Evento: ${trigger.event_manipulation}`);
-        console.log(`   - Timing: ${trigger.action_timing}`);
-        console.log(`   - Función: ${trigger.action_statement}`);
-        console.log('   ---');
-      });
-      
-      if (data.length === 0) {
-        console.log('   - No se encontraron triggers');
-      }
     } catch (error) {
-      console.log('❌ Error verificando triggers:', error);
+      // Error silencioso
     }
   }
 
