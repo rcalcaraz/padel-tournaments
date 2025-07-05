@@ -315,12 +315,12 @@
                 <div class="bg-gray-50 rounded-xl p-6 mb-8">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h4 class="text-[#1e293b] text-2xl font-bold mb-2">Pareja A</h4>
-                      <p id="pareja-a-names" class="text-[#64748b] text-xl">Selecciona los jugadores</p>
+                      <h4 id="pareja-a-names" class="text-[#1e293b] text-3xl font-bold mb-2">Selecciona los jugadores</h4>
+                      <p class="text-[#64748b] text-lg">Pareja A</p>
                     </div>
                     <div>
-                      <h4 class="text-[#1e293b] text-2xl font-bold mb-2">Pareja B</h4>
-                      <p id="pareja-b-names" class="text-[#64748b] text-xl">Selecciona los jugadores</p>
+                      <h4 id="pareja-b-names" class="text-[#1e293b] text-3xl font-bold mb-2">Selecciona los jugadores</h4>
+                      <p class="text-[#64748b] text-lg">Pareja B</p>
                     </div>
                   </div>
                 </div>
@@ -329,36 +329,32 @@
                 <div class="space-y-4 p-6 bg-white rounded-xl border border-gray-100 mb-6">
                   <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 1</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <label class="flex flex-col">
-                      <span id="pareja-a-set1-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
-                      <input
-                        id="pareja1-set1"
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        placeholder="0"
-                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
-                        value=""
-                        oninput="validarInputSet(this)"
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                      />
-                    </label>
-                    <label class="flex flex-col">
-                      <span id="pareja-b-set1-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
-                      <input
-                        id="pareja2-set1"
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        placeholder="0"
-                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
-                        value=""
-                        oninput="validarInputSet(this)"
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                      />
-                    </label>
+                    <input
+                      id="pareja1-set1"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="0"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onblur="calcularGanadorPartido()"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                    <input
+                      id="pareja2-set1"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="0"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onblur="calcularGanadorPartido()"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
                   </div>
                 </div>
                 
@@ -366,36 +362,32 @@
                 <div class="space-y-4 p-6 bg-white rounded-xl border border-gray-100 mb-6">
                   <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 2</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <label class="flex flex-col">
-                      <span id="pareja-a-set2-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
-                      <input
-                        id="pareja1-set2"
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        placeholder="0"
-                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
-                        value=""
-                        oninput="validarInputSet(this)"
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                      />
-                    </label>
-                    <label class="flex flex-col">
-                      <span id="pareja-b-set2-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
-                      <input
-                        id="pareja2-set2"
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        placeholder="0"
-                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
-                        value=""
-                        oninput="validarInputSet(this)"
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                      />
-                    </label>
+                    <input
+                      id="pareja1-set2"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="0"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onblur="calcularGanadorPartido()"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                    <input
+                      id="pareja2-set2"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="0"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onblur="calcularGanadorPartido()"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
                   </div>
                 </div>
                 
@@ -403,36 +395,32 @@
                 <div class="space-y-4 p-6 bg-white rounded-xl border border-gray-100">
                   <h4 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-[-0.015em]">Set 3</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <label class="flex flex-col">
-                      <span id="pareja-a-set3-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja A</span>
-                      <input
-                        id="pareja1-set3"
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        placeholder="0"
-                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
-                        value=""
-                        oninput="validarInputSet(this)"
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                      />
-                    </label>
-                    <label class="flex flex-col">
-                      <span id="pareja-b-set3-label" class="text-[#64748b] text-2xl font-medium mb-2">Pareja B</span>
-                      <input
-                        id="pareja2-set3"
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        placeholder="0"
-                        class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center"
-                        value=""
-                        oninput="validarInputSet(this)"
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                      />
-                    </label>
+                    <input
+                      id="pareja1-set3"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="0"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onblur="calcularGanadorPartido()"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
+                    <input
+                      id="pareja2-set3"
+                      type="number"
+                      min="0"
+                      max="99"
+                      step="1"
+                      placeholder="0"
+                      class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#3b82f6] h-20 placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal text-center transition-colors duration-200"
+                      value=""
+                      oninput="validarInputSet(this)"
+                      onblur="calcularGanadorPartido()"
+                      onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    />
                   </div>
                 </div>
                 

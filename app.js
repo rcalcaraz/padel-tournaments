@@ -908,19 +908,15 @@ class PadelApp {
     const nombre4 = jugador4.options[jugador4.selectedIndex].text;
 
     // Actualizar información de parejas
-    DOMUtils.getElement('pareja-a-names').textContent = `${nombre1} y ${nombre2}`;
-    DOMUtils.getElement('pareja-b-names').textContent = `${nombre3} y ${nombre4}`;
-
-    // Actualizar etiquetas de los sets
-    const parejaAName = `${nombre1} y ${nombre2}`;
-    const parejaBName = `${nombre3} y ${nombre4}`;
-
-    DOMUtils.getElement('pareja-a-set1-label').textContent = parejaAName;
-    DOMUtils.getElement('pareja-b-set1-label').textContent = parejaBName;
-    DOMUtils.getElement('pareja-a-set2-label').textContent = parejaAName;
-    DOMUtils.getElement('pareja-b-set2-label').textContent = parejaBName;
-    DOMUtils.getElement('pareja-a-set3-label').textContent = parejaAName;
-    DOMUtils.getElement('pareja-b-set3-label').textContent = parejaBName;
+    const parejaANames = DOMUtils.getElement('pareja-a-names');
+    const parejaBNames = DOMUtils.getElement('pareja-b-names');
+    
+    if (parejaANames) {
+      parejaANames.textContent = `${nombre1} y ${nombre2}`;
+    }
+    if (parejaBNames) {
+      parejaBNames.textContent = `${nombre3} y ${nombre4}`;
+    }
   }
 
   updateStepIndicators(step) {
@@ -966,6 +962,8 @@ class PadelApp {
 
 // Función global para validar inputs de sets
 function validarInputSet(input) {
+  console.log('validarInputSet ejecutada con:', input.id, input.value);
+  
   let valor = input.value;
   
   // Remover caracteres no numéricos
@@ -975,20 +973,116 @@ function validarInputSet(input) {
   let numero = parseInt(valor) || 0;
   
   // Aplicar límites
-  if (numero < APP_CONFIG.MIN_SETS) numero = APP_CONFIG.MIN_SETS;
-  if (numero > APP_CONFIG.MAX_SETS) numero = APP_CONFIG.MAX_SETS;
+  if (numero < 0) numero = 0;
+  if (numero > 99) numero = 99;
   
   // Actualizar el valor del input
   input.value = numero;
   
-  // Cambiar estilo según si tiene valor (incluyendo 0) o está vacío
-  if (input.value !== '') {
-    DOMUtils.setStyle(input, 'backgroundColor', '#dbeafe');
-    DOMUtils.setStyle(input, 'borderColor', '#2563eb');
-  } else {
-    DOMUtils.setStyle(input, 'backgroundColor', '#ffffff');
-    DOMUtils.setStyle(input, 'borderColor', '#dbeafe');
+  // Obtener el set correspondiente
+  const setId = input.id.split('-')[2]; // pareja1-set1 -> set1
+  const pareja1Input = document.getElementById(`pareja1-${setId}`);
+  const pareja2Input = document.getElementById(`pareja2-${setId}`);
+  
+  console.log('Set ID:', setId, 'Pareja1:', pareja1Input, 'Pareja2:', pareja2Input);
+  
+  // Aplicar sombreado a ambos inputs del set
+  if (pareja1Input && pareja2Input) {
+    const valor1 = parseInt(pareja1Input.value) || 0;
+    const valor2 = parseInt(pareja2Input.value) || 0;
+    
+    console.log('Valores:', valor1, valor2);
+    
+    // Color base para inputs con valor (mismo que bg-gray-50)
+    const colorBase = '#f9fafb'; // Equivalente a bg-gray-50
+    
+    // Aplicar color base a ambos inputs si tienen valor
+    if (valor1 > 0 || valor2 > 0) {
+      pareja1Input.style.backgroundColor = valor1 > 0 ? colorBase : '#ffffff';
+      pareja2Input.style.backgroundColor = valor2 > 0 ? colorBase : '#ffffff';
+      
+      // Si hay un ganador del set, aplicar color más oscuro
+      if (valor1 > valor2) {
+        pareja1Input.style.backgroundColor = '#e5e7eb'; // bg-gray-200 para ganador
+      } else if (valor2 > valor1) {
+        pareja2Input.style.backgroundColor = '#e5e7eb'; // bg-gray-200 para ganador
+      }
+    } else {
+      // Resetear colores si no hay valores
+      pareja1Input.style.backgroundColor = '#ffffff';
+      pareja2Input.style.backgroundColor = '#ffffff';
+    }
+    
+    console.log('Colores aplicados:', pareja1Input.style.backgroundColor, pareja2Input.style.backgroundColor);
   }
+  
+  // Calcular ganador del partido y mostrar copita
+  calcularGanadorPartido();
+}
+
+// Función para calcular el ganador del partido en tiempo real
+function calcularGanadorPartido() {
+  // Obtener todos los valores de los sets
+  const pareja1_set1 = parseInt(document.getElementById('pareja1-set1')?.value) || 0;
+  const pareja1_set2 = parseInt(document.getElementById('pareja1-set2')?.value) || 0;
+  const pareja1_set3 = parseInt(document.getElementById('pareja1-set3')?.value) || 0;
+  const pareja2_set1 = parseInt(document.getElementById('pareja2-set1')?.value) || 0;
+  const pareja2_set2 = parseInt(document.getElementById('pareja2-set2')?.value) || 0;
+  const pareja2_set3 = parseInt(document.getElementById('pareja2-set3')?.value) || 0;
+  
+  // Contar sets ganados por cada pareja
+  let pareja1_sets = 0;
+  let pareja2_sets = 0;
+  
+  // Contar sets ganados por pareja 1
+  if (pareja1_set1 > pareja2_set1) pareja1_sets++;
+  if (pareja1_set2 > pareja2_set2) pareja1_sets++;
+  if (pareja1_set3 > pareja2_set3) pareja1_sets++;
+  
+  // Contar sets ganados por pareja 2
+  if (pareja2_set1 > pareja1_set1) pareja2_sets++;
+  if (pareja2_set2 > pareja1_set2) pareja2_sets++;
+  if (pareja2_set3 > pareja1_set3) pareja2_sets++;
+  
+  console.log('Sets ganados - Pareja 1:', pareja1_sets, 'Pareja 2:', pareja2_sets);
+  
+  // Determinar ganador
+  let ganador = null;
+  if (pareja1_sets > pareja2_sets) {
+    ganador = 1;
+  } else if (pareja2_sets > pareja1_sets) {
+    ganador = 2;
+  }
+  
+  // Actualizar copitas
+  actualizarCopitas(ganador);
+}
+
+// Función para actualizar las copitas según el ganador
+function actualizarCopitas(ganador) {
+  const parejaANames = document.getElementById('pareja-a-names');
+  const parejaBNames = document.getElementById('pareja-b-names');
+  
+  // Remover copitas existentes
+  const copitasExistentes = document.querySelectorAll('.copita-ganador');
+  copitasExistentes.forEach(copita => copita.remove());
+  
+  // Añadir copita al ganador
+  if (ganador === 1 && parejaANames) {
+    const copita = document.createElement('span');
+    copita.className = 'copita-ganador ml-2 text-yellow-500 text-2xl';
+    copita.innerHTML = '🏆';
+    copita.title = 'Ganador del partido';
+    parejaANames.appendChild(copita);
+  } else if (ganador === 2 && parejaBNames) {
+    const copita = document.createElement('span');
+    copita.className = 'copita-ganador ml-2 text-yellow-500 text-2xl';
+    copita.innerHTML = '🏆';
+    copita.title = 'Ganador del partido';
+    parejaBNames.appendChild(copita);
+  }
+  
+  console.log('Ganador del partido:', ganador === 1 ? 'Pareja A' : ganador === 2 ? 'Pareja B' : 'Empate');
 }
 
 // Inicializar aplicación cuando el DOM esté listo
