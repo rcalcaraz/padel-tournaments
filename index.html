@@ -211,7 +211,17 @@
       <!-- Modal para añadir partido -->
       <div id="modal-partido" class="modal">
         <div class="modal-content">
-          <span class="close" id="cerrar-modal">&times;</span>
+          <span class="close" id="cerrar-modal" style="top: 32px; right: 20px; font-size: 24px;">&times;</span>
+          <button
+            id="btn-anterior-flecha"
+            type="button"
+            class="absolute left-6 top-8 w-16 h-16 rounded-full bg-white hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-center z-10 shadow-sm"
+            style="display: none;"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256" class="text-gray-600">
+              <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+            </svg>
+          </button>
           
           <div class="p-10">
             <!-- Indicador de pasos -->
@@ -242,7 +252,7 @@
                                           <select
                       id="jugador1"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
-                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
+                      onchange="this.style.backgroundColor = this.value ? '#f0f9ff' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 1</option>
                     </select>
@@ -251,7 +261,7 @@
                                           <select
                       id="jugador2"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
-                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
+                      onchange="this.style.backgroundColor = this.value ? '#f0f9ff' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 2</option>
                     </select>
@@ -267,7 +277,7 @@
                                           <select
                       id="jugador3"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
-                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
+                      onchange="this.style.backgroundColor = this.value ? '#f0f9ff' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 3</option>
                     </select>
@@ -276,7 +286,7 @@
                                           <select
                       id="jugador4"
                       class="form-input w-full rounded-lg text-[#1e293b] focus:outline-0 focus:ring-0 border border-[#dbeafe] bg-white focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb] focus:ring-opacity-20 h-28 bg-[image:--select-button-svg] placeholder:text-[#64748b] p-6 text-3xl font-normal leading-normal transition-colors duration-200"
-                      onchange="this.style.backgroundColor = this.value ? '#dbeafe' : '#ffffff'"
+                      onchange="this.style.backgroundColor = this.value ? '#f0f9ff' : '#ffffff'"
                     >
                       <option value="">Seleccionar Jugador 4</option>
                     </select>
@@ -289,7 +299,8 @@
                   <button
                     id="btn-siguiente"
                     type="button"
-                    class="flex min-w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-[#2563eb] text-white text-3xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
+                    class="flex min-w-[300px] items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-gray-100 text-gray-400 text-3xl font-normal leading-normal tracking-[0.015em] transition-colors cursor-not-allowed"
+                    disabled
                   >
                     <span class="truncate">Siguiente</span>
                   </button>
@@ -425,19 +436,12 @@
                   </div>
                 </div>
                 
-                <!-- Botones de navegación -->
-                <div class="flex justify-between pt-8">
-                  <button
-                    id="btn-anterior"
-                    type="button"
-                    class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-8 bg-gray-500 text-white text-2xl font-bold leading-normal tracking-[0.015em] hover:bg-gray-600 transition-colors"
-                  >
-                    <span class="truncate">Anterior</span>
-                  </button>
+                <!-- Botón de envío centrado -->
+                <div class="flex justify-center pt-8">
                   <button
                     id="enviar-partido"
                     type="submit"
-                    class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-8 bg-[#2563eb] text-white text-2xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
+                    class="flex min-w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-[#2563eb] text-white text-3xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors"
                   >
                     <span class="truncate">Enviar Partido</span>
                   </button>

@@ -136,7 +136,10 @@ class PadelApp {
     selectores.forEach(selectorId => {
       const selector = DOMUtils.getElement(selectorId);
       if (selector) {
-        selector.addEventListener('change', () => this.updateAvailableOptions());
+        selector.addEventListener('change', () => {
+          this.updateAvailableOptions();
+          this.checkFormCompletion();
+        });
       }
     });
 
@@ -690,6 +693,9 @@ class PadelApp {
 
     // Actualizar opciones disponibles
     this.updateAvailableOptions();
+    
+    // Verificar estado del botón siguiente
+    this.checkFormCompletion();
   }
 
   detenerAnimaciones() {
@@ -830,25 +836,14 @@ class PadelApp {
       btnSiguiente.addEventListener('click', () => this.nextStep());
     }
 
-    // Botón anterior
-    const btnAnterior = DOMUtils.getElement('btn-anterior');
-    if (btnAnterior) {
-      btnAnterior.addEventListener('click', () => this.previousStep());
+    // Botón anterior (flecha)
+    const btnAnteriorFlecha = DOMUtils.getElement('btn-anterior-flecha');
+    if (btnAnteriorFlecha) {
+      btnAnteriorFlecha.addEventListener('click', () => this.previousStep());
     }
   }
 
   nextStep() {
-    // Validar que todos los jugadores estén seleccionados
-    const jugador1 = DOMUtils.getElement('jugador1').value;
-    const jugador2 = DOMUtils.getElement('jugador2').value;
-    const jugador3 = DOMUtils.getElement('jugador3').value;
-    const jugador4 = DOMUtils.getElement('jugador4').value;
-
-    if (!jugador1 || !jugador2 || !jugador3 || !jugador4) {
-      alert('Por favor, selecciona todos los jugadores antes de continuar.');
-      return;
-    }
-
     // Actualizar nombres de las parejas
     this.updateParejaNames();
 
@@ -856,14 +851,45 @@ class PadelApp {
     DOMUtils.getElement('step1').classList.add('hidden');
     DOMUtils.getElement('step2').classList.remove('hidden');
 
+    // Mostrar flecha de volver atrás
+    const btnAnteriorFlecha = DOMUtils.getElement('btn-anterior-flecha');
+    if (btnAnteriorFlecha) {
+      btnAnteriorFlecha.style.display = 'flex';
+    }
+
     // Actualizar indicadores
     this.updateStepIndicators(2);
+  }
+
+  checkFormCompletion() {
+    const jugador1 = DOMUtils.getElement('jugador1').value;
+    const jugador2 = DOMUtils.getElement('jugador2').value;
+    const jugador3 = DOMUtils.getElement('jugador3').value;
+    const jugador4 = DOMUtils.getElement('jugador4').value;
+    
+    const btnSiguiente = DOMUtils.getElement('btn-siguiente');
+    
+    if (jugador1 && jugador2 && jugador3 && jugador4) {
+      // Habilitar botón
+      btnSiguiente.disabled = false;
+      btnSiguiente.className = 'flex min-w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-[#2563eb] text-white text-3xl font-bold leading-normal tracking-[0.015em] hover:bg-[#1d4ed8] transition-colors';
+    } else {
+      // Deshabilitar botón
+      btnSiguiente.disabled = true;
+      btnSiguiente.className = 'flex min-w-[300px] items-center justify-center overflow-hidden rounded-lg h-20 px-12 bg-gray-100 text-gray-400 text-3xl font-normal leading-normal tracking-[0.015em] transition-colors cursor-not-allowed';
+    }
   }
 
   previousStep() {
     // Ocultar paso 2 y mostrar paso 1
     DOMUtils.getElement('step2').classList.add('hidden');
     DOMUtils.getElement('step1').classList.remove('hidden');
+
+    // Ocultar flecha de volver atrás
+    const btnAnteriorFlecha = DOMUtils.getElement('btn-anterior-flecha');
+    if (btnAnteriorFlecha) {
+      btnAnteriorFlecha.style.display = 'none';
+    }
 
     // Actualizar indicadores
     this.updateStepIndicators(1);
@@ -922,6 +948,12 @@ class PadelApp {
     // Volver al paso 1
     DOMUtils.getElement('step1').classList.remove('hidden');
     DOMUtils.getElement('step2').classList.add('hidden');
+
+    // Ocultar flecha de volver atrás
+    const btnAnteriorFlecha = DOMUtils.getElement('btn-anterior-flecha');
+    if (btnAnteriorFlecha) {
+      btnAnteriorFlecha.style.display = 'none';
+    }
 
     // Resetear indicadores
     this.updateStepIndicators(1);
