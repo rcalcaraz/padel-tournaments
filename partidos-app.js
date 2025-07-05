@@ -63,177 +63,237 @@ class PartidosApp {
       loading.innerHTML = `
         <div class="grid grid-cols-1 gap-6 max-w-full mx-auto">
           <!-- Skeleton 1 -->
-          <div class="bg-white p-6 sm:p-8 rounded-lg shadow-sm">
-            <div class="flex flex-col gap-6">
+          <div class="bg-white p-8 sm:p-10 rounded-lg shadow-sm">
+            <div class="flex flex-col gap-8">
               <!-- Encabezado del partido -->
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
-                  <div class="h-8 bg-gray-200 rounded animate-pulse mb-2 w-32"></div>
-                  <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
+                  <div class="h-12 bg-gray-200 rounded animate-pulse mb-3 w-40"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
                 </div>
-                <div class="h-10 bg-gray-200 rounded-full animate-pulse w-32"></div>
+                <div class="h-12 bg-gray-200 rounded-full animate-pulse w-48"></div>
               </div>
               
               <!-- Jugadores con cambios de ELO en dos columnas -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <!-- Pareja A -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                  <div class="h-6 bg-gray-200 rounded animate-pulse mb-4 w-20 mx-auto"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                <div class="bg-gray-50 rounded-lg p-8">
+                  <div class="h-10 bg-gray-200 rounded animate-pulse mb-8 w-24 mx-auto"></div>
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
                 <!-- Pareja B -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                  <div class="h-6 bg-gray-200 rounded animate-pulse mb-4 w-20 mx-auto"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                <div class="bg-gray-50 rounded-lg p-8">
+                  <div class="h-10 bg-gray-200 rounded animate-pulse mb-8 w-24 mx-auto"></div>
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
               <!-- Resultado final -->
-              <div class="text-center border-t pt-6">
-                <div class="bg-gray-200 rounded-lg p-6 mb-4 animate-pulse">
-                  <div class="h-8 bg-gray-300 rounded animate-pulse mb-2 w-48 mx-auto"></div>
-                  <div class="h-6 bg-gray-300 rounded animate-pulse w-32 mx-auto"></div>
-                </div>
-                <div class="flex justify-center gap-4">
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+              <div class="text-center border-t pt-8">
+                <div class="bg-gray-200 rounded-lg p-10 mb-8 animate-pulse">
+                  <div class="h-12 bg-gray-300 rounded animate-pulse mb-4 w-64 mx-auto"></div>
+                  <div class="h-8 bg-gray-300 rounded animate-pulse w-48 mx-auto"></div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Skeleton 2 -->
-          <div class="bg-white p-6 sm:p-8 rounded-lg shadow-sm">
-            <div class="flex flex-col gap-6">
+          <div class="bg-white p-8 sm:p-10 rounded-lg shadow-sm">
+            <div class="flex flex-col gap-8">
               <!-- Encabezado del partido -->
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
-                  <div class="h-8 bg-gray-200 rounded animate-pulse mb-2 w-32"></div>
-                  <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
+                  <div class="h-12 bg-gray-200 rounded animate-pulse mb-3 w-40"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
                 </div>
-                <div class="h-10 bg-gray-200 rounded-full animate-pulse w-32"></div>
+                <div class="h-12 bg-gray-200 rounded-full animate-pulse w-48"></div>
               </div>
               
               <!-- Jugadores con cambios de ELO en dos columnas -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <!-- Pareja A -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                  <div class="h-6 bg-gray-200 rounded animate-pulse mb-4 w-20 mx-auto"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                <div class="bg-gray-50 rounded-lg p-8">
+                  <div class="h-10 bg-gray-200 rounded animate-pulse mb-8 w-24 mx-auto"></div>
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
                 <!-- Pareja B -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                  <div class="h-6 bg-gray-200 rounded animate-pulse mb-4 w-20 mx-auto"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                <div class="bg-gray-50 rounded-lg p-8">
+                  <div class="h-10 bg-gray-200 rounded animate-pulse mb-8 w-24 mx-auto"></div>
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
               <!-- Resultado final -->
-              <div class="text-center border-t pt-6">
-                <div class="bg-gray-200 rounded-lg p-6 mb-4 animate-pulse">
-                  <div class="h-8 bg-gray-300 rounded animate-pulse mb-2 w-48 mx-auto"></div>
-                  <div class="h-6 bg-gray-300 rounded animate-pulse w-32 mx-auto"></div>
-                </div>
-                <div class="flex justify-center gap-4">
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+              <div class="text-center border-t pt-8">
+                <div class="bg-gray-200 rounded-lg p-10 mb-8 animate-pulse">
+                  <div class="h-12 bg-gray-300 rounded animate-pulse mb-4 w-64 mx-auto"></div>
+                  <div class="h-8 bg-gray-300 rounded animate-pulse w-48 mx-auto"></div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Skeleton 3 -->
-          <div class="bg-white p-6 sm:p-8 rounded-lg shadow-sm">
-            <div class="flex flex-col gap-6">
+          <div class="bg-white p-8 sm:p-10 rounded-lg shadow-sm">
+            <div class="flex flex-col gap-8">
               <!-- Encabezado del partido -->
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
-                  <div class="h-8 bg-gray-200 rounded animate-pulse mb-2 w-32"></div>
-                  <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
+                  <div class="h-12 bg-gray-200 rounded animate-pulse mb-3 w-40"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
                 </div>
-                <div class="h-10 bg-gray-200 rounded-full animate-pulse w-32"></div>
+                <div class="h-12 bg-gray-200 rounded-full animate-pulse w-48"></div>
               </div>
               
               <!-- Jugadores con cambios de ELO en dos columnas -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <!-- Pareja A -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                  <div class="h-6 bg-gray-200 rounded animate-pulse mb-4 w-20 mx-auto"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                <div class="bg-gray-50 rounded-lg p-8">
+                  <div class="h-10 bg-gray-200 rounded animate-pulse mb-8 w-24 mx-auto"></div>
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
                 <!-- Pareja B -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                  <div class="h-6 bg-gray-200 rounded animate-pulse mb-4 w-20 mx-auto"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                <div class="bg-gray-50 rounded-lg p-8">
+                  <div class="h-10 bg-gray-200 rounded animate-pulse mb-8 w-24 mx-auto"></div>
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
-                      <div class="h-6 bg-gray-200 rounded-full animate-pulse w-12"></div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+                      <div class="flex-1">
+                        <div class="h-8 bg-gray-200 rounded animate-pulse mb-3 w-32"></div>
+                        <div class="h-6 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
+                      <div class="text-right">
+                        <div class="h-10 bg-gray-200 rounded animate-pulse mb-2 w-16"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
               <!-- Resultado final -->
-              <div class="text-center border-t pt-6">
-                <div class="bg-gray-200 rounded-lg p-6 mb-4 animate-pulse">
-                  <div class="h-8 bg-gray-300 rounded animate-pulse mb-2 w-48 mx-auto"></div>
-                  <div class="h-6 bg-gray-300 rounded animate-pulse w-32 mx-auto"></div>
-                </div>
-                <div class="flex justify-center gap-4">
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+              <div class="text-center border-t pt-8">
+                <div class="bg-gray-200 rounded-lg p-10 mb-8 animate-pulse">
+                  <div class="h-12 bg-gray-300 rounded animate-pulse mb-4 w-64 mx-auto"></div>
+                  <div class="h-8 bg-gray-300 rounded animate-pulse w-48 mx-auto"></div>
                 </div>
               </div>
             </div>
