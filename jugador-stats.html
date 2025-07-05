@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estadísticas del Jugador - Torneos de Pádel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+      <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Pantalla de carga -->
+  <div id="loading" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-8"></div>
+      <h2 class="text-3xl font-bold text-gray-800 mb-4">Cargando estadísticas...</h2>
+      <p class="text-gray-600 text-lg">Preparando la información del jugador</p>
+    </div>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div id="error-message" class="hidden fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center max-w-md mx-auto p-8">
+      <div class="text-red-500 text-6xl mb-4">⚠️</div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Error</h2>
+      <p id="error-text" class="text-gray-600 mb-6"></p>
+      <button onclick="window.location.reload()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        Recargar página
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensaje de configuración -->
+  <div id="config-message" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center max-w-md mx-auto p-8">
+      <div class="text-blue-500 text-6xl mb-4">⚙️</div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Configuración requerida</h2>
+      <p class="text-gray-600 mb-6">Por favor configura las credenciales de Supabase en el archivo config.js</p>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div id="main-content" class="hidden">
+    <!-- Menú de navegación -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-12 sm:h-16">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Torneos de Pádel</h1>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-2 sm:space-x-4 lg:space-x-8">
+            <!-- Botón Clasificación -->
+            <button id="nav-clasificacion" class="nav-button flex items-center space-x-1 sm:space-x-2 text-gray-600 hover:text-blue-600 transition-colors">
+              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgMTNIMTFWNUgzVjEzWk0zIDIwSDExVjE4SDNWMjBaTTEzIDVIMjFWMTRIMTNWNVpNMTMgMjBIMjFWMThIMTNWMjBaIiBmaWxsPSJjdXJyZW50Q29sb3IiLz4KPC9zdmc+" alt="Clasificación" class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
+              <span class="text-sm sm:text-base lg:text-lg font-medium hidden sm:inline">Clasificación</span>
+            </button>
+            
+            <!-- Botón Partidos -->
+            <button id="nav-partidos" class="nav-button flex items-center space-x-1 sm:space-x-2 text-gray-600 hover:text-blue-600 transition-colors">
+              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyQzIgMTcuNTIgNi40OCAyMiAxMiAyMkMxNy41MiAyMiAyMiAxNy41MiAyMiAxMkMyMiA2LjQ4IDE3LjUyIDIgMTIgMlpNMTIgMjBDNy41OSAyMCA0IDE2LjQxIDQgMTJDNCA3LjU5IDcuNTkgNCAxMiA0QzE2LjQxIDQgMjAgNy41OSAyMCAxMkMyMCAxNi40MSAxNi40MSAyMCAxMiAyMFpNMTIgNkM4LjY5IDYgNiA4LjY5IDYgMTJDNiAxNS4zMSA4LjY5IDE4IDEyIDE4QzE1LjMxIDE4IDE4IDE1LjMxIDE4IDEyQzE4IDguNjkgMTUuMzEgNiAxMiA2Wk0xMiAxNkM5Ljc5IDE2IDggMTQuMjEgOCAxMkM4IDkuNzkgOS43OSA4IDEyIDhDMTQuMjEgOCAxNiA5Ljc5IDE2IDEyQzE2IDE0LjIxIDE0LjIxIDE2IDEyIDE2WiIgZmlsbD0iY3VycmVudENvbG9yIi8+Cjwvc3ZnPgo=" alt="Partidos" class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
+              <span class="text-sm sm:text-base lg:text-lg font-medium hidden sm:inline">Partidos</span>
+            </button>
+            
+            <!-- Botón Añadir Partido -->
+            <button id="nav-anadir-partido" class="nav-button flex items-center space-x-1 sm:space-x-2 text-gray-600 hover:text-blue-600 transition-colors">
+              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyQzIgMTcuNTIgNi40OCAyMiAxMiAyMkMxNy41MiAyMiAyMiAxNy41MiAyMiAxMkMyMiA2LjQ4IDE3LjUyIDIgMTIgMlpNMTIgMjBDNy41OSAyMCA0IDE2LjQxIDQgMTJDNCA3LjU5IDcuNTkgNCAxMiA0QzE2LjQxIDQgMjAgNy41OSAyMCAxMkMyMCAxNi40MSAxNi40MSAyMCAxMiAyMFpNMTMgMTFIMTlWMTNIMTNWMTlaTTExIDEzSDVWMTFIMTFWMTNaIiBmaWxsPSJjdXJyZW50Q29sb3IiLz4KPC9zdmc+" alt="Añadir Partido" class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
+              <span class="text-sm sm:text-base lg:text-lg font-medium hidden sm:inline">Añadir Partido</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido de la página -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <!-- Información del jugador -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+          <div class="flex-shrink-0">
+            <div id="player-avatar" class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-blue-100 rounded-full flex items-center justify-center text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600">
+              J
+            </div>
+          </div>
+          <div class="flex-1 text-center sm:text-left">
+            <h1 id="player-name" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Cargando...</h1>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              <div class="text-center">
+                <div id="player-elo" class="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">-</div>
+                <div class="text-xs sm:text-sm text-gray-500">ELO</div>
+              </div>
+              <div class="text-center">
+                <div id="player-wins" class="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">-</div>
+                <div class="text-xs sm:text-sm text-gray-500">Victorias</div>
+              </div>
+              <div class="text-center">
+                <div id="player-losses" class="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">-</div>
+                <div class="text-xs sm:text-sm text-gray-500">Derrotas</div>
+              </div>
+              <div class="text-center">
+                <div id="player-winrate" class="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600">-</div>
+                <div class="text-xs sm:text-sm text-gray-500">% Victoria</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfica de progresión ELO -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Progresión ELO</h2>
+        <div class="h-64 sm:h-80 lg:h-96">
+          <canvas id="eloChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Últimos partidos -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Últimos Partidos</h2>
+        <div id="recent-matches" class="space-y-3 sm:space-y-4">
+          <div class="text-center py-6 sm:py-8">
+            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-3 sm:mb-4"></div>
+            <p class="text-sm sm:text-base text-gray-600">Cargando partidos...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="services.js"></script>
+  <script src="utils.js"></script>
+  <script src="jugador-stats-app.js"></script>
+</body>
+</html> 

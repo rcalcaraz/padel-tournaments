@@ -729,23 +729,10 @@ class PadelApp {
     
     playerCards.forEach(card => {
       card.addEventListener('click', () => {
-        // Verificar si la tarjeta ya está seleccionada
-        const isAlreadySelected = card.classList.contains('ring-4');
-        
-        // Remover destacado de todas las tarjetas
-        playerCards.forEach(c => {
-          DOMUtils.removeClass(c, 'ring-4');
-          DOMUtils.removeClass(c, 'ring-blue-500');
-          DOMUtils.removeClass(c, 'ring-opacity-50');
-          DOMUtils.removeClass(c, 'shadow-lg');
-        });
-        
-        // Si la tarjeta no estaba seleccionada, añadir el destacado
-        if (!isAlreadySelected) {
-          DOMUtils.addClass(card, 'ring-4');
-          DOMUtils.addClass(card, 'ring-blue-500');
-          DOMUtils.addClass(card, 'ring-opacity-50');
-          DOMUtils.addClass(card, 'shadow-lg');
+        const jugadorId = card.dataset.jugadorId;
+        if (jugadorId) {
+          // Redirigir a la página de estadísticas del jugador
+          window.location.href = `jugador-stats.html?id=${jugadorId}`;
         }
       });
     });
