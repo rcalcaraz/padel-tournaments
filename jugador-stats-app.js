@@ -45,20 +45,8 @@ class JugadorStatsApp {
   }
 
   setupNavigation() {
-    // Botón Clasificación
-    document.getElementById('nav-clasificacion').addEventListener('click', () => {
-      window.location.href = 'index.html';
-    });
-
-    // Botón Partidos
-    document.getElementById('nav-partidos').addEventListener('click', () => {
-      window.location.href = 'partidos.html';
-    });
-
-    // Botón Añadir Partido
-    document.getElementById('nav-anadir-partido').addEventListener('click', () => {
-      window.location.href = 'index.html#modal';
-    });
+    // La navegación ahora se maneja con enlaces directos en el HTML
+    // No necesitamos JavaScript para la navegación
   }
 
   async loadJugadorData() {
@@ -142,8 +130,9 @@ class JugadorStatsApp {
     const avatar = document.getElementById('player-avatar');
     avatar.textContent = this.jugador.nombre.charAt(0).toUpperCase();
     
-    // ELO
-    document.getElementById('player-elo').textContent = this.jugador.elo || 1500;
+    // ELO actual
+    const eloActual = this.jugador.elo || 1500;
+    document.getElementById('player-elo').textContent = eloActual;
     
     // Calcular estadísticas
     const stats = this.calculateStats();
@@ -155,6 +144,28 @@ class JugadorStatsApp {
     // Porcentaje de victoria
     const winRate = stats.total > 0 ? Math.round((stats.victorias / stats.total) * 100) : 0;
     document.getElementById('player-winrate').textContent = winRate + '%';
+    
+    // Calcular progresión total del ELO
+    const eloInicial = 1500;
+    const progresionElo = eloActual - eloInicial;
+    const progresionTexto = progresionElo >= 0 ? `+${progresionElo}` : `${progresionElo}`;
+    const progresionColor = progresionElo >= 0 ? 'text-green-600' : 'text-red-600';
+    
+    // Añadir la progresión ELO al HTML
+    const statsContainer = document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-5');
+    if (statsContainer) {
+      // Crear el elemento de progresión ELO
+      const progresionElement = document.createElement('div');
+      progresionElement.className = 'text-center';
+      progresionElement.innerHTML = `
+        <div class="text-xl sm:text-2xl lg:text-3xl font-bold ${progresionColor}">${progresionTexto}</div>
+        <div class="text-xs sm:text-sm text-gray-500">Progresión ELO</div>
+      `;
+      
+      // Insertar después del primer elemento (ELO actual)
+      const eloElement = statsContainer.children[0];
+      statsContainer.insertBefore(progresionElement, eloElement.nextSibling);
+    }
   }
 
   calculateStats() {
