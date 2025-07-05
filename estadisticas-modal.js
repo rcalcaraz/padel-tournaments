@@ -29,8 +29,10 @@ class EstadisticasModal {
 
     // Event listener para navegación de pestañas
     document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('tab-button')) {
-        this.cambiarPestana(e.target.dataset.tab);
+      // Buscar el botón de pestaña más cercano (el botón mismo o un elemento hijo)
+      const tabButton = e.target.closest('.tab-button');
+      if (tabButton) {
+        this.cambiarPestana(tabButton.dataset.tab);
       }
     });
   }
@@ -461,6 +463,11 @@ class EstadisticasModal {
       const pareja1Names = `${partido.pareja1_jugador1?.nombre || 'N/A'} y ${partido.pareja1_jugador2?.nombre || 'N/A'}`;
       const pareja2Names = `${partido.pareja2_jugador1?.nombre || 'N/A'} y ${partido.pareja2_jugador2?.nombre || 'N/A'}`;
       
+      // Calcular cambio de ELO
+      const cambioELO = this.calcularCambioELOPartido(partido, jugadorId);
+      const cambioELOTexto = cambioELO >= 0 ? `+${cambioELO}` : `${cambioELO}`;
+      const cambioELOColor = cambioELO >= 0 ? 'text-green-600' : 'text-red-600';
+      
       const fecha = new Date(partido.fecha_partido).toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'short',
@@ -470,18 +477,30 @@ class EstadisticasModal {
       });
 
       return `
-        <div class="bg-gray-50 rounded-lg p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <!-- Información principal -->
             <div class="flex-1">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 mb-2">
-                <span class="text-base sm:text-lg text-gray-500">${fecha}</span>
-                ${esGanador ? '<span class="text-green-600 font-semibold text-base sm:text-lg">🏆 Victoria</span>' : '<span class="text-red-600 font-semibold text-base sm:text-lg">❌ Derrota</span>'}
+              <!-- Fecha y resultado -->
+              <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
+                <span class="text-lg sm:text-xl text-gray-500 font-medium">${fecha}</span>
+                <div class="flex items-center space-x-3">
+                  ${esGanador 
+                    ? '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-lg sm:text-xl font-bold">🏆 Victoria</span>' 
+                    : '<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-lg sm:text-xl font-bold">❌ Derrota</span>'
+                  }
+                  <span class="text-lg sm:text-xl font-bold ${cambioELOColor}">${cambioELOTexto} ELO</span>
+                </div>
               </div>
-              <div class="text-base sm:text-lg lg:text-xl font-medium">
+              
+              <!-- Parejas -->
+              <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
                 ${pareja1Names} vs ${pareja2Names}
               </div>
-              <div class="text-sm sm:text-base text-gray-600 mt-1">
-                ${partido.pareja1_set1}-${partido.pareja2_set1}, ${partido.pareja1_set2}-${partido.pareja2_set2}${partido.pareja1_set3 ? `, ${partido.pareja1_set3}-${partido.pareja2_set3}` : ''}
+              
+              <!-- Resultado detallado -->
+              <div class="text-lg sm:text-xl text-gray-600 font-medium">
+                ${partido.pareja1_set1}-${partido.pareja2_set1} | ${partido.pareja1_set2}-${partido.pareja2_set2}${partido.pareja1_set3 ? ` | ${partido.pareja1_set3}-${partido.pareja2_set3}` : ''}
               </div>
             </div>
           </div>

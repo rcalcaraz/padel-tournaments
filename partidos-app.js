@@ -3,6 +3,7 @@ class PartidosApp {
   constructor() {
     this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
     this.currentJugadorId = null; // Para el modal de estadísticas
+    this.jugadores = []; // Array para almacenar los jugadores
     this.init();
   }
 
@@ -543,8 +544,10 @@ class PartidosApp {
 
     // Event listeners para navegación de pestañas
     document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('tab-button')) {
-        this.cambiarPestana(e.target.dataset.tab);
+      // Buscar el botón de pestaña más cercano (el botón mismo o un elemento hijo)
+      const tabButton = e.target.closest('.tab-button');
+      if (tabButton) {
+        this.cambiarPestana(tabButton.dataset.tab);
       }
     });
   }
@@ -590,6 +593,9 @@ class PartidosApp {
         throw new Error(estadisticasResult.error);
       }
       
+      // Guardar los jugadores en la propiedad de la clase
+      this.jugadores = estadisticasResult.data;
+      
       // Buscar el jugador en los datos de la clasificación
       console.log('Buscando jugador con ID:', jugadorId, 'Tipo:', typeof jugadorId);
       console.log('Jugadores disponibles:', estadisticasResult.data.map(j => ({ id: j.id, nombre: j.nombre })));
@@ -611,6 +617,9 @@ class PartidosApp {
       
       // Crear gráfica ELO
       this.createEloChart(partidos, jugadorId);
+      
+      // Calcular y mostrar estadísticas detalladas
+      this.calcularEstadisticasDetalladas(partidos, jugadorId);
       
       // Mostrar últimos partidos
       this.displayRecentMatches(partidos, jugadorId);
@@ -735,7 +744,7 @@ class PartidosApp {
               }
             },
             grid: {
-              color: '#e2e8f0'
+              display: false
             },
             ticks: {
               color: '#64748b',
@@ -756,7 +765,7 @@ class PartidosApp {
               }
             },
             grid: {
-              color: '#e2e8f0'
+              display: false
             },
             ticks: {
               color: '#64748b',
@@ -772,6 +781,141 @@ class PartidosApp {
         }
       }
     });
+  }
+
+  // Función para calcular y mostrar estadísticas detalladas
+  calcularEstadisticasDetalladas(partidos, jugadorId) {
+    if (!partidos || partidos.length === 0) {
+      // Mostrar valores por defecto si no hay partidos
+      DOMUtils.getElement('elo-ultimos-5').textContent = '0';
+      DOMUtils.getElement('media-puntos-set').textContent = '0';
+      DOMUtils.getElement('porcentaje-remontadas').textContent = '0%';
+      DOMUtils.getElement('porcentaje-victorias-aplastantes').textContent = '0%';
+      DOMUtils.getElement('porcentaje-derrotas-aplastantes').textContent = '0%';
+      return;
+    }
+
+    // Ordenar partidos por fecha (más recientes primero)
+    const partidosOrdenados = partidos.sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido));
+
+    // 1. ELO últimos 5 partidos
+    const ultimos5Partidos = partidosOrdenados.slice(0, 5);
+    let progresionELOUltimos5 = 0;
+    ultimos5Partidos.forEach(partido => {
+      progresionELOUltimos5 += this.calcularCambioELOPartido(partido, jugadorId);
+    });
+    DOMUtils.getElement('elo-ultimos-5').textContent = progresionELOUltimos5 >= 0 ? `+${progresionELOUltimos5}` : `${progresionELOUltimos5}`;
+
+    // 2. Media de puntos por set
+    let totalPuntos = 0;
+    let totalSets = 0;
+    partidos.forEach(partido => {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      if (estaEnPareja1) {
+        totalPuntos += (partido.pareja1_set1 || 0) + (partido.pareja1_set2 || 0) + (partido.pareja1_set3 || 0);
+        totalSets += (partido.pareja1_set1 ? 1 : 0) + (partido.pareja1_set2 ? 1 : 0) + (partido.pareja1_set3 ? 1 : 0);
+      } else {
+        totalPuntos += (partido.pareja2_set1 || 0) + (partido.pareja2_set2 || 0) + (partido.pareja2_set3 || 0);
+        totalSets += (partido.pareja2_set1 ? 1 : 0) + (partido.pareja2_set2 ? 1 : 0) + (partido.pareja2_set3 ? 1 : 0);
+      }
+    });
+    const mediaPuntosSet = totalSets > 0 ? (totalPuntos / totalSets).toFixed(1) : '0.0';
+    DOMUtils.getElement('media-puntos-set').textContent = mediaPuntosSet;
+
+    // 3. Porcentaje de remontadas
+    let partidosConRemontada = 0;
+    let partidosConPrimerSetPerdido = 0;
+    partidos.forEach(partido => {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      if (!ganadorPareja) return;
+      
+      const primerSetPerdido = estaEnPareja1 ? 
+        (partido.pareja1_set1 < partido.pareja2_set1) : 
+        (partido.pareja2_set1 < partido.pareja1_set1);
+      
+      const esGanador = (estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2);
+      
+      if (primerSetPerdido) {
+        partidosConPrimerSetPerdido++;
+        if (esGanador) {
+          partidosConRemontada++;
+        }
+      }
+    });
+    const porcentajeRemontadas = partidosConPrimerSetPerdido > 0 ? 
+      Math.round((partidosConRemontada / partidosConPrimerSetPerdido) * 100) : 0;
+    DOMUtils.getElement('porcentaje-remontadas').textContent = `${porcentajeRemontadas}%`;
+    DOMUtils.getElement('porcentaje-remontadas').innerHTML = `${porcentajeRemontadas}% <span class="text-sm sm:text-base lg:text-lg text-gray-500">(${partidosConRemontada} de ${partidosConPrimerSetPerdido})</span>`;
+
+    // 4. Porcentaje de victorias aplastantes
+    let victoriasAplastantes = 0;
+    let totalVictorias = 0;
+    partidos.forEach(partido => {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      if (!ganadorPareja) return;
+      
+      const esGanador = (estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2);
+      
+      if (esGanador) {
+        totalVictorias++;
+        
+        // Solo considerar partidos de 2 sets para victorias aplastantes
+        if (!partido.pareja1_set3 && !partido.pareja2_set3) {
+          const puntosGanados = estaEnPareja1 ? 
+            (partido.pareja1_set1 + partido.pareja1_set2) : 
+            (partido.pareja2_set1 + partido.pareja2_set2);
+          const puntosPerdidos = estaEnPareja1 ? 
+            (partido.pareja2_set1 + partido.pareja2_set2) : 
+            (partido.pareja1_set1 + partido.pareja1_set2);
+          
+          if ((puntosGanados - puntosPerdidos) > 7) {
+            victoriasAplastantes++;
+          }
+        }
+      }
+    });
+    const porcentajeVictoriasAplastantes = totalVictorias > 0 ? 
+      Math.round((victoriasAplastantes / totalVictorias) * 100) : 0;
+    DOMUtils.getElement('porcentaje-victorias-aplastantes').textContent = `${porcentajeVictoriasAplastantes}%`;
+    DOMUtils.getElement('porcentaje-victorias-aplastantes').innerHTML = `${porcentajeVictoriasAplastantes}% <span class="text-sm sm:text-base lg:text-lg text-gray-500">(${victoriasAplastantes} de ${totalVictorias})</span>`;
+
+    // 5. Porcentaje de derrotas aplastantes
+    let derrotasAplastantes = 0;
+    let totalDerrotas = 0;
+    partidos.forEach(partido => {
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const ganadorPareja = partido.ganador_pareja;
+      
+      if (!ganadorPareja) return;
+      
+      const esPerdedor = !((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2));
+      
+      if (esPerdedor) {
+        totalDerrotas++;
+        
+        // Solo considerar partidos de 2 sets para derrotas aplastantes
+        if (!partido.pareja1_set3 && !partido.pareja2_set3) {
+          const puntosGanados = estaEnPareja1 ? 
+            (partido.pareja1_set1 + partido.pareja1_set2) : 
+            (partido.pareja2_set1 + partido.pareja2_set2);
+          const puntosPerdidos = estaEnPareja1 ? 
+            (partido.pareja2_set1 + partido.pareja2_set2) : 
+            (partido.pareja1_set1 + partido.pareja1_set2);
+          
+          if ((puntosPerdidos - puntosGanados) > 7) {
+            derrotasAplastantes++;
+          }
+        }
+      }
+    });
+    const porcentajeDerrotasAplastantes = totalDerrotas > 0 ? 
+      Math.round((derrotasAplastantes / totalDerrotas) * 100) : 0;
+    DOMUtils.getElement('porcentaje-derrotas-aplastantes').textContent = `${porcentajeDerrotasAplastantes}%`;
+    DOMUtils.getElement('porcentaje-derrotas-aplastantes').innerHTML = `${porcentajeDerrotasAplastantes}% <span class="text-sm sm:text-base lg:text-lg text-gray-500">(${derrotasAplastantes} de ${totalDerrotas})</span>`;
   }
 
   prepareChartData(partidos, jugadorId) {
@@ -942,47 +1086,68 @@ class PartidosApp {
     if (!partidos || partidos.length === 0) {
       recentMatchesContainer.innerHTML = `
         <div class="text-center py-6 sm:py-8">
-          <p class="text-gray-500 text-lg sm:text-xl">No hay partidos recientes</p>
+          <div class="text-gray-400 text-4xl sm:text-6xl mb-3 sm:mb-4">🏓</div>
+          <p class="text-gray-600 text-base sm:text-lg">No hay partidos registrados aún.</p>
+          <p class="text-gray-500 text-sm sm:text-base">Juega algunos partidos para ver el historial aquí.</p>
         </div>
       `;
       return;
     }
     
-    // Ordenar partidos por fecha (más recientes primero)
+    // Ordenar partidos por fecha (más recientes primero) y mostrar solo los últimos 10
     const partidosOrdenados = partidos
       .sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido))
-      .slice(0, 5); // Mostrar solo los últimos 5 partidos
+      .slice(0, 10);
     
     const matchesHTML = partidosOrdenados.map(partido => {
-      const fecha = DateUtils.formatDate(partido.fecha_partido);
       const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
       const ganadorPareja = partido.ganador_pareja;
-      const esVictoria = ganadorPareja && ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2));
+      const esGanador = ganadorPareja && ((estaEnPareja1 && ganadorPareja === 1) || (!estaEnPareja1 && ganadorPareja === 2));
       
-      // Obtener nombres de los jugadores
-      const pareja1Jugador1 = partido.pareja1_jugador1?.nombre || 'Jugador 1';
-      const pareja1Jugador2 = partido.pareja1_jugador2?.nombre || 'Jugador 2';
-      const pareja2Jugador1 = partido.pareja2_jugador1?.nombre || 'Jugador 3';
-      const pareja2Jugador2 = partido.pareja2_jugador2?.nombre || 'Jugador 4';
+      const pareja1Names = `${partido.pareja1_jugador1?.nombre || 'N/A'} y ${partido.pareja1_jugador2?.nombre || 'N/A'}`;
+      const pareja2Names = `${partido.pareja2_jugador1?.nombre || 'N/A'} y ${partido.pareja2_jugador2?.nombre || 'N/A'}`;
       
+      // Calcular cambio de ELO
+      const cambioELO = this.calcularCambioELOPartido(partido, jugadorId);
+      const cambioELOTexto = cambioELO >= 0 ? `+${cambioELO}` : `${cambioELO}`;
+      const cambioELOColor = cambioELO >= 0 ? 'text-green-600' : 'text-red-600';
+      
+      const fecha = new Date(partido.fecha_partido).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
       return `
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div class="flex-1">
-            <div class="flex items-center space-x-2">
-              <span class="text-3xl font-bold ${esVictoria ? 'text-green-600' : 'text-red-600'}">
-                ${esVictoria ? '🏆' : '❌'}
-              </span>
-              <span class="text-xl sm:text-2xl font-medium text-gray-900">
-                ${fecha}
-              </span>
-            </div>
-            <div class="text-lg sm:text-xl text-gray-600 mt-1">
-              ${pareja1Jugador1} & ${pareja1Jugador2} vs ${pareja2Jugador1} & ${pareja2Jugador2}
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-xl sm:text-2xl font-bold text-gray-900">
-              Partido #${partido.id}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <!-- Información principal -->
+            <div class="flex-1">
+              <!-- Fecha y resultado -->
+              <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
+                <span class="text-xl sm:text-2xl lg:text-3xl text-gray-500 font-medium">${fecha}</span>
+                <div class="flex items-center space-x-3">
+                  ${esGanador 
+                    ? '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xl sm:text-2xl lg:text-3xl font-bold">Victoria</span>' 
+                    : '<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xl sm:text-2xl lg:text-3xl font-bold">Derrota</span>'
+                  }
+                  <span class="text-xl sm:text-2xl lg:text-3xl font-bold ${cambioELOColor} flex items-center">
+                    ${cambioELO >= 0 ? '↗' : '↘'} ${cambioELOTexto} ELO
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Parejas -->
+              <div class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-blue-600 mb-3">
+                ${pareja1Names} vs ${pareja2Names}
+              </div>
+              
+              <!-- Resultado detallado -->
+              <div class="text-xl sm:text-2xl lg:text-3xl text-gray-600 font-medium">
+                ${partido.pareja1_set1}-${partido.pareja2_set1} | ${partido.pareja1_set2}-${partido.pareja2_set2}${partido.pareja1_set3 ? ` | ${partido.pareja1_set3}-${partido.pareja2_set3}` : ''}
+              </div>
             </div>
           </div>
         </div>
@@ -1044,6 +1209,44 @@ class PartidosApp {
     if (rating >= 1400) return 'Intermedio';
     if (rating >= 1200) return 'Principiante';
     return 'Novato';
+  }
+
+  // Calcular cambio de ELO en un partido específico
+  calcularCambioELOPartido(partido, jugadorId) {
+    if (!partido.ganador_pareja) return 0;
+
+    // Obtener ratings de los jugadores
+    const jugador1 = this.jugadores.find(j => j.id === partido.pareja1_jugador1_id);
+    const jugador2 = this.jugadores.find(j => j.id === partido.pareja1_jugador2_id);
+    const jugador3 = this.jugadores.find(j => j.id === partido.pareja2_jugador1_id);
+    const jugador4 = this.jugadores.find(j => j.id === partido.pareja2_jugador2_id);
+
+    const rating1 = jugador1?.rating_elo || 1200;
+    const rating2 = jugador2?.rating_elo || 1200;
+    const rating3 = jugador3?.rating_elo || 1200;
+    const rating4 = jugador4?.rating_elo || 1200;
+
+    // Calcular rating promedio de cada pareja
+    const ratingPareja1 = (rating1 + rating2) / 2;
+    const ratingPareja2 = (rating3 + rating4) / 2;
+
+    // Determinar en qué pareja está el jugador
+    const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+    const ratingJugador = estaEnPareja1 ? ratingPareja1 : ratingPareja2;
+    const ratingOponente = estaEnPareja1 ? ratingPareja2 : ratingPareja1;
+
+    // Calcular probabilidad esperada
+    const probabilidadEsperada = 1 / (1 + Math.pow(10, (ratingOponente - ratingJugador) / 400));
+
+    // Determinar resultado
+    const esVictoria = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+    const resultado = esVictoria ? 1 : 0;
+
+    // Calcular cambio de ELO (K-factor = 32)
+    const K = 32;
+    const cambioELO = Math.round(K * (resultado - probabilidadEsperada));
+
+    return cambioELO;
   }
 
   // Función para cambiar entre pestañas
