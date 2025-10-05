@@ -503,9 +503,9 @@ class PadelApp {
               <div class="bg-white p-8 rounded-lg shadow-sm">
                 <div class="space-y-6">
                   <div class="flex justify-between items-center">
-                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Victorias:</span>
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">% Victorias:</span>
                     <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''} ${criterioActual === 'victorias' ? claseDestacado : ''}">
-                      ${estadisticas.victorias}
+                      ${totalPartidos > 0 ? Math.round((estadisticas.victorias / totalPartidos) * 100) : 0}%
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
@@ -515,9 +515,9 @@ class PadelApp {
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Total partidos:</span>
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Victorias:</span>
                     <span class="text-[#64748b] text-3xl sm:text-4xl font-bold">
-                      ${totalPartidos}
+                      ${estadisticas.victorias}
                     </span>
                   </div>
                 </div>
@@ -809,21 +809,21 @@ class PadelApp {
 
     
     if (criterio === 'victorias') {
-      // Ordenar por victorias (descendente), en caso de empate por menos partidos jugados
+      // Ordenar por porcentaje de victorias (descendente), en caso de empate por más partidos jugados
       this.jugadores.sort((a, b) => {
         const statsA = a.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
         const statsB = b.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
-        const victoriasA = statsA.victorias;
-        const victoriasB = statsB.victorias;
         const totalA = statsA.total || (statsA.victorias + statsA.derrotas);
         const totalB = statsB.total || (statsB.victorias + statsB.derrotas);
         
-
+        // Calcular porcentaje de victorias
+        const porcentajeA = totalA > 0 ? (statsA.victorias / totalA) * 100 : 0;
+        const porcentajeB = totalB > 0 ? (statsB.victorias / totalB) * 100 : 0;
         
-        if (victoriasA !== victoriasB) {
-          return victoriasB - victoriasA; // Más victorias primero
+        if (Math.abs(porcentajeA - porcentajeB) < 0.01) { // Empate en porcentaje (tolerancia de 0.01%)
+          return totalB - totalA; // Más partidos jugados primero en caso de empate
         } else {
-          return totalA - totalB; // Menos partidos jugados primero en caso de empate
+          return porcentajeB - porcentajeA; // Mayor porcentaje primero
         }
       });
     } else if (criterio === 'elo') {
