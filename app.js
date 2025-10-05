@@ -438,13 +438,13 @@ class PadelApp {
           <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Pos</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Jugador</th>
-                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">% Victorias</th>
-                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">Victorias</th>
-                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">Derrotas</th>
-                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">ELO</th>
-                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">Progresión</th>
+                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">Pos</th>
+                <th class="px-4 py-5 text-left text-lg font-semibold text-gray-700 uppercase tracking-wider">Jugador</th>
+                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">% Vic</th>
+                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">V</th>
+                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">D</th>
+                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">ELO</th>
+                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">+/-</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -619,44 +619,44 @@ class PadelApp {
     return `
       <tr class="bg-white hover:bg-gray-50 transition-colors duration-200 cursor-pointer player-row ${claseAnimacion}" data-jugador-id="${jugador.id}">
         <!-- Posición -->
-        <td class="px-6 py-4 text-center">
+        <td class="px-4 py-5 text-center">
           <div class="flex items-center justify-center w-12 h-12 bg-[#111714] text-white text-xl font-bold rounded-full mx-auto">
             ${posicion}
           </div>
         </td>
         
         <!-- Nombre -->
-        <td class="px-6 py-4">
+        <td class="px-4 py-5">
           <div class="text-2xl font-bold text-[#1e293b]">${jugador.nombre}</div>
         </td>
         
         <!-- % Victorias -->
-        <td class="px-6 py-4 text-center">
-          <div class="text-xl font-bold ${victoriasCambiaron ? 'text-green-600' : 'text-gray-700'} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300' : ''}">
+        <td class="px-4 py-5 text-center">
+          <div class="text-2xl font-bold ${victoriasCambiaron ? 'text-green-600' : 'text-gray-700'} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}">
             ${totalPartidos > 0 ? Math.round((estadisticas.victorias / totalPartidos) * 100) : 0}%
           </div>
         </td>
         
         <!-- Victorias -->
-        <td class="px-6 py-4 text-center">
-          <div class="text-xl font-bold text-gray-700">${estadisticas.victorias}</div>
+        <td class="px-4 py-5 text-center">
+          <div class="text-2xl font-bold text-gray-700">${estadisticas.victorias}</div>
         </td>
         
         <!-- Derrotas -->
-        <td class="px-6 py-4 text-center">
-          <div class="text-xl font-bold ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'}">${estadisticas.derrotas}</div>
+        <td class="px-4 py-5 text-center">
+          <div class="text-2xl font-bold ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'}">${estadisticas.derrotas}</div>
         </td>
         
         <!-- ELO -->
-        <td class="px-6 py-4 text-center">
-          <div class="text-xl font-bold ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
+        <td class="px-4 py-5 text-center">
+          <div class="text-2xl font-bold ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
             ${jugador.rating_elo || 1200}
           </div>
         </td>
         
         <!-- Progresión -->
-        <td class="px-6 py-4 text-center">
-          <div class="text-xl font-bold ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
+        <td class="px-4 py-5 text-center">
+          <div class="text-2xl font-bold ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
             ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
           </div>
         </td>
