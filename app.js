@@ -4,6 +4,7 @@ class PadelApp {
     this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
     this.isProcessing = false;
     this.ordenActual = 'victorias'; // 'victorias' o 'elo'
+    this.vistaActual = 'cards'; // 'cards' o 'tabla'
     this.jugadores = []; // Almacenar jugadores para ordenar localmente
     this.currentJugadorId = null; // Para el modal de estadísticas
     
@@ -115,6 +116,10 @@ class PadelApp {
     DOMUtils.getElement('ordenar-elo').addEventListener('click', () => this.ordenarJugadores('elo'));
     DOMUtils.getElement('ordenar-progresion').addEventListener('click', () => this.ordenarJugadores('progresion'));
     
+    // Event listeners para cambio de vista
+    DOMUtils.getElement('vista-cards').addEventListener('click', () => this.cambiarVista('cards'));
+    DOMUtils.getElement('vista-tabla').addEventListener('click', () => this.cambiarVista('tabla'));
+    
     // Event listeners para la modal
     DOMUtils.getElement('abrir-modal-partido').addEventListener('click', () => this.abrirModal());
     DOMUtils.getElement('cerrar-modal').addEventListener('click', () => this.cerrarModal());
@@ -217,6 +222,7 @@ class PadelApp {
       this.displayJugadores(this.jugadores);
       this.fillPlayerSelectors(this.jugadores);
       this.actualizarBotonesOrdenacion();
+      this.actualizarBotonesVista();
       
       return result;
     } catch (error) {
@@ -425,17 +431,46 @@ class PadelApp {
     // Guardar estadísticas anteriores para comparar
     const estadisticasAnteriores = this.getEstadisticasAnteriores();
     
-    container.innerHTML = '';
-    jugadores.forEach((jugador, index) => {
-      const posicion = index + 1;
-      const jugadorHTML = this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
-      container.innerHTML += jugadorHTML;
-    });
+    if (this.vistaActual === 'tabla') {
+      // Crear tabla con encabezados
+      const tableHTML = `
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Pos</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Jugador</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">% Victorias</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">Victorias</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">Derrotas</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">ELO</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">Progresión</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              ${jugadores.map((jugador, index) => {
+                const posicion = index + 1;
+                return this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      container.innerHTML = tableHTML;
+    } else {
+      // Vista de cards
+      container.innerHTML = '';
+      jugadores.forEach((jugador, index) => {
+        const posicion = index + 1;
+        const jugadorHTML = this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
+        container.innerHTML += jugadorHTML;
+      });
+    }
     
     // Guardar estadísticas actuales para la próxima comparación
     this.guardarEstadisticasActuales(jugadores);
     
-    // Añadir event listeners para el destacado de tarjetas
+    // Añadir event listeners para el destacado de tarjetas/filas
     this.setupPlayerCardListeners();
     
     // Detener animaciones después de 3 segundos
@@ -467,6 +502,14 @@ class PadelApp {
   }
 
   createJugadorHTML(jugador, estadisticasAnteriores, posicion) {
+    if (this.vistaActual === 'tabla') {
+      return this.createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion);
+    } else {
+      return this.createJugadorCardHTML(jugador, estadisticasAnteriores, posicion);
+    }
+  }
+
+  createJugadorCardHTML(jugador, estadisticasAnteriores, posicion) {
     // Usar estadísticas ya calculadas en el objeto jugador
     const estadisticas = jugador.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
     const statsAnteriores = estadisticasAnteriores[jugador.id] || { victorias: 0, derrotas: 0 };
@@ -551,6 +594,73 @@ class PadelApp {
           </div>
         </div>
       </div>
+    `;
+  }
+
+  createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion) {
+    // Usar estadísticas ya calculadas en el objeto jugador
+    const estadisticas = jugador.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
+    const statsAnteriores = estadisticasAnteriores[jugador.id] || { victorias: 0, derrotas: 0 };
+    const victoriasCambiaron = statsAnteriores.victorias !== estadisticas.victorias;
+    const derrotasCambiaron = statsAnteriores.derrotas !== estadisticas.derrotas;
+    const tieneCambios = victoriasCambiaron || derrotasCambiaron;
+    
+    const claseAnimacion = tieneCambios ? 'animate-pulse bg-green-50' : '';
+    
+    // Siempre mostrar victorias, derrotas y ELO
+    const ratingColor = EloUtils.getRatingColor(jugador.rating_elo || 1200);
+    const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
+    const totalPartidos = estadisticas.total || (estadisticas.victorias + estadisticas.derrotas);
+    
+    // Determinar qué dato resaltar según el criterio de ordenación
+    const criterioActual = this.ordenActual || 'victorias';
+    const claseDestacado = 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300';
+    
+    return `
+      <tr class="bg-white hover:bg-gray-50 transition-colors duration-200 cursor-pointer player-row ${claseAnimacion}" data-jugador-id="${jugador.id}">
+        <!-- Posición -->
+        <td class="px-6 py-4 text-center">
+          <div class="flex items-center justify-center w-12 h-12 bg-[#111714] text-white text-xl font-bold rounded-full mx-auto">
+            ${posicion}
+          </div>
+        </td>
+        
+        <!-- Nombre -->
+        <td class="px-6 py-4">
+          <div class="text-2xl font-bold text-[#1e293b]">${jugador.nombre}</div>
+        </td>
+        
+        <!-- % Victorias -->
+        <td class="px-6 py-4 text-center">
+          <div class="text-xl font-bold ${victoriasCambiaron ? 'text-green-600' : 'text-gray-700'} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300' : ''}">
+            ${totalPartidos > 0 ? Math.round((estadisticas.victorias / totalPartidos) * 100) : 0}%
+          </div>
+        </td>
+        
+        <!-- Victorias -->
+        <td class="px-6 py-4 text-center">
+          <div class="text-xl font-bold text-gray-700">${estadisticas.victorias}</div>
+        </td>
+        
+        <!-- Derrotas -->
+        <td class="px-6 py-4 text-center">
+          <div class="text-xl font-bold ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'}">${estadisticas.derrotas}</div>
+        </td>
+        
+        <!-- ELO -->
+        <td class="px-6 py-4 text-center">
+          <div class="text-xl font-bold ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
+            ${jugador.rating_elo || 1200}
+          </div>
+        </td>
+        
+        <!-- Progresión -->
+        <td class="px-6 py-4 text-center">
+          <div class="text-xl font-bold ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
+            ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
+          </div>
+        </td>
+      </tr>
     `;
   }
 
@@ -791,16 +901,48 @@ class PadelApp {
 
   setupPlayerCardListeners() {
     const playerCards = DOMUtils.getElements('.player-card');
+    const playerRows = DOMUtils.getElements('.player-row');
     
+    // Event listeners para cards
     playerCards.forEach(card => {
       card.addEventListener('click', () => {
         const jugadorId = card.dataset.jugadorId;
         if (jugadorId) {
-          // Abrir modal de estadísticas del jugador
           this.abrirModalEstadisticas(parseInt(jugadorId));
         }
       });
     });
+    
+    // Event listeners para filas de tabla
+    playerRows.forEach(row => {
+      row.addEventListener('click', () => {
+        const jugadorId = row.dataset.jugadorId;
+        if (jugadorId) {
+          this.abrirModalEstadisticas(parseInt(jugadorId));
+        }
+      });
+    });
+  }
+
+  cambiarVista(nuevaVista) {
+    this.vistaActual = nuevaVista;
+    this.actualizarBotonesVista();
+    this.displayJugadores(this.jugadores);
+  }
+
+  actualizarBotonesVista() {
+    const botonCards = DOMUtils.getElement('vista-cards');
+    const botonTabla = DOMUtils.getElement('vista-tabla');
+    
+    if (this.vistaActual === 'cards') {
+      // Cards activo
+      botonCards.className = 'w-12 h-12 bg-white text-[#1e293b] rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center border-2 border-blue-300 hover:shadow-xl hover:scale-105 active:scale-95';
+      botonTabla.className = 'w-12 h-12 text-[#64748b] rounded-2xl transition-all duration-300 flex items-center justify-center hover:text-[#1e293b] hover:bg-white hover:shadow-lg hover:scale-105 active:scale-95';
+    } else {
+      // Tabla activa
+      botonTabla.className = 'w-12 h-12 bg-white text-[#1e293b] rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center border-2 border-blue-300 hover:shadow-xl hover:scale-105 active:scale-95';
+      botonCards.className = 'w-12 h-12 text-[#64748b] rounded-2xl transition-all duration-300 flex items-center justify-center hover:text-[#1e293b] hover:bg-white hover:shadow-lg hover:scale-105 active:scale-95';
+    }
   }
 
   // Ordenar jugadores según el criterio especificado
@@ -861,7 +1003,7 @@ class PadelApp {
       // Resetear todos los botones al estado inactivo
       const botones = [botonVictorias, botonELO, botonProgresion];
       botones.forEach(boton => {
-        boton.className = 'px-8 py-4 text-[#64748b] rounded-xl transition-all duration-200 text-2xl font-medium whitespace-nowrap hover:text-[#1e293b]';
+        boton.className = 'px-10 py-5 text-[#64748b] rounded-2xl transition-all duration-300 text-2xl font-semibold whitespace-nowrap hover:text-[#1e293b] hover:bg-white hover:shadow-lg hover:scale-105 active:scale-95';
       });
       
       // Activar el botón correspondiente al orden actual
