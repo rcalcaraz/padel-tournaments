@@ -488,14 +488,15 @@ class PadelApp {
     return `
       <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
         <div class="flex items-center gap-8">
-          <!-- Posición -->
-          <div class="flex items-center justify-center w-20 h-20 bg-[#111714] text-white text-4xl font-bold rounded-full flex-shrink-0">
-            ${posicion}
-          </div>
-          
           <!-- Información del Jugador -->
           <div class="flex-1">
-            <h3 class="text-[#1e293b] text-5xl sm:text-[2.75rem] font-bold mb-8">${jugador.nombre}</h3>
+            <div class="flex items-center gap-6 mb-8">
+              <!-- Posición -->
+              <div class="flex items-center justify-center w-16 h-16 bg-[#111714] text-white text-3xl font-bold rounded-full flex-shrink-0">
+                ${posicion}
+              </div>
+              <h3 class="text-[#1e293b] text-5xl sm:text-[2.75rem] font-bold">${jugador.nombre}</h3>
+            </div>
             
             <!-- Estadísticas en dos columnas -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
