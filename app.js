@@ -627,12 +627,19 @@ class PadelApp {
         
         <!-- Nombre -->
         <td class="px-4 py-5">
-          <div class="text-3xl text-[#1e293b]">${jugador.nombre}</div>
+          <div class="text-3xl font-bold text-[#1e293b]">${jugador.nombre}</div>
         </td>
         
         <!-- % Victorias -->
         <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${victoriasCambiaron ? 'text-green-600' : 'text-gray-700'} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}">
+          <div class="text-3xl ${criterioActual === 'victorias' ? 'font-bold' : ''} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${totalPartidos > 0 ? (() => {
+            const porcentaje = Math.round((estadisticas.victorias / totalPartidos) * 100);
+            if (porcentaje >= 80) return '#059669'; // Verde para 80%+
+            if (porcentaje >= 60) return '#0d9488'; // Verde-azul para 60-79%
+            if (porcentaje >= 40) return '#0891b2'; // Azul para 40-59%
+            if (porcentaje >= 20) return '#7c3aed'; // Púrpura para 20-39%
+            return '#dc2626'; // Rojo para menos de 20%
+          })() : '#6b7280'};">
             ${totalPartidos > 0 ? Math.round((estadisticas.victorias / totalPartidos) * 100) : 0}%
           </div>
         </td>
@@ -649,14 +656,14 @@ class PadelApp {
         
         <!-- ELO -->
         <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
+          <div class="text-3xl ${criterioActual === 'elo' ? 'font-bold' : ''} ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
             ${jugador.rating_elo || 1200}
           </div>
         </td>
         
         <!-- Progresión -->
         <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
+          <div class="text-3xl ${criterioActual === 'progresion' ? 'font-bold' : ''} ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
             ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
           </div>
         </td>
