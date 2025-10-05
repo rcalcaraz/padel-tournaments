@@ -486,7 +486,7 @@ class PadelApp {
     const claseDestacado = 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300';
     
     return `
-      <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
+      <div class="bg-gray-50 p-8 rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300 player-card ${claseAnimacion} cursor-pointer" data-jugador-id="${jugador.id}">
         <div class="flex items-center gap-8">
           <!-- Información del Jugador -->
           <div class="flex-1">
