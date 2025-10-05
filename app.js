@@ -627,36 +627,36 @@ class PadelApp {
         
         <!-- Nombre -->
         <td class="px-4 py-5">
-          <div class="text-2xl font-bold text-[#1e293b]">${jugador.nombre}</div>
+          <div class="text-3xl font-bold text-[#1e293b]">${jugador.nombre}</div>
         </td>
         
         <!-- % Victorias -->
         <td class="px-4 py-5 text-center">
-          <div class="text-2xl font-bold ${victoriasCambiaron ? 'text-green-600' : 'text-gray-700'} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}">
+          <div class="text-3xl font-bold ${victoriasCambiaron ? 'text-green-600' : 'text-gray-700'} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}">
             ${totalPartidos > 0 ? Math.round((estadisticas.victorias / totalPartidos) * 100) : 0}%
           </div>
         </td>
         
         <!-- Victorias -->
         <td class="px-4 py-5 text-center">
-          <div class="text-2xl font-bold text-gray-700">${estadisticas.victorias}</div>
+          <div class="text-3xl font-bold text-gray-700">${estadisticas.victorias}</div>
         </td>
         
         <!-- Derrotas -->
         <td class="px-4 py-5 text-center">
-          <div class="text-2xl font-bold ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'}">${estadisticas.derrotas}</div>
+          <div class="text-3xl font-bold ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'}">${estadisticas.derrotas}</div>
         </td>
         
         <!-- ELO -->
         <td class="px-4 py-5 text-center">
-          <div class="text-2xl font-bold ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
+          <div class="text-3xl font-bold ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
             ${jugador.rating_elo || 1200}
           </div>
         </td>
         
         <!-- Progresión -->
         <td class="px-4 py-5 text-center">
-          <div class="text-2xl font-bold ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
+          <div class="text-3xl font-bold ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
             ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
           </div>
         </td>
