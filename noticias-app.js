@@ -173,16 +173,16 @@ class NoticiasGenerator {
     const nombres = ganadores.join(', ');
 
     return `
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 h-48">
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 uppercase tracking-wide mb-3">Mayor paliza de la semana</h3>
-          <div class="text-2xl font-bold text-gray-900">${nombres}</div>
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 h-64">
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-gray-700 uppercase tracking-wide mb-4">Mayor paliza de la semana</h3>
+          <div class="text-3xl font-bold text-gray-900">${nombres}</div>
           ${esEmpate ? '<div class="text-sm text-gray-500 mt-1">(Empate)</div>' : ''}
         </div>
         
         <div class="flex items-center justify-between">
-          <div class="text-4xl font-bold text-red-600">${mayorDiferencia}</div>
-          <div class="text-lg text-gray-500">sets de diferencia</div>
+          <div class="text-5xl font-bold text-red-600">${mayorDiferencia}</div>
+          <div class="text-xl text-gray-500">sets de diferencia</div>
         </div>
       </div>
     `;
@@ -526,15 +526,15 @@ class NoticiasGenerator {
   // Función auxiliar para crear cards con el estilo de las estadísticas
   crearCardHTML(titulo, nombre, valor, unidad, icono, bgColor, textColor) {
     return `
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 h-48">
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 uppercase tracking-wide mb-3">${titulo}</h3>
-          <div class="text-2xl font-bold text-gray-900">${nombre}</div>
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 h-64">
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-gray-700 uppercase tracking-wide mb-4">${titulo}</h3>
+          <div class="text-3xl font-bold text-gray-900">${nombre}</div>
         </div>
         
         <div class="flex items-center justify-between">
-          <div class="text-4xl font-bold ${textColor}">${valor}</div>
-          <div class="text-lg text-gray-500">${unidad}</div>
+          <div class="text-5xl font-bold ${textColor}">${valor}</div>
+          <div class="text-xl text-gray-500">${unidad}</div>
         </div>
       </div>
     `;
@@ -545,15 +545,15 @@ class NoticiasGenerator {
     const nombres = jugadoresEmpatados.map(j => j.jugador.nombre).join(', ');
     
     return `
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 h-48">
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 uppercase tracking-wide mb-3">${titulo}</h3>
-          <div class="text-2xl font-bold text-gray-900">${nombres}</div>
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 h-64">
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-gray-700 uppercase tracking-wide mb-4">${titulo}</h3>
+          <div class="text-3xl font-bold text-gray-900">${nombres}</div>
         </div>
         
         <div class="flex items-center justify-between">
-          <div class="text-4xl font-bold ${textColor}">${valor}</div>
-          <div class="text-lg text-gray-500">${unidad}</div>
+          <div class="text-5xl font-bold ${textColor}">${valor}</div>
+          <div class="text-xl text-gray-500">${unidad}</div>
         </div>
       </div>
     `;
