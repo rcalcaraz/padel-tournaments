@@ -592,37 +592,24 @@ class NoticiasGenerator {
     return partidosJugador.slice(0, 5);
   }
 
-  // Función auxiliar para calcular el cambio de ELO en los últimos 5 partidos
+  // Función auxiliar para calcular el cambio de ELO en los últimos 5 partidos (OPTIMIZADA)
   async calcularCambioELOUltimos5Partidos(jugadorId, partidos) {
     if (partidos.length === 0) return 0;
 
     let cambioELO = 0;
     
-    // Obtener cambios reales de ELO desde la base de datos para los últimos 5 partidos
+    // Usar cálculo simulado para mejor rendimiento (sin llamadas al servidor)
     for (const partido of partidos) {
-      try {
-        const cambiosResult = await this.supabaseService.getCambiosELOPartido(partido.id);
-        if (cambiosResult.success) {
-          // Buscar el cambio específico para este jugador
-          const cambioJugador = cambiosResult.data[`jugador_${jugadorId}`];
-          if (cambioJugador !== undefined) {
-            cambioELO += cambioJugador;
-          }
-        }
-      } catch (error) {
-        console.warn(`Error obteniendo cambios de ELO para partido ${partido.id}:`, error);
-        // Fallback al cálculo local si hay error
-        const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
-        const gano = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
-        
-        if (gano) {
-          cambioELO += 15; // Ganancia promedio por victoria
-        } else {
-          cambioELO -= 15; // Pérdida promedio por derrota
-        }
+      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+      const gano = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+      
+      if (gano) {
+        cambioELO += 15; // Ganancia promedio por victoria
+      } else {
+        cambioELO -= 15; // Pérdida promedio por derrota
       }
     }
-
+    
     return cambioELO;
   }
 
