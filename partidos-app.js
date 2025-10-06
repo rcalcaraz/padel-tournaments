@@ -1,12 +1,15 @@
 // Aplicación para la página de partidos
 class PartidosApp {
   constructor() {
-    this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
+    // Usar el servicio global si está disponible, sino crear uno nuevo
+    this.supabaseService = window.supabaseService || new SupabaseService(SUPABASE_CONFIG);
     this.currentJugadorId = null; // Para el modal de estadísticas
     this.jugadores = []; // Array para almacenar los jugadores
     
-    // Hacer disponible globalmente para el script de recálculo
-    window.supabaseService = this.supabaseService;
+    // Hacer disponible globalmente si no existe
+    if (!window.supabaseService) {
+      window.supabaseService = this.supabaseService;
+    }
     
     this.init();
   }
@@ -33,21 +36,13 @@ class PartidosApp {
     try {
       this.showLoading();
       
-      // Guardar el tiempo de inicio
-      const startTime = Date.now();
-      
-      // Cargar los partidos
-      const partidos = await this.supabaseService.getPartidos();
-      
-      // Calcular cuánto tiempo ha pasado
-      const elapsedTime = Date.now() - startTime;
-      const minLoadTime = 1000; // 1 segundo mínimo
-      
-      // Si ha pasado menos de 2 segundos, esperar el tiempo restante
-      if (elapsedTime < minLoadTime) {
-        const remainingTime = minLoadTime - elapsedTime;
-        await new Promise(resolve => setTimeout(resolve, remainingTime));
+      // Inicializar caché global si no está inicializado
+      if (!window.dataCacheInitialized) {
+        await window.initializeDataCache(this.supabaseService);
       }
+      
+      // Usar caché global para obtener datos
+      const partidos = await window.dataCache.getPartidos(this.supabaseService);
       
       this.hideLoading();
       await this.displayPartidos(partidos);

@@ -14,6 +14,13 @@ class PadelApp {
     this.init();
   }
 
+  // Función para forzar recarga de datos (útil después de cambios)
+  async refreshData() {
+    console.log('🔄 Forzando recarga de datos...');
+    await window.dataCache.refreshData(this.supabaseService);
+    await this.loadJugadores();
+  }
+
   init(showLoadingScreen = true) {
     if (!this.supabaseService.isConnected()) {
       this.showError(MESSAGES.ERROR_CONFIG + 'No se pudo conectar a Supabase');
@@ -188,32 +195,16 @@ class PadelApp {
     try {
       this.showLoading();
       
-      // Guardar el tiempo de inicio
-      const startTime = Date.now();
-      
-      // Obtener estadísticas con ELO (incluye progresión calculada desde la base de datos)
-      const estadisticasResult = await this.supabaseService.getEstadisticasConELO();
-      
-      if (!estadisticasResult.success) {
-        throw new Error(estadisticasResult.error);
+      // Inicializar caché global si no está inicializado
+      if (!window.dataCacheInitialized) {
+        await window.initializeDataCache(this.supabaseService);
       }
       
-
+      // Usar caché global para obtener datos
+      const jugadores = await window.dataCache.getJugadores(this.supabaseService);
       
-      const result = estadisticasResult;
-
-      // Calcular cuánto tiempo ha pasado
-      const elapsedTime = Date.now() - startTime;
-      const minLoadTime = 1000; // 1 segundo mínimo
-      
-      // Si ha pasado menos de 1 segundo, esperar el tiempo restante
-      if (elapsedTime < minLoadTime) {
-        const remainingTime = minLoadTime - elapsedTime;
-        await new Promise(resolve => setTimeout(resolve, remainingTime));
-      }
-
       // Guardar jugadores para ordenar localmente
-      this.jugadores = result.data;
+      this.jugadores = jugadores;
       
       // Ordenar por defecto por victorias
       this.ordenarJugadores('victorias');
@@ -224,7 +215,7 @@ class PadelApp {
       this.actualizarBotonesOrdenacion();
       this.actualizarBotonesVista();
       
-      return result;
+      return { success: true, data: jugadores };
     } catch (error) {
       console.error('Error cargando jugadores:', error);
       this.hideLoading();

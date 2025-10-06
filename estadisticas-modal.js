@@ -4,6 +4,9 @@ class EstadisticasModal {
     this.jugadores = [];
     this.partidos = [];
     this.chart = null;
+    
+    // Caché local para cambios de ELO
+    this.cacheCambiosELO = {};
   }
 
   // Inicializar el modal
@@ -77,25 +80,14 @@ class EstadisticasModal {
       document.getElementById('main-content-estadisticas').classList.add('hidden');
       document.getElementById('error-message-estadisticas').classList.add('hidden');
 
-      // Cargar jugadores si no están cargados
-      if (this.jugadores.length === 0) {
-        const jugadoresResult = await this.supabaseService.getJugadores();
-        if (jugadoresResult.success) {
-          this.jugadores = jugadoresResult.data;
-        } else {
-          throw new Error('Error cargando jugadores');
-        }
-      }
-
-      // Cargar partidos si no están cargados
-      if (this.partidos.length === 0) {
-        const partidosResult = await this.supabaseService.getPartidos();
-        if (partidosResult.success) {
-          this.partidos = partidosResult.data;
-        } else {
-          throw new Error('Error cargando partidos');
-        }
-      }
+      // Usar caché global para obtener datos
+      const [jugadores, partidos] = await Promise.all([
+        window.dataCache.getJugadores(this.supabaseService),
+        window.dataCache.getPartidos(this.supabaseService)
+      ]);
+      
+      this.jugadores = jugadores;
+      this.partidos = partidos;
 
       // Buscar jugador
       const jugador = this.jugadores.find(j => j.id === jugadorId);
@@ -118,7 +110,7 @@ class EstadisticasModal {
       this.displayParejaStats(jugadorId, partidosJugador);
 
       // Crear gráfica de progresión ELO
-      this.createEloChart(partidosJugador, jugadorId);
+      await this.createEloChart(partidosJugador, jugadorId);
 
       // Mostrar últimos partidos
       this.displayRecentMatches(partidosJugador, jugadorId);
@@ -180,7 +172,7 @@ class EstadisticasModal {
   }
 
   // Crear gráfica de progresión ELO
-  createEloChart(partidos, jugadorId) {
+  async createEloChart(partidos, jugadorId) {
     const ctx = document.getElementById('eloChart');
     if (!ctx) return;
 
@@ -189,7 +181,7 @@ class EstadisticasModal {
       this.chart.destroy();
     }
 
-    const chartData = this.prepareChartData(partidos, jugadorId);
+    const chartData = await this.prepareChartData(partidos, jugadorId);
 
     this.chart = new Chart(ctx, {
       type: 'line',
@@ -247,7 +239,7 @@ class EstadisticasModal {
   }
 
   // Preparar datos para la gráfica
-  prepareChartData(partidos, jugadorId) {
+  async prepareChartData(partidos, jugadorId) {
     // Ordenar partidos por fecha
     const partidosOrdenados = partidos.sort((a, b) => new Date(a.fecha_partido) - new Date(b.fecha_partido));
     
@@ -255,9 +247,42 @@ class EstadisticasModal {
     const data = [];
     let eloActual = 1200; // ELO inicial
 
+    // Cargar cambios de ELO en paralelo para optimizar rendimiento
+    const cambiosELOPromises = partidosOrdenados.map(async (partido) => {
+      const cacheKey = `${partido.id}_${jugadorId}`;
+      
+      // Verificar caché local primero
+      if (this.cacheCambiosELO[cacheKey] !== undefined) {
+        return this.cacheCambiosELO[cacheKey];
+      }
+      
+      try {
+        // Intentar obtener cambio real de ELO desde la base de datos
+        const cambiosResult = await this.supabaseService.getCambiosELOPartido(partido.id);
+        if (cambiosResult.success) {
+          const cambioJugador = cambiosResult.data[`jugador_${jugadorId}`];
+          if (cambioJugador !== undefined) {
+            // Guardar en caché local
+            this.cacheCambiosELO[cacheKey] = cambioJugador;
+            return cambioJugador;
+          }
+        }
+      } catch (error) {
+        console.warn(`Error obteniendo cambios de ELO para partido ${partido.id}:`, error);
+      }
+      
+      // Fallback al cálculo local si hay error o no se encuentra
+      const cambioCalculado = this.calcularCambioELOPartido(partido, jugadorId);
+      this.cacheCambiosELO[cacheKey] = cambioCalculado;
+      return cambioCalculado;
+    });
+
+    // Esperar a que se resuelvan todos los cambios de ELO
+    const cambiosELO = await Promise.all(cambiosELOPromises);
+
+    // Construir datos de la gráfica
     partidosOrdenados.forEach((partido, index) => {
-      // Calcular cambio de ELO para este partido
-      const cambioELO = this.calcularCambioELOPartido(partido, jugadorId);
+      const cambioELO = cambiosELO[index];
       eloActual += cambioELO;
 
       // Usar fecha del partido como etiqueta

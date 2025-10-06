@@ -1,12 +1,22 @@
 // Generador de noticias para torneos de pádel
 class NoticiasGenerator {
   constructor() {
-    this.supabaseService = new SupabaseService(SUPABASE_CONFIG);
+    // Usar el servicio global si está disponible, sino crear uno nuevo
+    this.supabaseService = window.supabaseService || new SupabaseService(SUPABASE_CONFIG);
     this.jugadores = [];
     this.partidos = [];
     
-    // Hacer disponible globalmente
-    window.supabaseService = this.supabaseService;
+    // Caché local para cálculos pesados
+    this.cacheCalculos = {
+      estadisticasPorJugador: null,
+      partidosPorJugador: null,
+      lastCalculated: null
+    };
+    
+    // Hacer disponible globalmente si no existe
+    if (!window.supabaseService) {
+      window.supabaseService = this.supabaseService;
+    }
     
     // Inicializar automáticamente
     this.init();
@@ -34,22 +44,25 @@ class NoticiasGenerator {
     console.log('Iniciando carga de datos reales...');
     
     try {
-      // Usar el mismo método que usa la página de clasificación
-      console.log('Cargando jugadores con ELO...');
-      const jugadoresResult = await this.supabaseService.getEstadisticasConELO();
-      
-      if (jugadoresResult.success && jugadoresResult.data && jugadoresResult.data.length > 0) {
-        this.jugadores = jugadoresResult.data;
-        console.log('✅ Jugadores cargados:', this.jugadores.length);
-        console.log('Nombres de jugadores:', this.jugadores.map(j => j.nombre));
-      } else {
-        console.warn('No se pudieron cargar jugadores:', jugadoresResult);
+      // Inicializar caché global si no está inicializado
+      if (!window.dataCacheInitialized) {
+        await window.initializeDataCache(this.supabaseService);
       }
-
-      // Cargar partidos usando el mismo método que la página de partidos
-      console.log('Cargando partidos...');
-      this.partidos = await this.supabaseService.getPartidos();
-      console.log('✅ Partidos cargados:', this.partidos.length);
+      
+      // Usar caché global para obtener datos
+      console.log('Obteniendo datos del caché global...');
+      const [jugadores, partidos] = await Promise.all([
+        window.dataCache.getJugadores(this.supabaseService),
+        window.dataCache.getPartidos(this.supabaseService)
+      ]);
+      
+      this.jugadores = jugadores;
+      this.partidos = partidos;
+      
+      console.log('✅ Datos obtenidos del caché:', {
+        jugadores: this.jugadores.length,
+        partidos: this.partidos.length
+      });
 
       // Verificar que tenemos datos
       if (this.jugadores.length === 0) {
@@ -73,7 +86,8 @@ class NoticiasGenerator {
     console.log('Generando noticias con:', this.jugadores.length, 'jugadores y', this.partidos.length, 'partidos');
 
     try {
-      // Generar las cards (algunas son asíncronas)
+      // Generar las cards (optimizadas para ser más rápidas)
+      console.log('🚀 Generando cards optimizadas...');
       const cards = await Promise.all([
         this.generarCardMasPartidosJugados(),
         this.generarCardMasSociable(),
@@ -106,6 +120,7 @@ class NoticiasGenerator {
       this.mostrarError();
     }
   }
+
 
   // 1. Más partidos jugados este mes
   generarCardMasPartidosJugados() {
