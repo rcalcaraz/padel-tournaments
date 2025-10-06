@@ -219,7 +219,7 @@ class PadelApp {
       this.ordenarJugadores('victorias');
       
       this.hideLoading();
-      this.displayJugadores(this.jugadores);
+      await this.displayJugadores(this.jugadores);
       this.fillPlayerSelectors(this.jugadores);
       this.actualizarBotonesOrdenacion();
       this.actualizarBotonesVista();
@@ -414,7 +414,7 @@ class PadelApp {
     }
   }
 
-  displayJugadores(jugadores) {
+  async displayJugadores(jugadores) {
     const container = DOMUtils.getElement('jugadores-container');
     if (!container) return;
 
@@ -433,6 +433,13 @@ class PadelApp {
     
     if (this.vistaActual === 'tabla') {
       // Crear tabla con encabezados
+      const jugadorPromises = jugadores.map(async (jugador, index) => {
+        const posicion = index + 1;
+        return await this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
+      });
+      
+      const jugadorHTMLs = await Promise.all(jugadorPromises);
+      
       const tableHTML = `
         <div class="overflow-x-auto">
           <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
@@ -448,10 +455,7 @@ class PadelApp {
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              ${jugadores.map((jugador, index) => {
-                const posicion = index + 1;
-                return this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
-              }).join('')}
+              ${jugadorHTMLs.join('')}
             </tbody>
           </table>
         </div>
@@ -460,11 +464,11 @@ class PadelApp {
     } else {
       // Vista de cards
       container.innerHTML = '';
-      jugadores.forEach((jugador, index) => {
+      for (const [index, jugador] of jugadores.entries()) {
         const posicion = index + 1;
-        const jugadorHTML = this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
+        const jugadorHTML = await this.createJugadorHTML(jugador, estadisticasAnteriores, posicion);
         container.innerHTML += jugadorHTML;
-      });
+      }
     }
     
     // Guardar estadísticas actuales para la próxima comparación
@@ -501,15 +505,68 @@ class PadelApp {
     return { victorias, derrotas };
   }
 
-  createJugadorHTML(jugador, estadisticasAnteriores, posicion) {
+  async createJugadorHTML(jugador, estadisticasAnteriores, posicion) {
     if (this.vistaActual === 'tabla') {
       return this.createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion);
     } else {
-      return this.createJugadorCardHTML(jugador, estadisticasAnteriores, posicion);
+      return await this.createJugadorCardHTML(jugador, estadisticasAnteriores, posicion);
     }
   }
 
-  createJugadorCardHTML(jugador, estadisticasAnteriores, posicion) {
+  // Función para calcular la forma actual (últimos 5 partidos)
+  async calcularFormaActual(jugadorId) {
+    try {
+      // Si no tenemos partidos cargados, cargarlos
+      if (!this.partidos || this.partidos.length === 0) {
+        this.partidos = await this.supabaseService.getPartidos();
+      }
+
+      if (!this.partidos || this.partidos.length === 0) {
+        return '<span class="text-gray-400 text-sm">Sin datos</span>';
+      }
+
+      // Obtener partidos del jugador ordenados por fecha (más recientes primero)
+      const partidosJugador = this.partidos.filter(partido => 
+        partido.pareja1_jugador1_id === jugadorId || 
+        partido.pareja1_jugador2_id === jugadorId ||
+        partido.pareja2_jugador1_id === jugadorId || 
+        partido.pareja2_jugador2_id === jugadorId
+      ).sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido));
+
+      // Tomar solo los últimos 5 partidos
+      const ultimos5Partidos = partidosJugador.slice(0, 5);
+
+      if (ultimos5Partidos.length === 0) {
+        return '<span class="text-gray-400 text-sm">Sin partidos</span>';
+      }
+
+      // Generar las letras con colores
+      let formaHTML = '';
+      ultimos5Partidos.forEach(partido => {
+        const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+        const gano = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+        
+        const letra = gano ? 'V' : 'D';
+        const colorFondo = gano ? 'bg-green-500' : 'bg-red-500';
+        const colorTexto = 'text-white';
+        
+        formaHTML += `<span class="inline-flex items-center justify-center w-8 h-8 ${colorFondo} ${colorTexto} text-sm font-bold rounded">${letra}</span>`;
+      });
+
+      // Si hay menos de 5 partidos, rellenar con espacios vacíos
+      const partidosFaltantes = 5 - ultimos5Partidos.length;
+      for (let i = 0; i < partidosFaltantes; i++) {
+        formaHTML += '<span class="inline-flex items-center justify-center w-8 h-8 bg-gray-200 text-gray-400 text-sm font-bold rounded">-</span>';
+      }
+
+      return formaHTML;
+    } catch (error) {
+      console.error('Error calculando forma actual:', error);
+      return '<span class="text-gray-400 text-sm">Sin datos</span>';
+    }
+  }
+
+  async createJugadorCardHTML(jugador, estadisticasAnteriores, posicion) {
     // Usar estadísticas ya calculadas en el objeto jugador
     const estadisticas = jugador.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
     const statsAnteriores = estadisticasAnteriores[jugador.id] || { victorias: 0, derrotas: 0 };
@@ -523,6 +580,9 @@ class PadelApp {
     const ratingColor = EloUtils.getRatingColor(jugador.rating_elo || 1200);
     const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
     const totalPartidos = estadisticas.total || (estadisticas.victorias + estadisticas.derrotas);
+    
+    // Calcular forma actual (últimos 5 partidos)
+    const formaActual = await this.calcularFormaActual(jugador.id);
     
     // Determinar qué dato resaltar según el criterio de ordenación
     const criterioActual = this.ordenActual || 'victorias';
@@ -548,20 +608,26 @@ class PadelApp {
                 <div class="space-y-6">
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">% Victorias:</span>
-                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''} ${criterioActual === 'victorias' ? claseDestacado : ''}">
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${victoriasCambiaron ? 'text-green-600' : ''} ${criterioActual === 'victorias' ? claseDestacado : ''} min-h-[3rem] flex items-center">
                       ${totalPartidos > 0 ? Math.round((estadisticas.victorias / totalPartidos) * 100) : 0}%
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Derrotas:</span>
-                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${derrotasCambiaron ? 'text-red-600' : ''}">
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold ${derrotasCambiaron ? 'text-red-600' : ''} min-h-[3rem] flex items-center">
                       ${estadisticas.derrotas}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Victorias:</span>
-                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold">
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold min-h-[3rem] flex items-center">
                       ${estadisticas.victorias}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Total Partidos:</span>
+                    <span class="text-[#64748b] text-3xl sm:text-4xl font-bold min-h-[3rem] flex items-center">
+                      ${totalPartidos}
                     </span>
                   </div>
                 </div>
@@ -572,21 +638,27 @@ class PadelApp {
                 <div class="space-y-6">
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Rating ELO:</span>
-                    <span class="text-3xl sm:text-4xl font-bold ${criterioActual === 'elo' ? claseDestacado : ''}" style="color: ${ratingColor};">
+                    <span class="text-3xl sm:text-4xl font-bold ${criterioActual === 'elo' ? claseDestacado : ''} min-h-[3rem] flex items-center" style="color: ${ratingColor};">
                       ${jugador.rating_elo || 1200}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Nivel:</span>
-                    <span class="text-[#64748b] text-2xl sm:text-3xl font-bold">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-bold min-h-[3rem] flex items-center">
                       ${ratingTitle}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Progresión:</span>
-                    <span class="text-3xl sm:text-4xl font-bold ${criterioActual === 'progresion' ? claseDestacado : ''}" style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'};">
+                    <span class="text-3xl sm:text-4xl font-bold ${criterioActual === 'progresion' ? claseDestacado : ''} min-h-[3rem] flex items-center" style="color: ${jugador.progresion_elo >= 0 ? '#10b981' : '#ef4444'};">
                       ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
                     </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#64748b] text-2xl sm:text-3xl font-medium">Forma:</span>
+                    <div class="flex gap-1 items-center min-h-[3rem]">
+                      ${formaActual}
+                    </div>
                   </div>
                 </div>
               </div>
