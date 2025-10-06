@@ -447,11 +447,12 @@ class PadelApp {
               <tr>
                 <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">Pos</th>
                 <th class="px-4 py-5 text-left text-lg font-semibold text-gray-700 uppercase tracking-wider">Jugador</th>
-                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">% Vic</th>
-                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">V</th>
-                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">D</th>
-                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">ELO</th>
-                <th class="px-4 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">+/-</th>
+                <th class="px-3 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">% Vic</th>
+                <th class="px-3 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">V</th>
+                <th class="px-3 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">D</th>
+                <th class="px-3 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">ELO</th>
+                <th class="px-3 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">+/-</th>
+                <th class="px-3 py-5 text-center text-lg font-semibold text-gray-700 uppercase tracking-wider">Forma</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -507,9 +508,77 @@ class PadelApp {
 
   async createJugadorHTML(jugador, estadisticasAnteriores, posicion) {
     if (this.vistaActual === 'tabla') {
-      return this.createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion);
+      return await this.createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion);
     } else {
       return await this.createJugadorCardHTML(jugador, estadisticasAnteriores, posicion);
+    }
+  }
+
+  // Función para calcular la forma con flecha (últimos 5 partidos)
+  async calcularFormaFlecha(jugadorId) {
+    try {
+      // Si no tenemos partidos cargados, cargarlos
+      if (!this.partidos || this.partidos.length === 0) {
+        this.partidos = await this.supabaseService.getPartidos();
+      }
+
+      if (!this.partidos || this.partidos.length === 0) {
+        return '<span class="text-gray-400 text-sm">-</span>';
+      }
+
+      // Obtener partidos del jugador ordenados por fecha (más recientes primero)
+      const partidosJugador = this.partidos.filter(partido => 
+        partido.pareja1_jugador1_id === jugadorId || 
+        partido.pareja1_jugador2_id === jugadorId ||
+        partido.pareja2_jugador1_id === jugadorId || 
+        partido.pareja2_jugador2_id === jugadorId
+      ).sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido));
+
+      // Tomar solo los últimos 5 partidos
+      const ultimos5Partidos = partidosJugador.slice(0, 5);
+
+      if (ultimos5Partidos.length === 0) {
+        return '<span class="text-gray-400 text-sm">-</span>';
+      }
+
+      // Contar victorias en los últimos 5 partidos
+      let victorias = 0;
+      ultimos5Partidos.forEach(partido => {
+        const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+        const gano = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+        if (gano) victorias++;
+      });
+
+      const porcentajeVictorias = (victorias / ultimos5Partidos.length) * 100;
+
+      // Determinar flecha basada en el porcentaje de victorias
+      let flecha, color, rotation;
+      if (porcentajeVictorias >= 80) {
+        flecha = '↑'; // Flecha hacia arriba rotada (excelente)
+        color = 'text-green-600';
+        rotation = 'transform rotate-45';
+      } else if (porcentajeVictorias >= 60) {
+        flecha = '↑'; // Flecha hacia arriba (buena)
+        color = 'text-green-500';
+        rotation = '';
+      } else if (porcentajeVictorias >= 40) {
+        flecha = '↑'; // Flecha hacia arriba rotada (regular)
+        color = 'text-yellow-500';
+        rotation = 'transform rotate-90';
+      } else if (porcentajeVictorias >= 20) {
+        flecha = '↑'; // Flecha hacia arriba rotada (mala)
+        color = 'text-orange-500';
+        rotation = 'transform rotate-[135deg]';
+      } else {
+        flecha = '↑'; // Flecha hacia arriba rotada (muy mala)
+        color = 'text-red-500';
+        rotation = 'transform rotate-180';
+      }
+
+      return `<span class="text-3xl font-black ${color} ${rotation} inline-block">${flecha}</span>`;
+    } catch (error) {
+      console.error('Error calculando forma flecha:', error);
+      return '<span class="text-gray-400 text-sm">-</span>';
     }
   }
 
@@ -669,7 +738,7 @@ class PadelApp {
     `;
   }
 
-  createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion) {
+  async createJugadorTablaHTML(jugador, estadisticasAnteriores, posicion) {
     // Usar estadísticas ya calculadas en el objeto jugador
     const estadisticas = jugador.estadisticas || { victorias: 0, derrotas: 0, total: 0 };
     const statsAnteriores = estadisticasAnteriores[jugador.id] || { victorias: 0, derrotas: 0 };
@@ -684,9 +753,12 @@ class PadelApp {
     const ratingTitle = EloUtils.getRatingTitle(jugador.rating_elo || 1200);
     const totalPartidos = estadisticas.total || (estadisticas.victorias + estadisticas.derrotas);
     
+    // Calcular forma con flecha
+    const formaFlecha = await this.calcularFormaFlecha(jugador.id);
+    
     // Determinar qué dato resaltar según el criterio de ordenación
     const criterioActual = this.ordenActual || 'victorias';
-    const claseDestacado = 'bg-blue-100 px-3 py-1 rounded-lg border-2 border-blue-300';
+    const claseDestacado = 'bg-blue-100 px-2 py-1 rounded-lg border-2 border-blue-300';
     
     return `
       <tr class="bg-white hover:bg-gray-50 transition-colors duration-200 cursor-pointer player-row ${claseAnimacion}" data-jugador-id="${jugador.id}">
@@ -703,8 +775,8 @@ class PadelApp {
         </td>
         
         <!-- % Victorias -->
-        <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${criterioActual === 'victorias' ? 'font-bold' : ''} ${criterioActual === 'victorias' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${totalPartidos > 0 ? (() => {
+        <td class="px-3 py-5 text-center">
+          <div class="text-3xl ${criterioActual === 'victorias' ? 'font-bold' : ''} ${criterioActual === 'victorias' ? 'bg-blue-100 px-2 py-1 rounded-lg border-2 border-blue-300' : ''} min-h-[3rem] flex items-center justify-center" style="color: ${totalPartidos > 0 ? (() => {
             const porcentaje = Math.round((estadisticas.victorias / totalPartidos) * 100);
             if (porcentaje >= 80) return '#059669'; // Verde para 80%+
             if (porcentaje >= 60) return '#0d9488'; // Verde-azul para 60-79%
@@ -717,26 +789,33 @@ class PadelApp {
         </td>
         
         <!-- Victorias -->
-        <td class="px-4 py-5 text-center">
-          <div class="text-3xl text-gray-700">${estadisticas.victorias}</div>
+        <td class="px-3 py-5 text-center">
+          <div class="text-3xl text-gray-700 min-h-[3rem] flex items-center justify-center">${estadisticas.victorias}</div>
         </td>
         
         <!-- Derrotas -->
-        <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'}">${estadisticas.derrotas}</div>
+        <td class="px-3 py-5 text-center">
+          <div class="text-3xl ${derrotasCambiaron ? 'text-red-600' : 'text-gray-700'} min-h-[3rem] flex items-center justify-center">${estadisticas.derrotas}</div>
         </td>
         
         <!-- ELO -->
-        <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${criterioActual === 'elo' ? 'font-bold' : ''} ${criterioActual === 'elo' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''}" style="color: ${ratingColor};">
+        <td class="px-3 py-5 text-center">
+          <div class="text-3xl ${criterioActual === 'elo' ? 'font-bold' : ''} ${criterioActual === 'elo' ? 'bg-blue-100 px-2 py-1 rounded-lg border-2 border-blue-300' : ''} min-h-[3rem] flex items-center justify-center" style="color: ${ratingColor};">
             ${jugador.rating_elo || 1200}
           </div>
         </td>
         
         <!-- Progresión -->
-        <td class="px-4 py-5 text-center">
-          <div class="text-3xl ${criterioActual === 'progresion' ? 'font-bold' : ''} ${criterioActual === 'progresion' ? 'bg-blue-100 px-3 py-2 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'}">
+        <td class="px-3 py-5 text-center">
+          <div class="text-3xl ${criterioActual === 'progresion' ? 'font-bold' : ''} ${criterioActual === 'progresion' ? 'bg-blue-100 px-2 py-1 rounded-lg border-2 border-blue-300' : ''} ${jugador.progresion_elo >= 0 ? 'text-green-600' : 'text-red-600'} min-h-[3rem] flex items-center justify-center">
             ${jugador.progresion_elo >= 0 ? '+' : ''}${jugador.progresion_elo || 0}
+          </div>
+        </td>
+        
+        <!-- Forma -->
+        <td class="px-3 py-5 text-center">
+          <div class="flex justify-center items-center min-h-[3rem]">
+            ${formaFlecha}
           </div>
         </td>
       </tr>
