@@ -59,6 +59,7 @@ class PadelApp {
     const mainContent = DOMUtils.getElement('main-content');
     
     if (loadingScreen) {
+      loadingScreen.classList.remove('hidden');
       loadingScreen.style.display = 'block';
     }
     
@@ -93,6 +94,7 @@ class PadelApp {
       // Ocultar completamente después de la transición
       setTimeout(() => {
         loadingScreen.style.display = 'none';
+        loadingScreen.classList.add('hidden');
       }, 500);
     }
     
@@ -2305,7 +2307,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Detectar si es una nueva sesión o recarga de página
-  // Mostrar pantalla de bienvenida si es la primera vez o si se recarga la página
+  // Mostrar pantalla de bienvenida solo si es la primera vez o si se recarga la página
   const isNewSession = !sessionStorage.getItem('padelAppSession') || 
                       performance.navigation.type === 1; // 1 = recarga de página
   
@@ -2313,5 +2315,19 @@ document.addEventListener('DOMContentLoaded', function() {
   sessionStorage.setItem('padelAppSession', 'true');
   
   window.padelApp = new PadelApp();
+  
+  // Si no es una nueva sesión, ocultar inmediatamente la pantalla de carga
+  if (!isNewSession) {
+    const loadingScreen = document.getElementById('loading-screen');
+    const mainContent = document.getElementById('main-content');
+    
+    if (loadingScreen) {
+      loadingScreen.style.display = 'none';
+    }
+    if (mainContent) {
+      mainContent.classList.remove('hidden');
+    }
+  }
+  
   window.padelApp.init(isNewSession);
 }); 
