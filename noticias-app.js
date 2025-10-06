@@ -13,6 +13,9 @@ class NoticiasGenerator {
       lastCalculated: null
     };
     
+    // Caché local para cambios de ELO
+    this.cacheCambiosELO = {};
+    
     // Hacer disponible globalmente si no existe
     if (!window.supabaseService) {
       window.supabaseService = this.supabaseService;
@@ -72,6 +75,9 @@ class NoticiasGenerator {
       }
 
       console.log('✅ Todos los datos cargados correctamente');
+      
+      // Verificar si hay cambios y actualizar caché si es necesario
+      await this.verificarYActualizarCache();
       
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -592,24 +598,112 @@ class NoticiasGenerator {
     return partidosJugador.slice(0, 5);
   }
 
-  // Función auxiliar para calcular el cambio de ELO en los últimos 5 partidos (OPTIMIZADA)
+  // Función auxiliar para calcular el cambio de ELO en los últimos 5 partidos (CON CACHÉ LOCAL)
   async calcularCambioELOUltimos5Partidos(jugadorId, partidos) {
     if (partidos.length === 0) return 0;
 
     let cambioELO = 0;
     
-    // Usar cálculo simulado para mejor rendimiento (sin llamadas al servidor)
+    // Usar caché local para evitar llamadas repetidas al servidor
     for (const partido of partidos) {
-      const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
-      const gano = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+      const cacheKey = `${partido.id}_${jugadorId}`;
       
-      if (gano) {
-        cambioELO += 15; // Ganancia promedio por victoria
-      } else {
-        cambioELO -= 15; // Pérdida promedio por derrota
+      // Verificar caché local primero
+      if (this.cacheCambiosELO[cacheKey] !== undefined) {
+        cambioELO += this.cacheCambiosELO[cacheKey];
+        continue;
       }
+      
+      try {
+        // Intentar obtener cambio real de ELO desde la base de datos
+        const cambiosResult = await this.supabaseService.getCambiosELOPartido(partido.id);
+        if (cambiosResult.success) {
+          const cambioJugador = cambiosResult.data[`jugador_${jugadorId}`];
+          if (cambioJugador !== undefined) {
+            // Guardar en caché local
+            this.cacheCambiosELO[cacheKey] = cambioJugador;
+            cambioELO += cambioJugador;
+            continue;
+          }
+        }
+      } catch (error) {
+        console.warn(`Error obteniendo cambios de ELO para partido ${partido.id}:`, error);
+      }
+      
+      // Fallback al cálculo local si hay error o no se encuentra
+      const cambioCalculado = this.calcularCambioELOPartido(partido, jugadorId);
+      this.cacheCambiosELO[cacheKey] = cambioCalculado;
+      cambioELO += cambioCalculado;
     }
     
+    return cambioELO;
+  }
+
+  // Limpiar caché de cambios de ELO (útil cuando hay novedades)
+  limpiarCacheCambiosELO() {
+    console.log('🗑️ Limpiando caché de cambios de ELO...');
+    this.cacheCambiosELO = {};
+  }
+
+  // Verificar si hay cambios en el servidor y limpiar caché si es necesario
+  async verificarYActualizarCache() {
+    try {
+      // Verificar si hay cambios comparando con el último partido
+      const ultimoPartido = await this.supabaseService.getUltimoPartido();
+      if (!ultimoPartido || ultimoPartido.length === 0) return;
+
+      const ultimoPartidoServer = ultimoPartido[0];
+      const ultimoPartidoLocal = this.partidos.length > 0 ? 
+        this.partidos.sort((a, b) => new Date(b.fecha_partido) - new Date(a.fecha_partido))[0] : 
+        null;
+
+      // Si hay cambios, limpiar caché
+      if (ultimoPartidoLocal && 
+          (ultimoPartidoServer.id !== ultimoPartidoLocal.id || 
+           ultimoPartidoServer.fecha_partido !== ultimoPartidoLocal.fecha_partido)) {
+        console.log('🔄 Cambios detectados, limpiando caché de ELO...');
+        this.limpiarCacheCambiosELO();
+      }
+    } catch (error) {
+      console.warn('⚠️ Error verificando cambios, manteniendo caché:', error);
+    }
+  }
+
+  // Calcular cambio de ELO para un partido específico (misma lógica que la modal)
+  calcularCambioELOPartido(partido, jugadorId) {
+    if (!partido.ganador_pareja) return 0;
+
+    // Obtener ratings de los jugadores
+    const jugador1 = this.jugadores.find(j => j.id === partido.pareja1_jugador1_id);
+    const jugador2 = this.jugadores.find(j => j.id === partido.pareja1_jugador2_id);
+    const jugador3 = this.jugadores.find(j => j.id === partido.pareja2_jugador1_id);
+    const jugador4 = this.jugadores.find(j => j.id === partido.pareja2_jugador2_id);
+
+    const rating1 = jugador1?.rating_elo || 1200;
+    const rating2 = jugador2?.rating_elo || 1200;
+    const rating3 = jugador3?.rating_elo || 1200;
+    const rating4 = jugador4?.rating_elo || 1200;
+
+    // Calcular rating promedio de cada pareja
+    const ratingPareja1 = (rating1 + rating2) / 2;
+    const ratingPareja2 = (rating3 + rating4) / 2;
+
+    // Determinar en qué pareja está el jugador
+    const estaEnPareja1 = partido.pareja1_jugador1_id === jugadorId || partido.pareja1_jugador2_id === jugadorId;
+    const ratingJugador = estaEnPareja1 ? ratingPareja1 : ratingPareja2;
+    const ratingOponente = estaEnPareja1 ? ratingPareja2 : ratingPareja1;
+
+    // Calcular probabilidad esperada
+    const probabilidadEsperada = 1 / (1 + Math.pow(10, (ratingOponente - ratingJugador) / 400));
+
+    // Determinar resultado
+    const esVictoria = (estaEnPareja1 && partido.ganador_pareja === 1) || (!estaEnPareja1 && partido.ganador_pareja === 2);
+    const resultado = esVictoria ? 1 : 0;
+
+    // Calcular cambio de ELO (K-factor = 32)
+    const K = 32;
+    const cambioELO = Math.round(K * (resultado - probabilidadEsperada));
+
     return cambioELO;
   }
 
